@@ -7,13 +7,21 @@ import tempfile
 from .catalog import load_catalog
 from .config import Settings
 from reasoning.spice import find_ngspice
+from .firebase_credentials import load_certificate,CredentialConfigurationError
 
 
 def check(settings, *, production=False, authenticated=False, catalog=None):
     checks={}
     checks['firebase_project']=bool(settings.firebase_project) or authenticated
-    checks['firebase_credentials']=authenticated or bool(os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON') or
-        (os.getenv('GOOGLE_APPLICATION_CREDENTIALS') and Path(os.environ['GOOGLE_APPLICATION_CREDENTIALS']).is_file()))
+    credential_error=None
+    if authenticated:checks['firebase_credentials']=True
+    else:
+        try:
+            load_certificate(settings.firebase_project)
+            checks['firebase_credentials']=True
+        except CredentialConfigurationError as exc:
+            checks['firebase_credentials']=False
+            credential_error=exc.code
     checks['ngspice']=bool(find_ngspice())
     checks['worker']=settings.worker_enabled
     try:
@@ -35,6 +43,7 @@ def check(settings, *, production=False, authenticated=False, catalog=None):
     if settings.memory_scopes_file:
         checks['memory_configuration']=Path(settings.memory_scopes_file).is_file() and bool(os.getenv('MEKO_MCP_URL') and os.getenv('MEKO_API_TOKEN'))
     return {'status':'ready' if all(checks.values()) else 'not_ready','checks':checks,
+            'firebase_credential_error':credential_error,'firebase_permissions_verified':False,
             'approved_real_experiments':approved,'live_providers_verified':False}
 
 

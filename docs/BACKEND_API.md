@@ -146,7 +146,11 @@ Restart preserves queued jobs; interrupted running jobs require explicit handlin
 400 malformed/duplicate-key/non-finite JSON; 401 missing/invalid Firebase token;
 403 role denied; 404 unknown/unowned session or absent image; 409 stale/busy/closed/
 conflicting request; 413 size; 415 invalid image; 422 invalid typed payload;
-503 missing readiness configuration or unavailable optional memory operations.
+503 missing/invalid server credentials, Firebase service/OAuth/permission failures,
+missing readiness configuration or unavailable optional memory operations;
+500 unexpected authentication backend failure. Invalid/expired/revoked tokens
+remain 401. Server credentials are validated offline by readiness; live Firebase
+permission validation is a separate operator diagnostic, not a health-check call.
 Inspect status first: errors use `detail` or validation `error`/`fields`.
 Uploads have a 6 MiB total envelope limit; JSON requests/events have 512 KiB.
 

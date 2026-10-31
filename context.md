@@ -266,3 +266,32 @@ Existing session records are preserved; SQLite creates the new receipts table.
 Firebase/provider readiness configuration and instructor approvals are unchanged.
 No credentials were read or host settings changed; commit/push/redeploy required.
 Verification: 268 tests passed, zero failures/skips; API1.1 synthetic demo passed; package wheel build passed. Docker/live deployment not run locally.
+
+## Firebase error/readiness fix (2026-11-01)
+
+Owner ML2/backend Codex, following user's request to solve the assessed issues.
+backend/auth.py now separates invalid/expired/revoked tokens, disabled/deleted
+users and tenant mismatch (401), credential/OAuth/IAM/service failures (503), and
+unexpected initialization/verification/claims failures (500). Verification and
+check_revoked=True stay enabled. Private logs contain only controlled stage and
+exception type, not provider messages, tokens or keys. Cached app project checked.
+
+backend/firebase_credentials.py validates either nonblank inline JSON (precedence)
+or GOOGLE_APPLICATION_CREDENTIALS secret file: service-account object, matching
+project_id, required string fields and Firebase Admin private-key loading. No
+ambient/user ADC fallback on this explicit service-account deployment path.
+Preflight shares that offline validator, reports safe credential reason codes,
+and explicitly firebase_permissions_verified=false. It makes no Google calls.
+
+Added operator-only python -m backend.firebase_diagnostic --live: OAuth refresh
+and separate Auth user-read permission check, bounded network timeouts, random
+synthetic nonexistent UID by default. Reports stages/exception classes only;
+no records/access tokens printed. Never invoked by readiness or this coding task.
+Updated deployment/API docs and env template. Expanded mocked auth tests and
+synthetic ephemeral-key credential/diagnostic tests; no real key fixtures saved.
+
+Verification: 283 tests passed, zero failures/skips; package wheel built; diff
+check passed. Real credential file not read, real OAuth/IAM not tested, no keys
+revoked or Render secrets/deployment changed. Operator must replace exposed keys
+if applicable, supply matching project credentials, redeploy, and run live
+permission diagnostic on host. Vision remains a separate Gemini configuration.
