@@ -7,7 +7,19 @@ from pathlib import Path
 from .circuit import number, token
 
 
-def simulate(circuit, probe, executable="ngspice"):
+def find_ngspice():
+    """Explicit environment setting, PATH, then the optional local Windows tool."""
+    configured = os.environ.get("NGSPICE_EXECUTABLE")
+    if configured:
+        return shutil.which(configured)
+    found = shutil.which("ngspice")
+    if found:
+        return found
+    local = Path(__file__).resolve().parents[1] / ".tools" / "Spice64" / "bin" / "ngspice_con.exe"
+    return str(local) if local.is_file() else None
+
+
+def simulate(circuit, probe, executable=None):
     frequency = number(probe["frequency_hz"], "frequency_hz", True)
     positive, negative = token(probe["positive"]), token(probe.get("negative", "0"))
     positive = circuit["aliases"].get(positive, positive)
@@ -15,7 +27,8 @@ def simulate(circuit, probe, executable="ngspice"):
     nets = {n for c in circuit["components"] for n in c["pins"].values()}
     if positive not in nets or negative not in nets:
         return {"status": "invalid_probe"}
-    if not shutil.which(executable):
+    executable = find_ngspice() if executable is None else shutil.which(executable)
+    if not executable:
         return {"status": "unavailable", "detail": "ngspice executable not found"}
     # SPICE identifiers are case-insensitive; opaque generated names preserve
     # distinct JSON nets (e.g. A and a) and avoid expression-reserved names.
@@ -33,8 +46,9 @@ def simulate(circuit, probe, executable="ngspice"):
             # Explicitly an ideal small-signal VCVS; supply pins are checked
             # topologically but rail saturation is not modeled.
             lines.append(f"E{i} {p['out']} 0 {p['+']} {p['-']} {c['gain']:.12g}")
+    voltage = lambda node: "0" if node == "0" else f"v({node})"
     lines += [".control", f"ac lin 1 {frequency:.12g} {frequency:.12g}",
-              f"let reading = mag(v({positive})-v({negative}))",
+              f"let reading = mag({voltage(positive)}-{voltage(negative)})",
               "wrdata reading.txt reading", "quit", ".endc", ".end"]
     try:
         with tempfile.TemporaryDirectory(prefix="lab-spice-") as folder:
@@ -43,6 +57,9 @@ def simulate(circuit, probe, executable="ngspice"):
             run = subprocess.run([executable, "-n", "-b", "circuit.cir"], cwd=folder,
                                  capture_output=True, text=True, timeout=5,
                                  env={**os.environ, "SPICE_ASCIIRAWFILE": "1"})
+            log = ((run.stdout or "") + (run.stderr or "")).lower()
+            if any(marker in log for marker in ("singular matrix", "timestep too small", "fatal error")):
+                return {"status":"failed", "detail":"Circuit has a solver/model degeneracy; check connectivity and sources"}
             output = path / "reading.txt"
             if run.returncode or not output.exists():
                 return {"status": "failed", "detail": "Solver did not produce a reading"}

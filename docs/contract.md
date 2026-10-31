@@ -1,5 +1,18 @@
 # Reasoning contract v1.0
 
+Current integration adds explicit ML1 candidate envelopes alongside this legacy
+analog request. See docs/ML1_INTEGRATION_REVIEW.md and
+schemas/vision-diagnose-request.schema.json. Both use POST /v1/diagnose and the
+shared reasoning.api.diagnose_input dispatcher; reasoning.engine.diagnose remains
+the analog-only function for compatibility. A raw 0.1 export is still not a full
+diagnostic request. No analysis is inferred from a component name.
+
+ML1 code is imported from Abhiram db8a1ce. The 7400_as_not path performs isolated
+logical topology/truth-table checks; the analog_from_vision path requires explicit
+source settings, ground/probe port mappings and supported R/C models. Both enforce
+the ML1 review gate and preserve endpoint provenance. Neither invokes Gemini or
+grants human review. See tools/demo.py for synthetic reproducible examples.
+
 Decision owner: Codex acting as ML person 2. Integration contract for teammates.
 
 POST /v1/diagnose accepts the JSON illustrated in examples/rc.json and

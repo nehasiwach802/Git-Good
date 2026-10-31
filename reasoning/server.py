@@ -2,8 +2,9 @@
 import json
 import math
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from .engine import diagnose
+from .api import diagnose_input
 from .validation import ValidationError
+from .spice import find_ngspice
 
 
 def strict_json(data):
@@ -37,6 +38,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path == "/capabilities":
+            return self.reply(200, {"status":"ok", "analyses":["analog_ac_magnitude", "7400_as_not", "analog_from_vision"],
+                                    "ngspice_available":bool(find_ngspice()), "vision_extraction_called":False})
         self.reply(200 if self.path == "/health" else 404,
                    {"status": "ok"} if self.path == "/health" else {"error": "not_found"})
 
@@ -44,12 +48,16 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/v1/diagnose":
             return self.reply(404, {"error": "not_found"})
         try:
+            if self.headers.get("Transfer-Encoding"):
+                return self.reply(400, {"error":"unsupported_transfer_encoding"})
+            if len(self.headers.get_all("Content-Length", [])) != 1:
+                return self.reply(400, {"error":"content_length_required"})
             size = int(self.headers.get("Content-Length", "0"))
             if not 0 < size <= 262144:
                 return self.reply(413, {"error": "body_limit_256KiB"})
             self.connection.settimeout(10)
             request = strict_json(self.rfile.read(size))
-            self.reply(200, diagnose(request))
+            self.reply(200, diagnose_input(request))
         except ValidationError as exc:
             self.reply(400, {"error": "invalid_request", "code": exc.code,
                              "path": exc.path, "detail": exc.detail})

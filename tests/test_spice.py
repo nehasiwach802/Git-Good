@@ -19,6 +19,7 @@ class SpiceAdapterTests(unittest.TestCase):
             deck = Path(kwargs['cwd'],'circuit.cir').read_text()
             self.assertIn('R0 n0 n1 1000', deck)
             self.assertIn('ac lin 1 ', deck)
+            self.assertNotIn('v(0)', deck)
             self.assertIsInstance(argv,list)
             self.assertNotIn('shell',kwargs)
             Path(kwargs['cwd'],'reading.txt').write_text('1.59154943e2 7.0710678e-1\n')
@@ -36,3 +37,14 @@ class SpiceAdapterTests(unittest.TestCase):
     def test_directive_injection_rejected(self):
         self.probe['positive'] = 'output)\nshell command'
         with self.assertRaises(ValueError): simulate(self.circuit,self.probe)
+
+    def test_real_solver_degenerate_and_differential_probes(self):
+        import copy
+        short=copy.deepcopy(self.circuit)
+        source=next(c for c in short['components'] if c['type']=='V')
+        source['pins']['+']='0'
+        self.assertEqual(simulate(short,self.probe)['status'],'failed')
+        reverse={**self.probe,'positive':'0','negative':'output'}
+        self.assertAlmostEqual(simulate(self.circuit,reverse)['value'],2**-.5,places=6)
+        same={**self.probe,'negative':'output'}
+        self.assertEqual(simulate(self.circuit,same)['value'],0)

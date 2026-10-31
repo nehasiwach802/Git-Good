@@ -3,9 +3,8 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from .engine import diagnose
+from .api import diagnose_input, validate_input
 from .server import strict_json
-from .validation import validate_request
 
 
 def main():
@@ -16,8 +15,8 @@ def main():
     args = parser.parse_args()
     try:
         request = strict_json(args.request.read_bytes())
-        validate_request(request)
-        result = {"valid": True} if args.validate_only else diagnose(request)
+        validate_input(request)
+        result = {"valid": True} if args.validate_only else diagnose_input(request)
         output = json.dumps(result, indent=2, allow_nan=False) + "\n"
         if args.output:
             args.output.write_text(output, encoding="utf-8")

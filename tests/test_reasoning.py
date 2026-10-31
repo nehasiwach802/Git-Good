@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from reasoning.circuit import normalize, diff
 from reasoning.engine import diagnose
-from reasoning.spice import simulate
+from reasoning.spice import simulate, find_ngspice
 
 
 def fixture():
@@ -82,7 +82,7 @@ class ReasoningTests(unittest.TestCase):
         r = fixture()
         self.assertEqual(simulate(normalize(r['student_circuit']), r['experiment']['probes'][0], 'nonexistent-ngspice-test')['status'],'unavailable')
 
-    @unittest.skipUnless(shutil.which('ngspice'), 'ngspice not installed')
+    @unittest.skipUnless(find_ngspice(), 'ngspice not installed')
     def test_real_rc_and_opamp(self):
         for filename, expected in [('rc',.70710678),('opamp',1.99994)]:
             r = json.loads(Path(f'examples/{filename}.json').read_text())

@@ -29,3 +29,18 @@ class SchemaTests(unittest.TestCase):
         validator = Draft202012Validator(json.loads(Path('schemas/diagnose-request.schema.json').read_text()))
         for request in ({}, [], {'schema_version':'2.0'}):
             self.assertFalse(validator.is_valid(request))
+
+    def test_actual_vision_envelopes_and_outputs(self):
+        from jsonschema import Draft202012Validator
+        from referencing import Registry,Resource
+        from reasoning.api import diagnose_input
+        analog=json.loads(Path('schemas/diagnose-request.schema.json').read_text())
+        vision=json.loads(Path('schemas/vision-diagnose-request.schema.json').read_text())
+        registry=Registry().with_resource(analog['$id'],Resource.from_contents(analog))
+        Draft202012Validator.check_schema(vision)
+        validator=Draft202012Validator(vision,registry=registry)
+        response=Draft202012Validator(json.loads(Path('schemas/diagnose-response.schema.json').read_text()))
+        for name in ('vision-7400','vision-7400-wrong-wire','vision-7400-unreviewed','vision-rc'):
+            request=json.loads(Path(f'examples/{name}.json').read_text())
+            validator.validate(request)
+            response.validate(diagnose_input(request))

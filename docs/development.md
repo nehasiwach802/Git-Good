@@ -1,5 +1,12 @@
 # Work independently of vision and final experiments
 
+Update: ML1's actual labvision package from Abhiram db8a1ce is now available in
+this checkout and integrated through explicit digital/analog candidate routes.
+Use `python tools/demo.py` for end-to-end dummy JSON and `python tools/run_checks.py`
+for all tests with skipped tests treated as failures. See
+[current integration notes](ML1_INTEGRATION_REVIEW.md). Earlier statements below
+about independent fixture work still apply; real-photo accuracy remains unverified.
+
 This implementation is a development baseline, not a finalized experiment list.
 RC and ideal op-amp examples are simulated fixtures. Use handwritten JSON until
 ML1 can produce the same electrical circuit representation.

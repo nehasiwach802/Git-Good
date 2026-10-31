@@ -1,0 +1,611 @@
+{
+  "schema_version": "1.0",
+  "analysis": "analog_from_vision",
+  "safety_profile": "instructor_approved_low_voltage",
+  "board": {
+    "id": "terminal-strips-30-no-rails",
+    "description": "Two five-hole terminal strips per row; power rails excluded.",
+    "groups": [
+      [
+        "A1",
+        "B1",
+        "C1",
+        "D1",
+        "E1"
+      ],
+      [
+        "F1",
+        "G1",
+        "H1",
+        "I1",
+        "J1"
+      ],
+      [
+        "A2",
+        "B2",
+        "C2",
+        "D2",
+        "E2"
+      ],
+      [
+        "F2",
+        "G2",
+        "H2",
+        "I2",
+        "J2"
+      ],
+      [
+        "A3",
+        "B3",
+        "C3",
+        "D3",
+        "E3"
+      ],
+      [
+        "F3",
+        "G3",
+        "H3",
+        "I3",
+        "J3"
+      ],
+      [
+        "A4",
+        "B4",
+        "C4",
+        "D4",
+        "E4"
+      ],
+      [
+        "F4",
+        "G4",
+        "H4",
+        "I4",
+        "J4"
+      ],
+      [
+        "A5",
+        "B5",
+        "C5",
+        "D5",
+        "E5"
+      ],
+      [
+        "F5",
+        "G5",
+        "H5",
+        "I5",
+        "J5"
+      ],
+      [
+        "A6",
+        "B6",
+        "C6",
+        "D6",
+        "E6"
+      ],
+      [
+        "F6",
+        "G6",
+        "H6",
+        "I6",
+        "J6"
+      ],
+      [
+        "A7",
+        "B7",
+        "C7",
+        "D7",
+        "E7"
+      ],
+      [
+        "F7",
+        "G7",
+        "H7",
+        "I7",
+        "J7"
+      ],
+      [
+        "A8",
+        "B8",
+        "C8",
+        "D8",
+        "E8"
+      ],
+      [
+        "F8",
+        "G8",
+        "H8",
+        "I8",
+        "J8"
+      ],
+      [
+        "A9",
+        "B9",
+        "C9",
+        "D9",
+        "E9"
+      ],
+      [
+        "F9",
+        "G9",
+        "H9",
+        "I9",
+        "J9"
+      ],
+      [
+        "A10",
+        "B10",
+        "C10",
+        "D10",
+        "E10"
+      ],
+      [
+        "F10",
+        "G10",
+        "H10",
+        "I10",
+        "J10"
+      ],
+      [
+        "A11",
+        "B11",
+        "C11",
+        "D11",
+        "E11"
+      ],
+      [
+        "F11",
+        "G11",
+        "H11",
+        "I11",
+        "J11"
+      ],
+      [
+        "A12",
+        "B12",
+        "C12",
+        "D12",
+        "E12"
+      ],
+      [
+        "F12",
+        "G12",
+        "H12",
+        "I12",
+        "J12"
+      ],
+      [
+        "A13",
+        "B13",
+        "C13",
+        "D13",
+        "E13"
+      ],
+      [
+        "F13",
+        "G13",
+        "H13",
+        "I13",
+        "J13"
+      ],
+      [
+        "A14",
+        "B14",
+        "C14",
+        "D14",
+        "E14"
+      ],
+      [
+        "F14",
+        "G14",
+        "H14",
+        "I14",
+        "J14"
+      ],
+      [
+        "A15",
+        "B15",
+        "C15",
+        "D15",
+        "E15"
+      ],
+      [
+        "F15",
+        "G15",
+        "H15",
+        "I15",
+        "J15"
+      ],
+      [
+        "A16",
+        "B16",
+        "C16",
+        "D16",
+        "E16"
+      ],
+      [
+        "F16",
+        "G16",
+        "H16",
+        "I16",
+        "J16"
+      ],
+      [
+        "A17",
+        "B17",
+        "C17",
+        "D17",
+        "E17"
+      ],
+      [
+        "F17",
+        "G17",
+        "H17",
+        "I17",
+        "J17"
+      ],
+      [
+        "A18",
+        "B18",
+        "C18",
+        "D18",
+        "E18"
+      ],
+      [
+        "F18",
+        "G18",
+        "H18",
+        "I18",
+        "J18"
+      ],
+      [
+        "A19",
+        "B19",
+        "C19",
+        "D19",
+        "E19"
+      ],
+      [
+        "F19",
+        "G19",
+        "H19",
+        "I19",
+        "J19"
+      ],
+      [
+        "A20",
+        "B20",
+        "C20",
+        "D20",
+        "E20"
+      ],
+      [
+        "F20",
+        "G20",
+        "H20",
+        "I20",
+        "J20"
+      ],
+      [
+        "A21",
+        "B21",
+        "C21",
+        "D21",
+        "E21"
+      ],
+      [
+        "F21",
+        "G21",
+        "H21",
+        "I21",
+        "J21"
+      ],
+      [
+        "A22",
+        "B22",
+        "C22",
+        "D22",
+        "E22"
+      ],
+      [
+        "F22",
+        "G22",
+        "H22",
+        "I22",
+        "J22"
+      ],
+      [
+        "A23",
+        "B23",
+        "C23",
+        "D23",
+        "E23"
+      ],
+      [
+        "F23",
+        "G23",
+        "H23",
+        "I23",
+        "J23"
+      ],
+      [
+        "A24",
+        "B24",
+        "C24",
+        "D24",
+        "E24"
+      ],
+      [
+        "F24",
+        "G24",
+        "H24",
+        "I24",
+        "J24"
+      ],
+      [
+        "A25",
+        "B25",
+        "C25",
+        "D25",
+        "E25"
+      ],
+      [
+        "F25",
+        "G25",
+        "H25",
+        "I25",
+        "J25"
+      ],
+      [
+        "A26",
+        "B26",
+        "C26",
+        "D26",
+        "E26"
+      ],
+      [
+        "F26",
+        "G26",
+        "H26",
+        "I26",
+        "J26"
+      ],
+      [
+        "A27",
+        "B27",
+        "C27",
+        "D27",
+        "E27"
+      ],
+      [
+        "F27",
+        "G27",
+        "H27",
+        "I27",
+        "J27"
+      ],
+      [
+        "A28",
+        "B28",
+        "C28",
+        "D28",
+        "E28"
+      ],
+      [
+        "F28",
+        "G28",
+        "H28",
+        "I28",
+        "J28"
+      ],
+      [
+        "A29",
+        "B29",
+        "C29",
+        "D29",
+        "E29"
+      ],
+      [
+        "F29",
+        "G29",
+        "H29",
+        "I29",
+        "J29"
+      ],
+      [
+        "A30",
+        "B30",
+        "C30",
+        "D30",
+        "E30"
+      ],
+      [
+        "F30",
+        "G30",
+        "H30",
+        "I30",
+        "J30"
+      ]
+    ]
+  },
+  "candidate": {
+    "schema_version": "0.1",
+    "candidate_id": "synthetic-rc-vision",
+    "revision": 1,
+    "board_profile_id": "terminal-strips-30-no-rails",
+    "board_confirmed": true,
+    "reviewed_revision": 1,
+    "components": [
+      {
+        "id": "seen_R",
+        "part": "resistor",
+        "value_si": 1000,
+        "value_confirmed": true,
+        "identity_confirmed": true,
+        "pins": {
+          "1": {
+            "hole": "A1",
+            "alternatives": [],
+            "confidence": "unknown",
+            "reason": "",
+            "source": "manual",
+            "confirmed": true
+          },
+          "2": {
+            "hole": "A2",
+            "alternatives": [],
+            "confidence": "unknown",
+            "reason": "",
+            "source": "manual",
+            "confirmed": true
+          }
+        }
+      },
+      {
+        "id": "seen_C",
+        "part": "capacitor",
+        "value_si": 1e-06,
+        "value_confirmed": true,
+        "identity_confirmed": true,
+        "pins": {
+          "1": {
+            "hole": "B2",
+            "alternatives": [],
+            "confidence": "unknown",
+            "reason": "",
+            "source": "manual",
+            "confirmed": true
+          },
+          "2": {
+            "hole": "A3",
+            "alternatives": [],
+            "confidence": "unknown",
+            "reason": "",
+            "source": "manual",
+            "confirmed": true
+          }
+        }
+      }
+    ],
+    "wires": [],
+    "ports": [
+      {
+        "id": "IN",
+        "role": "input",
+        "endpoint": {
+          "hole": "B1",
+          "alternatives": [],
+          "confidence": "unknown",
+          "reason": "",
+          "source": "manual",
+          "confirmed": true
+        }
+      },
+      {
+        "id": "OUT",
+        "role": "output",
+        "endpoint": {
+          "hole": "C2",
+          "alternatives": [],
+          "confidence": "unknown",
+          "reason": "",
+          "source": "manual",
+          "confirmed": true
+        }
+      },
+      {
+        "id": "GND",
+        "role": "gnd",
+        "endpoint": {
+          "hole": "B3",
+          "alternatives": [],
+          "confidence": "unknown",
+          "reason": "",
+          "source": "manual",
+          "confirmed": true
+        }
+      }
+    ],
+    "issues": [
+      "Synthetic software fixture; no photograph or physical review."
+    ]
+  },
+  "experiment": {
+    "id": "rc_lowpass",
+    "circuit": {
+      "components": [
+        {
+          "id": "R1",
+          "type": "R",
+          "value": 1000,
+          "pins": {
+            "1": "input",
+            "2": "output"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "C1",
+          "type": "C",
+          "value": 1e-06,
+          "pins": {
+            "1": "output",
+            "2": "0"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "V1",
+          "type": "V",
+          "ac": 1,
+          "pins": {
+            "+": "input",
+            "-": "0"
+          },
+          "confirmed": true
+        }
+      ]
+    },
+    "probes": [
+      {
+        "id": "output",
+        "positive": "output",
+        "negative": "0",
+        "frequency_hz": 159.154943,
+        "relative_tolerance": 0.05,
+        "absolute_tolerance_v": 0.01
+      }
+    ]
+  },
+  "component_id_map": {
+    "seen_R": "R1",
+    "seen_C": "C1"
+  },
+  "ground_port": "GND",
+  "voltage_sources": [
+    {
+      "id": "V1",
+      "positive_port": "IN",
+      "negative_port": "GND",
+      "dc": 0,
+      "ac": 1
+    }
+  ],
+  "probe_ports": {
+    "output": {
+      "positive": "OUT",
+      "negative": "GND"
+    }
+  },
+  "measurements": [
+    {
+      "probe_id": "output",
+      "value": 0.70710678,
+      "unit": "V",
+      "convention": "ac_magnitude"
+    }
+  ],
+  "student_expectations": {
+    "output": 1
+  }
+}

@@ -67,3 +67,15 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(body['path'],'$.schema_version')
         for payload in ('{"schema_version":"1.0","schema_version":"1.0"}', '{"x":NaN}'):
             self.assertEqual(self.call('POST','/v1/diagnose',payload)[0],400)
+
+    def test_actual_vision_diagnosis_http(self):
+        for name,check in [('vision-7400','review_learning_objective'),('vision-7400-wrong-wire','review_wiring'),('vision-7400-unreviewed','confirm_connections'),('vision-rc','explain_prediction')]:
+            code,result=self.call('POST','/v1/diagnose',Path(f'examples/{name}.json').read_bytes())
+            self.assertEqual(code,200)
+            self.assertEqual(result['next_check']['kind'],check)
+
+    def test_capabilities(self):
+        code,result=self.call('GET','/capabilities')
+        self.assertEqual(code,200)
+        self.assertIn('7400_as_not',result['analyses'])
+        self.assertTrue(result['ngspice_available'])

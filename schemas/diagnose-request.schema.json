@@ -402,5 +402,11 @@
     "schema_version",
     "experiment",
     "student_circuit"
-  ]
+  ],
+  "$id": "urn:gitgood:reasoning:analog-request",
+  "not": {
+    "required": [
+      "analysis"
+    ]
+  }
 }

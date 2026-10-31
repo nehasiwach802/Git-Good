@@ -1,0 +1,1580 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gitgood:reasoning:vision-request",
+  "title": "ML1 candidate diagnostic envelope 1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "analysis": {
+      "enum": [
+        "7400_as_not",
+        "analog_from_vision"
+      ]
+    },
+    "safety_profile": {
+      "type": "string"
+    },
+    "candidate": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "0.1"
+        },
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "board_profile_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board_confirmed": {
+          "type": "boolean"
+        },
+        "reviewed_revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+                  },
+                  "part": {
+                    "const": "7400"
+                  },
+                  "identity_confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "2": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "3": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "4": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "5": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "6": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "7": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "8": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "9": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "10": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "11": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "12": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "13": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "14": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "1",
+                      "2",
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "10",
+                      "11",
+                      "12",
+                      "13",
+                      "14"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "part",
+                  "identity_confirmed",
+                  "pins"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+                  },
+                  "part": {
+                    "const": "resistor"
+                  },
+                  "identity_confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "2": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "1",
+                      "2"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "value_si": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "value_confirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "part",
+                  "identity_confirmed",
+                  "pins",
+                  "value_si",
+                  "value_confirmed"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+                  },
+                  "part": {
+                    "const": "capacitor"
+                  },
+                  "identity_confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "2": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "1",
+                      "2"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "value_si": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "value_confirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "part",
+                  "identity_confirmed",
+                  "pins",
+                  "value_si",
+                  "value_confirmed"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+                  },
+                  "part": {
+                    "const": "led"
+                  },
+                  "identity_confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "anode": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      },
+                      "cathode": {
+                        "type": "object",
+                        "properties": {
+                          "hole": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "alternatives": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "minItems": 0,
+                            "maxItems": 100
+                          },
+                          "confidence": {
+                            "enum": [
+                              "likely",
+                              "uncertain",
+                              "unknown"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "enum": [
+                              "manual",
+                              "vision"
+                            ]
+                          },
+                          "confirmed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "hole",
+                          "alternatives",
+                          "confidence",
+                          "reason",
+                          "source",
+                          "confirmed"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "anode",
+                      "cathode"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "part",
+                  "identity_confirmed",
+                  "pins"
+                ]
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "wires": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+              },
+              "a": {
+                "type": "object",
+                "properties": {
+                  "hole": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "alternatives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 100
+                  },
+                  "confidence": {
+                    "enum": [
+                      "likely",
+                      "uncertain",
+                      "unknown"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "enum": [
+                      "manual",
+                      "vision"
+                    ]
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "hole",
+                  "alternatives",
+                  "confidence",
+                  "reason",
+                  "source",
+                  "confirmed"
+                ]
+              },
+              "b": {
+                "type": "object",
+                "properties": {
+                  "hole": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "alternatives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 100
+                  },
+                  "confidence": {
+                    "enum": [
+                      "likely",
+                      "uncertain",
+                      "unknown"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "enum": [
+                      "manual",
+                      "vision"
+                    ]
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "hole",
+                  "alternatives",
+                  "confidence",
+                  "reason",
+                  "source",
+                  "confirmed"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "a",
+              "b"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 1000
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+              },
+              "role": {
+                "enum": [
+                  "input",
+                  "output",
+                  "vcc",
+                  "gnd"
+                ]
+              },
+              "endpoint": {
+                "type": "object",
+                "properties": {
+                  "hole": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "alternatives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 100
+                  },
+                  "confidence": {
+                    "enum": [
+                      "likely",
+                      "uncertain",
+                      "unknown"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "enum": [
+                      "manual",
+                      "vision"
+                    ]
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "hole",
+                  "alternatives",
+                  "confidence",
+                  "reason",
+                  "source",
+                  "confirmed"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "endpoint"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "schema_version",
+        "candidate_id",
+        "revision",
+        "board_profile_id",
+        "board_confirmed",
+        "reviewed_revision",
+        "components",
+        "wires",
+        "ports",
+        "issues"
+      ]
+    },
+    "board": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "id",
+        "groups"
+      ]
+    },
+    "component_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "gate": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "experiment": {
+      "$ref": "urn:gitgood:reasoning:analog-request#/properties/experiment"
+    },
+    "component_id_map": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "ground_port": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "voltage_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "positive_port": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          },
+          "negative_port": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          },
+          "dc": {
+            "type": "number"
+          },
+          "ac": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "positive_port",
+          "negative_port"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "probe_ports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "positive": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          },
+          "negative": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          }
+        },
+        "required": [
+          "positive",
+          "negative"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "analysis",
+    "candidate",
+    "board"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "analysis": {
+            "const": "7400_as_not"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "measurements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "input": {
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1
+                  ]
+                },
+                "output": {
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1
+                  ]
+                }
+              },
+              "required": [
+                "input",
+                "output"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 2
+          },
+          "student_expectations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "input": {
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1
+                  ]
+                },
+                "output": {
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1
+                  ]
+                }
+              },
+              "required": [
+                "input",
+                "output"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "analysis": {
+            "const": "analog_from_vision"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "experiment",
+          "ground_port",
+          "voltage_sources",
+          "probe_ports"
+        ],
+        "properties": {
+          "measurements": {
+            "$ref": "urn:gitgood:reasoning:analog-request#/properties/measurements"
+          },
+          "student_expectations": {
+            "$ref": "urn:gitgood:reasoning:analog-request#/properties/student_expectations"
+          }
+        }
+      }
+    }
+  ]
+}

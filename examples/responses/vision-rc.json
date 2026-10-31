@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "findings": [
+    {
+      "id": "e_a4798caeda5ecc82",
+      "kind": "measurement_comparison",
+      "probe_id": "output",
+      "predicted": 0.707106781,
+      "measured": 0.70710678,
+      "tolerance": 0.035355339050000004,
+      "residual": 9.999999717180685e-10,
+      "matches": true
+    },
+    {
+      "id": "e_b89b0c117a321af6",
+      "kind": "expectation_disagrees",
+      "probe_id": "output",
+      "expected": 1.0,
+      "comparison_evidence": "e_a4798caeda5ecc82"
+    }
+  ],
+  "predictions": [
+    {
+      "probe_id": "output",
+      "reference": {
+        "status": "ok",
+        "value": 0.707106781,
+        "unit": "V",
+        "convention": "ac_magnitude",
+        "model": "ideal_small_signal"
+      },
+      "student": {
+        "status": "ok",
+        "value": 0.707106781,
+        "unit": "V",
+        "convention": "ac_magnitude",
+        "model": "ideal_small_signal"
+      }
+    }
+  ],
+  "hypotheses": {
+    "wiring": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "concept": {
+      "support": "supported",
+      "evidence_ids": [
+        "e_b89b0c117a321af6"
+      ]
+    },
+    "apparatus": {
+      "support": "unresolved",
+      "evidence_ids": []
+    }
+  },
+  "limitations": [
+    "Scores are ordinal evidence labels, not probabilities.",
+    "AC magnitude only; ideal op-amp model excludes clipping and supply faults."
+  ],
+  "source_context": {
+    "board_id": "terminal-strips-30-no-rails",
+    "candidate_revision": 1,
+    "reviewed_revision": 1
+  },
+  "status": "evaluated",
+  "next_check": {
+    "kind": "explain_prediction",
+    "reason": "Ask student to explain the expected circuit response",
+    "check_id": "check_b5a4e94b269f30d5",
+    "input_type": "student_explanation",
+    "requires_instructor": false,
+    "evidence_ids": [
+      "e_a4798caeda5ecc82",
+      "e_b89b0c117a321af6"
+    ]
+  },
+  "vision_source": {
+    "candidate_id": "synthetic-rc-vision",
+    "revision": 1,
+    "board_profile_id": "terminal-strips-30-no-rails"
+  },
+  "reviewed_connectivity": {
+    "schema_version": "0.1",
+    "candidate_id": "synthetic-rc-vision",
+    "revision": 1,
+    "board_profile_id": "terminal-strips-30-no-rails",
+    "status": "reviewed_connectivity",
+    "components": [
+      {
+        "id": "seen_R",
+        "part": "resistor",
+        "value_si": 1000,
+        "pins": {
+          "1": "N0",
+          "2": "N1"
+        }
+      },
+      {
+        "id": "seen_C",
+        "part": "capacitor",
+        "value_si": 1e-06,
+        "pins": {
+          "1": "N1",
+          "2": "N2"
+        }
+      }
+    ],
+    "ports": [
+      {
+        "id": "IN",
+        "role": "input",
+        "node": "N0"
+      },
+      {
+        "id": "OUT",
+        "role": "output",
+        "node": "N1"
+      },
+      {
+        "id": "GND",
+        "role": "gnd",
+        "node": "N2"
+      }
+    ],
+    "nodes": {
+      "N0": [
+        "A1",
+        "B1",
+        "C1",
+        "D1",
+        "E1"
+      ],
+      "N1": [
+        "A2",
+        "B2",
+        "C2",
+        "D2",
+        "E2"
+      ],
+      "N2": [
+        "A3",
+        "B3",
+        "C3",
+        "D3",
+        "E3"
+      ]
+    },
+    "provenance": {
+      "seen_R.1": {
+        "hole": "A1",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "seen_R.2": {
+        "hole": "A2",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "seen_C.1": {
+        "hole": "B2",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "seen_C.2": {
+        "hole": "A3",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "IN": {
+        "hole": "B1",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "OUT": {
+        "hole": "C2",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "GND": {
+        "hole": "B3",
+        "alternatives": [],
+        "confidence": "unknown",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      }
+    },
+    "issues": [
+      "Synthetic software fixture; no photograph or physical review."
+    ],
+    "limitations": [
+      "Reviewed observations do not verify physical continuity or device health.",
+      "Node IDs are local to this revision; compare graph connectivity."
+    ]
+  }
+}
