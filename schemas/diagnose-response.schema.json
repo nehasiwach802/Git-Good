@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reasoning response v1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "enum": [
+        "evaluated",
+        "needs_confirmation",
+        "instructor_required"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind"
+        ]
+      }
+    },
+    "predictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "probe_id": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+          },
+          "reference": {
+            "type": "object"
+          },
+          "student": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "probe_id",
+          "reference",
+          "student"
+        ]
+      }
+    },
+    "hypotheses": {
+      "type": "object",
+      "properties": {
+        "wiring": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        },
+        "concept": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        },
+        "apparatus": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        }
+      },
+      "required": [
+        "wiring",
+        "concept",
+        "apparatus"
+      ]
+    },
+    "next_check": {
+      "type": "object",
+      "properties": {
+        "check_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "input_type": {
+          "type": "string"
+        },
+        "requires_instructor": {
+          "type": "boolean"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "check_id",
+        "kind",
+        "reason",
+        "input_type",
+        "requires_instructor",
+        "evidence_ids"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "findings",
+    "predictions",
+    "hypotheses",
+    "next_check",
+    "limitations"
+  ]
+}

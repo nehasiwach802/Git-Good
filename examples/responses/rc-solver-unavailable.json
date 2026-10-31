@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "findings": [
+    {
+      "id": "e_4d0149c240de200a",
+      "kind": "simulation_unresolved",
+      "probe_id": "output",
+      "circuit": "reference",
+      "status": "unavailable"
+    },
+    {
+      "id": "e_01f297380e549a99",
+      "kind": "simulation_unresolved",
+      "probe_id": "output",
+      "circuit": "student",
+      "status": "unavailable"
+    }
+  ],
+  "predictions": [
+    {
+      "probe_id": "output",
+      "reference": {
+        "status": "unavailable",
+        "detail": "ngspice executable not found"
+      },
+      "student": {
+        "status": "unavailable",
+        "detail": "ngspice executable not found"
+      }
+    }
+  ],
+  "hypotheses": {
+    "wiring": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "concept": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "apparatus": {
+      "support": "unresolved",
+      "evidence_ids": []
+    }
+  },
+  "limitations": [
+    "Scores are ordinal evidence labels, not probabilities.",
+    "AC magnitude only; ideal op-amp model excludes clipping and supply faults."
+  ],
+  "status": "evaluated",
+  "next_check": {
+    "kind": "resolve_simulation",
+    "reason": "Prediction unavailable; no apparatus attribution",
+    "evidence_ids": [
+      "e_4d0149c240de200a",
+      "e_01f297380e549a99"
+    ],
+    "check_id": "check_2a2d134f59e8d091",
+    "input_type": "simulation_configuration",
+    "requires_instructor": false
+  }
+}

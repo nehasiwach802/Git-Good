@@ -1,0 +1,406 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reasoning request v1.0",
+  "$defs": {
+    "circuit": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                  },
+                  "type": {
+                    "const": "R"
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "2": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      }
+                    },
+                    "required": [
+                      "1",
+                      "2"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "value": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "pins",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                  },
+                  "type": {
+                    "const": "C"
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "2": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      }
+                    },
+                    "required": [
+                      "1",
+                      "2"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "value": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "pins",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                  },
+                  "type": {
+                    "const": "V"
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "+": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "-": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      }
+                    },
+                    "required": [
+                      "+",
+                      "-"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dc": {
+                    "type": "number"
+                  },
+                  "ac": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "pins"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                  },
+                  "type": {
+                    "const": "OPAMP"
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  },
+                  "pins": {
+                    "type": "object",
+                    "properties": {
+                      "+": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "-": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "out": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "vcc": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      },
+                      "vee": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+                      }
+                    },
+                    "required": [
+                      "+",
+                      "-",
+                      "out",
+                      "vcc",
+                      "vee"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "gain": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "pins"
+                ]
+              }
+            ]
+          },
+          "maxItems": 100,
+          "minItems": 1
+        },
+        "wires": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "maxItems": 1000,
+          "minItems": 0
+        }
+      },
+      "required": [
+        "components"
+      ]
+    },
+    "probe": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+        },
+        "positive": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+        },
+        "negative": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+        },
+        "frequency_hz": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "relative_tolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "absolute_tolerance_v": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "positive",
+        "frequency_hz"
+      ]
+    },
+    "measurement": {
+      "type": "object",
+      "properties": {
+        "probe_id": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "const": "V"
+        },
+        "convention": {
+          "const": "ac_magnitude"
+        }
+      },
+      "required": [
+        "probe_id",
+        "value",
+        "unit",
+        "convention"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "safety_profile": {
+      "type": "string"
+    },
+    "experiment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+        },
+        "circuit": {
+          "$ref": "#/$defs/circuit"
+        },
+        "probes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/probe"
+          },
+          "maxItems": 20,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "circuit",
+        "probes"
+      ]
+    },
+    "student_circuit": {
+      "$ref": "#/$defs/circuit"
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/measurement"
+      },
+      "maxItems": 20,
+      "minItems": 0
+    },
+    "student_expectations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
+    },
+    "student_probe_nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "positive": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+          },
+          "negative": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "equipment_evidence": {
+      "type": "object",
+      "properties": {
+        "anomaly_follows_equipment": {
+          "type": "boolean"
+        },
+        "source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "maxItems": 100,
+          "minItems": 0
+        }
+      },
+      "required": [],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "anomaly_follows_equipment": {
+                "const": true
+              }
+            },
+            "required": [
+              "anomaly_follows_equipment"
+            ]
+          },
+          "then": {
+            "required": [
+              "source_ids"
+            ],
+            "properties": {
+              "source_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "experiment",
+    "student_circuit"
+  ]
+}

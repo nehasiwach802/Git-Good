@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gitgood-reasoning"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "Evidence-linked electronics lab reasoning core"
+
+[project.optional-dependencies]
+test = ["jsonschema>=4.18,<5"]
+
+[tool.setuptools.packages.find]
+include = ["reasoning*"]

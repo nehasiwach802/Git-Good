@@ -1,0 +1,136 @@
+[
+  {
+    "name": "healthy",
+    "changes": [],
+    "concept_expectations": false,
+    "expected_check": "review_learning_objective",
+    "supported": []
+  },
+  {
+    "name": "conceptual_expectation",
+    "changes": [],
+    "expected_check": "explain_prediction",
+    "supported": [
+      "concept"
+    ]
+  },
+  {
+    "name": "open_connection",
+    "changes": [
+      [
+        [
+          "student_circuit",
+          "components",
+          0,
+          "pins",
+          "2"
+        ],
+        "isolated"
+      ]
+    ],
+    "expected_check": "review_wiring",
+    "supported": [
+      "wiring"
+    ],
+    "concept_expectations": false
+  },
+  {
+    "name": "wrong_value",
+    "changes": [
+      [
+        [
+          "student_circuit",
+          "components",
+          0,
+          "value"
+        ],
+        2000
+      ]
+    ],
+    "expected_check": "review_wiring",
+    "supported": [
+      "wiring"
+    ],
+    "concept_expectations": false
+  },
+  {
+    "name": "unconfirmed",
+    "changes": [
+      [
+        [
+          "student_circuit",
+          "components",
+          0,
+          "confirmed"
+        ],
+        false
+      ]
+    ],
+    "expected_check": "confirm_connections",
+    "supported": []
+  },
+  {
+    "name": "unexplained_mismatch",
+    "changes": [
+      [
+        [
+          "measurements",
+          0,
+          "value"
+        ],
+        0
+      ]
+    ],
+    "expected_check": "instructor_supervised_setup_check",
+    "supported": []
+  },
+  {
+    "name": "substitution_evidence",
+    "changes": [
+      [
+        [
+          "measurements",
+          0,
+          "value"
+        ],
+        0
+      ],
+      [
+        [
+          "equipment_evidence"
+        ],
+        {
+          "anomaly_follows_equipment": true,
+          "source_ids": [
+            "simulated_trial"
+          ]
+        }
+      ]
+    ],
+    "expected_check": "instructor_supervised_setup_check",
+    "supported": [
+      "apparatus"
+    ]
+  },
+  {
+    "name": "multiple_causes",
+    "changes": [
+      [
+        [
+          "student_circuit",
+          "components",
+          0,
+          "value"
+        ],
+        2000
+      ]
+    ],
+    "prediction": 0.4472136,
+    "measurement": 0.4472136,
+    "expected_check": "review_wiring",
+    "supported": [
+      "wiring",
+      "concept"
+    ]
+  }
+]
