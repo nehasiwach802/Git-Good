@@ -79,3 +79,10 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(code,200)
         self.assertIn('7400_as_not',result['analyses'])
         self.assertTrue(result['ngspice_available'])
+
+    def test_generalized_uncertainty_http(self):
+        for name, status in [('rc-uncertain', 'needs_confirmation'), ('divider', 'evaluated')]:
+            code, result = self.call('POST', '/v1/diagnose', Path(f'examples/generalized/{name}.json').read_bytes())
+            self.assertEqual(code, 200)
+            self.assertEqual(result['schema_version'], '2.0')
+            self.assertEqual(result['status'], status)

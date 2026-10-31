@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gitgood:request:2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "safety_profile": {
+      "type": "string"
+    },
+    "reference": {
+      "$ref": "urn:gitgood:reference:1"
+    },
+    "observation": {
+      "$ref": "urn:gitgood:observation:1"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "enum": [
+            "internal_v1",
+            "ml1_v0.1"
+          ]
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "adapter",
+        "payload"
+      ]
+    },
+    "component_map": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "maxItems": 20
+    },
+    "student_expectations": {
+      "type": [
+        "object",
+        "array"
+      ]
+    },
+    "problem_description": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "port_map": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "equipment_evidence": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "reference"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "observation"
+      ],
+      "not": {
+        "required": [
+          "input"
+        ]
+      }
+    },
+    {
+      "required": [
+        "input"
+      ],
+      "not": {
+        "required": [
+          "observation"
+        ]
+      }
+    }
+  ]
+}

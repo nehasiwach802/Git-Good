@@ -11,6 +11,8 @@ from .spice import simulate
 
 
 def advance_session(request, state=None, simulator=simulate):
+    if isinstance(request, dict) and request.get("schema_version") == "2.0":
+        return advance_generalized(request, state, simulator)
     if state is None:
         state = {"version": 1, "snapshots": []}
     if (not isinstance(state, dict) or state.get("version") != 1
@@ -78,5 +80,48 @@ def advance_session(request, state=None, simulator=simulate):
     if not repeated or snapshots[-1]["result"] != result:
         if len(snapshots) == 100:
             raise ValueError("session history full; archive before continuing")
+        snapshots.append({"input_id": fingerprint, "result": deepcopy(result)})
+    return {"result": result, "state": updated, "unchanged_input": repeated}
+
+
+def advance_generalized(request, state=None, simulator=simulate):
+    """Bind internal observation identity/revision and reference/model version."""
+    request = validate_input(request)
+    if state is None:
+        state = {"version": 2, "snapshots": []}
+    if (not isinstance(state, dict) or state.get("version") != 2
+            or not isinstance(state.get("snapshots"), list) or len(state["snapshots"]) > 100
+            or any(not isinstance(s, dict) or not isinstance(s.get("input_id"), str)
+                   or not isinstance(s.get("result"), dict) for s in state["snapshots"])):
+        raise ValueError("invalid generalized session state")
+    from .registry import REGISTRY_VERSION
+    reference_key = stable_id("reference_", {"reference": request["reference"], "registry_version": REGISTRY_VERSION})
+    if state.get("reference_key", reference_key) != reference_key:
+        raise ValueError("start a new session when reference/version/analysis changes")
+    obs = request["observation"]
+    source_key = stable_id("source_", {"id": obs["id"], "board_id": obs.get("source", {}).get("board_id")})
+    if state.get("source_key", source_key) != source_key:
+        raise ValueError("start a new session when observation or board identity changes")
+    previous_revision = state.get("revision", obs["revision"])
+    if type(previous_revision) is not int or obs["revision"] < previous_revision:
+        raise ValueError("stale observation revision")
+    physical = {"components": [{"id": c["id"], "model": c["model"], "properties": c.get("properties", {}),
+                   "pins": {pin: {"net": p["net"], "alternatives": p.get("alternatives", [])}
+                            for pin, p in c["pins"].items()}} for c in obs["components"]],
+                "ports": {name: {"net": p["net"], "alternatives": p.get("alternatives", [])}
+                          for name, p in obs.get("ports", {}).items()},
+                "board_topology_id": obs.get("source", {}).get("board_topology_id")}
+    physical_key = stable_id("physical_", physical)
+    if obs["revision"] == previous_revision and state.get("physical_key", physical_key) != physical_key:
+        raise ValueError("physical observations changed without incrementing revision")
+    result = diagnose_input(request, simulator)
+    fingerprint = stable_id("input_", request)
+    updated = deepcopy(state)
+    updated.update(reference_key=reference_key, source_key=source_key, revision=obs["revision"], physical_key=physical_key)
+    snapshots = updated["snapshots"]
+    repeated = bool(snapshots and snapshots[-1]["input_id"] == fingerprint)
+    if not repeated or snapshots[-1]["result"] != result:
+        if len(snapshots) == 100:
+            raise ValueError("session history full")
         snapshots.append({"input_id": fingerprint, "result": deepcopy(result)})
     return {"result": result, "state": updated, "unchanged_input": repeated}

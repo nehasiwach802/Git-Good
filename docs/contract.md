@@ -1,5 +1,10 @@
 # Reasoning contract v1.0
 
+Generalized requests now use version 2.0 alongside this retained 1.0 interface.
+See docs/GENERALIZED_CORE.md and schemas/generalized-request.schema.json. The
+internal observation schema and adapters deliberately separate ML1 format details
+from comparison, uncertainty, model capabilities and experiment references.
+
 Current integration adds explicit ML1 candidate envelopes alongside this legacy
 analog request. See docs/ML1_INTEGRATION_REVIEW.md and
 schemas/vision-diagnose-request.schema.json. Both use POST /v1/diagnose and the

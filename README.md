@@ -66,3 +66,17 @@ request confirmation; the RC example uses real ngspice and predicts about
 [vision request schema](schemas/vision-diagnose-request.schema.json).
 
 GET /capabilities reports available analysis routes and solver discovery.
+
+Generalized core (request version 2.0): independent observation adapters, partial
+connection uncertainty, versioned reference records, explicit identity mapping,
+and model/analysis capabilities. Existing 1.0 requests remain supported.
+
+```powershell
+python tools/demo_generalized.py
+python -m reasoning examples/generalized/rc-uncertain.json
+python -m reasoning examples/generalized/divider.json
+```
+
+See [generalized architecture and internal contract](docs/GENERALIZED_CORE.md).
+Future ML1 output formats can be translated by an adapter; unresolved predictions
+are not treated as confirmed student wiring mistakes.

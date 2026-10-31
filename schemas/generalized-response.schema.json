@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generalized diagnostic response 2.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "status": {
+      "enum": [
+        "evaluated",
+        "needs_confirmation",
+        "instructor_required",
+        "unsupported_analysis"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "certainty": {
+            "enum": [
+              "confirmed",
+              "possible",
+              "unresolved"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind"
+        ]
+      }
+    },
+    "predictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "probe_id": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|0)$"
+          },
+          "reference": {
+            "type": "object"
+          },
+          "student": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "probe_id",
+          "reference",
+          "student"
+        ]
+      }
+    },
+    "hypotheses": {
+      "type": "object",
+      "properties": {
+        "wiring": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        },
+        "concept": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        },
+        "apparatus": {
+          "type": "object",
+          "properties": {
+            "support": {
+              "enum": [
+                "supported",
+                "unresolved"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "support",
+            "evidence_ids"
+          ]
+        }
+      },
+      "required": [
+        "wiring",
+        "concept",
+        "apparatus"
+      ]
+    },
+    "next_check": {
+      "type": "object",
+      "properties": {
+        "check_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "input_type": {
+          "type": "string"
+        },
+        "requires_instructor": {
+          "type": "boolean"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "check_id",
+        "kind",
+        "reason",
+        "input_type",
+        "requires_instructor",
+        "evidence_ids"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reference": {
+      "type": "object",
+      "properties": {
+        "experiment_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "experiment_id",
+        "version"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "revision"
+      ]
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "maxItems": 12000,
+      "minItems": 0
+    },
+    "capability_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "findings",
+    "predictions",
+    "hypotheses",
+    "next_check",
+    "limitations",
+    "reference",
+    "observation",
+    "pending",
+    "capability_gaps"
+  ],
+  "$id": "urn:gitgood:response:2"
+}

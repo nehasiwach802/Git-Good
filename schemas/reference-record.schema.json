@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gitgood:reference:1",
+  "type": "object",
+  "properties": {
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "approval": {
+      "enum": [
+        "approved",
+        "draft"
+      ]
+    },
+    "circuit": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "pins": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 100,
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "pins"
+            ]
+          },
+          "maxItems": 100,
+          "minItems": 1
+        },
+        "wires": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "components"
+      ]
+    },
+    "ports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "positive_port": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "negative_port": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "frequency_hz": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "relative_tolerance": {
+                "type": "number",
+                "minimum": 0
+              },
+              "absolute_tolerance_v": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "positive_port",
+              "negative_port",
+              "frequency_hz"
+            ]
+          },
+          "maxItems": 20,
+          "minItems": 1
+        },
+        "component_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "gate": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "port_roles": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "output": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "vcc": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "gnd": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "input",
+            "output",
+            "vcc",
+            "gnd"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "engine"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "engine": {
+                "const": "analog_ac"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "probes"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "engine": {
+                "const": "7400_as_not"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "component_id",
+              "port_roles"
+            ]
+          }
+        }
+      ]
+    },
+    "approved_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "instruction"
+        ]
+      },
+      "maxItems": 50,
+      "minItems": 0
+    }
+  },
+  "required": [
+    "experiment_id",
+    "version",
+    "approval",
+    "circuit",
+    "analysis"
+  ]
+}

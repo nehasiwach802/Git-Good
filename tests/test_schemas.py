@@ -44,3 +44,21 @@ class SchemaTests(unittest.TestCase):
             request=json.loads(Path(f'examples/{name}.json').read_text())
             validator.validate(request)
             response.validate(diagnose_input(request))
+
+    def test_generalized_examples_and_outputs(self):
+        from jsonschema import Draft202012Validator
+        from referencing import Registry, Resource
+        from reasoning.api import diagnose_input
+        registry = Registry()
+        schemas = {}
+        for name in ('observation', 'reference-record', 'generalized-request', 'generalized-response'):
+            schema = json.loads(Path(f'schemas/{name}.schema.json').read_text())
+            Draft202012Validator.check_schema(schema)
+            schemas[name] = schema
+            registry = registry.with_resource(schema['$id'], Resource.from_contents(schema))
+        requests = Draft202012Validator(schemas['generalized-request'], registry=registry)
+        responses = Draft202012Validator(schemas['generalized-response'], registry=registry)
+        for path in Path('examples/generalized').glob('*.json'):
+            request = json.loads(path.read_text())
+            requests.validate(request)
+            responses.validate(diagnose_input(request))

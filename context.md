@@ -44,6 +44,26 @@ Deterministic components produce findings; the explanation layer communicates th
 - Real ngspice 47 runs from the ignored local .tools/Spice64/bin/ngspice_con.exe;
   environment override NGSPICE_EXECUTABLE and PATH are also supported. This binary
   is not committed or distributed with the package.
+- Added generalized request/response 2.0 while preserving 1.0 routes. New
+  observations.py validates partial internal observations and versioned reference
+  records; adapters.py isolates current ML1 0.1 and internal observation input.
+- generalized.py compares reference vs observed evidence without repairing model
+  proposals. Unknowns, alternatives and unconfirmed differences do not establish
+  wiring faults. Independently confirmed values/directional relationships may
+  still supply evidence while other observations remain unresolved.
+- registry.py declares model pin semantics, required values, supported analyses
+  and a registry version. Unknown models/analyses yield capability gaps rather
+  than guesses. RC and a resistor divider reuse the same analog runner.
+- Explicit component_map and optional port_map resolve identity without matching
+  arbitrary labels. Simulation requires resolved review/values/ports. Draft
+  references cannot establish confirmed wiring faults.
+- ExperimentCatalog supports backend ID/version lookup and defensive copies;
+  reference configuration, optional approved checks and reported problem text
+  remain separate from extraction. No final five experiments are selected.
+- Version-2 sessions bind reference/model-registry versions and observation/board
+  identity; physical edits require a revision increase. tools/demo_generalized.py
+  writes examples to outputs/generalized/; schemas and docs/GENERALIZED_CORE.md
+  document the internal development contract, not a finalized future ML1 format.
 
 ## Contracts and decisions
 
@@ -74,12 +94,18 @@ subject to team agreement.
 
 ## Latest verification
 
-Latest verification during actual ML1 integration on 2026-10-31:
+Latest verification during generalized-core implementation on 2026-10-31:
 
 - `python -m reasoning examples/rc.json --validate-only`: passed.
-- `python tools/run_checks.py`: 80 tests passed, zero failed and zero skipped;
+- `python tools/run_checks.py`: 103 tests passed, zero failed and zero skipped;
   includes real ngspice RC/op-amp, digital gate checks, candidate conversion,
   session boundaries, provider-failure mocks, CLI, HTTP and JSON Schema checks.
+- New coverage: partial observations, alternatives, explicit identity/port maps,
+  draft references, unknown values, capability gaps, catalog versions, model
+  version changes, extraction correction and compatibility with existing routes.
+- `python tools/demo_generalized.py`: RC 0.707106781 V, divider 0.5 V, isolated
+  7400 ideal truth table; uncertain/unknown RC requires confirmation without
+  confirmed wiring support. Outputs saved under outputs/generalized/.
 - Real solver testing exposed and fixed v(0) ground-vector handling. Degenerate
   circuits are rejected; differential/zero readings are tested.
 - `python tools/demo.py`: all four synthetic scenarios produced expected checks;

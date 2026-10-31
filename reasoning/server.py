@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from .api import diagnose_input
 from .validation import ValidationError
 from .spice import find_ngspice
+from .registry import capabilities
 
 
 def strict_json(data):
@@ -40,7 +41,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/capabilities":
             return self.reply(200, {"status":"ok", "analyses":["analog_ac_magnitude", "7400_as_not", "analog_from_vision"],
-                                    "ngspice_available":bool(find_ngspice()), "vision_extraction_called":False})
+                                    "ngspice_available":bool(find_ngspice()), "vision_extraction_called":False,
+                                    "generalized": capabilities(), "request_versions": ["1.0", "2.0"]})
         self.reply(200 if self.path == "/health" else 404,
                    {"status": "ok"} if self.path == "/health" else {"error": "not_found"})
 

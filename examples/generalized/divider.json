@@ -1,0 +1,210 @@
+{
+  "schema_version": "2.0",
+  "safety_profile": "instructor_approved_low_voltage",
+  "reference": {
+    "experiment_id": "divider-example",
+    "name": "Resistor divider (synthetic development record)",
+    "version": "1",
+    "approval": "approved",
+    "circuit": {
+      "components": [
+        {
+          "id": "R1",
+          "type": "R",
+          "value": 1000,
+          "pins": {
+            "1": "input",
+            "2": "output"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "R2",
+          "type": "R",
+          "value": 1000,
+          "pins": {
+            "1": "output",
+            "2": "0"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "V1",
+          "type": "V",
+          "ac": 1,
+          "pins": {
+            "+": "input",
+            "-": "0"
+          },
+          "confirmed": true,
+          "dc": 0
+        }
+      ]
+    },
+    "ports": {
+      "IN": "input",
+      "OUT": "output",
+      "GND": "0"
+    },
+    "analysis": {
+      "engine": "analog_ac",
+      "probes": [
+        {
+          "id": "output",
+          "positive_port": "OUT",
+          "negative_port": "GND",
+          "frequency_hz": 159.154943,
+          "relative_tolerance": 0.05,
+          "absolute_tolerance_v": 0.01
+        }
+      ]
+    },
+    "approved_checks": [
+      {
+        "id": "explain-ac",
+        "kind": "explain_prediction",
+        "instruction": "Explain the predicted AC gain at the stated frequency."
+      }
+    ]
+  },
+  "observation": {
+    "id": "synthetic-divider",
+    "revision": 1,
+    "reviewed_revision": 1,
+    "completeness_confirmed": true,
+    "components": [
+      {
+        "id": "seen_R1",
+        "model": "R",
+        "identity_confirmed": true,
+        "properties_confirmed": true,
+        "properties": {
+          "value": 1000
+        },
+        "pins": {
+          "1": {
+            "net": "seen_in",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          },
+          "2": {
+            "net": "seen_out",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          }
+        }
+      },
+      {
+        "id": "seen_R2",
+        "model": "R",
+        "identity_confirmed": true,
+        "properties_confirmed": true,
+        "properties": {
+          "value": 1000
+        },
+        "pins": {
+          "1": {
+            "net": "seen_out",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          },
+          "2": {
+            "net": "seen_ground",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          }
+        }
+      },
+      {
+        "id": "seen_V1",
+        "model": "V",
+        "identity_confirmed": true,
+        "properties_confirmed": true,
+        "properties": {
+          "dc": 0,
+          "ac": 1
+        },
+        "pins": {
+          "+": {
+            "net": "seen_in",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          },
+          "-": {
+            "net": "seen_ground",
+            "alternatives": [],
+            "confirmed": true,
+            "confidence": "likely",
+            "evidence_refs": [
+              "synthetic-observation"
+            ]
+          }
+        }
+      }
+    ],
+    "ports": {
+      "IN": {
+        "net": "seen_in",
+        "alternatives": [],
+        "confirmed": true,
+        "confidence": "likely",
+        "evidence_refs": [
+          "synthetic-observation"
+        ]
+      },
+      "OUT": {
+        "net": "seen_out",
+        "alternatives": [],
+        "confirmed": true,
+        "confidence": "likely",
+        "evidence_refs": [
+          "synthetic-observation"
+        ]
+      },
+      "GND": {
+        "net": "seen_ground",
+        "alternatives": [],
+        "confirmed": true,
+        "confidence": "likely",
+        "evidence_refs": [
+          "synthetic-observation"
+        ]
+      }
+    }
+  },
+  "component_map": {
+    "seen_R1": "R1",
+    "seen_V1": "V1",
+    "seen_R2": "R2"
+  },
+  "measurements": [
+    {
+      "probe_id": "output",
+      "value": 0.5,
+      "unit": "V",
+      "convention": "ac_magnitude"
+    }
+  ],
+  "student_expectations": {},
+  "problem_description": "Synthetic student report: expected 1 V at the output."
+}
