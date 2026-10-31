@@ -6,9 +6,8 @@ import json
 from equipment_flags import EquipmentEvidence, flag_equipment
 
 
-def main():
-    now = datetime.now(timezone.utc)
-    rows = [EquipmentEvidence(
+def simulated_evidence(now):
+    return [EquipmentEvidence(
         evidence_id=f"sim-reading-{index}", lab_id="demo-lab", student_id=f"sim-student-{index}",
         session_id=f"sim-session-{index}", experiment_id=experiment,
         equipment_id="scope-3", channel="CH2", metric="voltage_amplitude_peak",
@@ -17,6 +16,11 @@ def main():
         netlist_matches_reference=True, simulated=True,
     ) for index, (experiment, expected) in enumerate(
         [("rc-filter", 1.0), ("inverting-amplifier", 2.0), ("rc-filter", 1.5)], start=1)]
+
+
+def main():
+    now = datetime.now(timezone.utc)
+    rows = simulated_evidence(now)
     print("SIMULATED DEMO - no real equipment diagnosis or shared warning")
     print("After two students:", flag_equipment(rows[:2], as_of=now))
     flags = flag_equipment(rows, as_of=now)
