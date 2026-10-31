@@ -1,6 +1,6 @@
 ## Meko team protocol
 
-Build datapack: `gitgood-build` (replace with the exact datapack name)
+Build datapack: `gitgood-build`
 
 - Before every task, recall the `gitgood-build` datapack.
 - When a task ends, save a short summary to it.
