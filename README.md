@@ -6,7 +6,9 @@ actual ML1 extraction/review, ML2 diagnostics and ML3 explanation/memory adapter
 Firebase authentication, durable sessions/jobs and explicit review events are
 implemented. Bundled experiments are synthetic and require instructor configuration.
 The deprecated `/api/sessions` remains a diagnosis-free connectivity smoke test;
-Android should use `/api/v1/sessions` for the integrated flow.
+Android uses JSON POST `/api/v1/sessions`, a separate POST to
+`/api/v1/sessions/{session_id}/image`, then nested typed events with
+`expected_session_version` and `close_session` (API 1.1).
 
 ```powershell
 python -m pip install -e ".[backend,test]"

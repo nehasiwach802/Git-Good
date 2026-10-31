@@ -46,7 +46,7 @@ class Workflow:
         choices = [x for (eid,v),x in self.catalog.items() if eid==experiment_id and (version is None or v==version)]
         if len(choices)!=1: error(422,'unknown_experiment','Choose a supported experiment ID and version')
         experiment = deepcopy(choices[0])
-        digest = hashlib.sha256(encode([experiment_id,experiment['version'],description,receipt['sha256']]).encode()).hexdigest()
+        digest = hashlib.sha256(encode([experiment_id,experiment['version'],description,receipt['sha256'] if receipt else None]).encode()).hexdigest()
         with self.store.transaction() as db:
             row = db.execute('SELECT record,request_hash FROM sessions WHERE owner=? AND request_key=?', (principal.actor_id,request_key)).fetchone()
             if row:
@@ -55,7 +55,7 @@ class Workflow:
                 if existing['lab_id']!=principal.lab_id:error(409,'lab_changed','Use a new upload key for the current lab')
                 return existing
             sid = str(uuid4())
-            record = {'session_id':sid,'owner':principal.actor_id,'lab_id':principal.lab_id,'version':1,'state':'extracting',
+            record = {'session_id':sid,'owner':principal.actor_id,'lab_id':principal.lab_id,'version':1,'state':'extracting' if receipt else 'awaiting_image',
                 'experiment_id':experiment_id,'experiment_version':experiment['version'],'experiment':experiment,
                 'description':description,'board':deepcopy(experiment['board']),'candidate':None,'image':receipt,
                 'messages':[],'actions':[],'diagnostic':None,'explanation':None,'ml1':{'status':'queued'},'ml3':{'memory_status':'not_requested'},
@@ -65,20 +65,49 @@ class Workflow:
                 'source_settings':{},'measurements':[],'student_expectations':[] if experiment['reference']['analysis']['engine']=='7400_as_not' else {},
                 'checks_performed':[],'resolved':False}
             message(record,'user',description)
-            message(record,'assistant','Image received. Extracting observations; no wiring has been confirmed yet.')
-            self.store.enqueue(db,record,'extract')
-            db.execute('INSERT INTO sessions VALUES(?,?,?,?,?,?)', (sid,principal.actor_id,request_key,digest,encode(record),data))
+            if receipt:
+                message(record,'assistant','Image received. Extracting observations; no wiring has been confirmed yet.')
+                self.store.enqueue(db,record,'extract')
+            else:
+                record['ml1']={'status':'awaiting_image'}
+                message(record,'assistant','Session created. Upload a circuit image to begin review.')
+            self.actions(record)
+            db.execute('INSERT INTO sessions VALUES(?,?,?,?,?,?)', (sid,principal.actor_id,request_key,digest,encode(record),data or b''))
             return record
 
+    def attach_image(self,sid,principal,data,receipt,request_key,expected_version):
+        digest=hashlib.sha256(encode([receipt['sha256'],expected_version]).encode()).hexdigest()
+        with self.store.transaction() as db:
+            record=self.store.get(db,sid,principal.actor_id)
+            if not record or record['lab_id']!=principal.lab_id:error(404,'session_not_found','Session not found')
+            if principal.role!='student':error(403,'student_required','Student role required')
+            previous=db.execute('SELECT * FROM uploads WHERE session_id=? AND request_key=?',(sid,request_key)).fetchone()
+            if previous:
+                if previous['digest']!=digest:error(409,'idempotency_conflict','Upload key reused with different content or version')
+                return json.loads(previous['response'])
+            if record['version']!=expected_version:error(409,'stale_session','Refresh session before uploading')
+            if record['state']!='awaiting_image':error(409,'image_already_attached','Image can only be attached to an awaiting_image session')
+            record.update(image=receipt,state='extracting',ml1={'status':'queued'},version=record['version']+1)
+            self.store.enqueue(db,record,'extract')
+            self.actions(record)
+            message(record,'assistant','Image received. Extracting observations; review is required before diagnosis.')
+            db.execute('UPDATE sessions SET image=? WHERE id=?',(data,sid))
+            self.store.save(db,record)
+            response=public(record)
+            db.execute('INSERT INTO uploads VALUES(?,?,?,?)',(sid,request_key,digest,encode(response)))
+            return response
+
     def actions(self, record):
-        if record['state']=='awaiting_review':
+        if record['state']=='awaiting_image':
+            record['actions']=[{'type':'upload_image'}]
+        elif record['state']=='awaiting_review':
             record['actions']=[{'type':'review_candidate','candidate_revision':record['candidate']['revision'],
                                'pending':pending(record['candidate'],record['board']),
                                'reasoning_pending':record['diagnostic'].get('pending',[]) if record.get('diagnostic') else [],
                                'event_types':['correct_endpoint','replace_candidate','confirm_candidate','set_correspondence','source_settings']}]
         elif record['state']=='failed':
             record['actions']=[{'type':'retry_extraction','message':'Retry explicitly; previous provider request may have run.'}]
-        elif record.get('diagnostic') and record['state'] not in ('completed','completing'):
+        elif record.get('diagnostic') and record['state'] not in ('completed','completing','closed'):
             record['actions']=[record['diagnostic']['next_check']]
         else: record['actions']=[]
 
@@ -99,7 +128,7 @@ class Workflow:
             kind = event.type
             if record['state'] in ('extracting','diagnosing','completing'):
                 error(409,'session_busy','Wait for processing before submitting an event')
-            if record['state']=='completed': error(409,'session_completed','Completed sessions are immutable')
+            if record['state'] in ('completed','closed'): error(409,'session_completed','Closed sessions are immutable')
             candidate = record['candidate']
             if hasattr(event,'candidate_revision') and (not candidate or candidate['revision']!=event.candidate_revision):
                 error(409,'stale_candidate','Candidate revision changed; review current connections')
@@ -163,10 +192,15 @@ class Workflow:
                     record['checks_performed'].append(event.check_id)
                     message(record,'user',event.observation)
                     message(record,'assistant','Check result recorded as a student report. Submit readings or corrected connections to update the diagnosis.')
-                elif kind=='complete':
-                    if not record['diagnostic'] or record['diagnostic']['status']!='evaluated':raise ValueError('A reviewed, evaluated diagnosis is required')
-                    record.update(resolved=event.resolved,state='completing')
-                    self.store.enqueue(db,record,'outcome')
+                elif kind in ('complete','close_session'):
+                    evaluated=record['diagnostic'] and record['diagnostic']['status']=='evaluated'
+                    if not evaluated:
+                        if kind=='complete':raise ValueError('A reviewed, evaluated diagnosis is required')
+                        record.update(state='closed',job_id=None)
+                        message(record,'assistant','Session closed without an evaluated outcome; no diagnostic memory was written.')
+                    else:
+                        record.update(resolved=event.resolved,state='completing')
+                        self.store.enqueue(db,record,'outcome')
                 elif kind=='retry_extraction':
                     if record['state']!='failed':raise ValueError('Only failed processing can be retried')
                     if record.get('ml3',{}).get('outcome_status')=='needs_reconciliation':raise ValueError('Memory write requires operator reconciliation, not retry')

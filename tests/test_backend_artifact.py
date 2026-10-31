@@ -28,6 +28,6 @@ class DeploymentArtifactTests(unittest.TestCase):
             # Keep installed dependency directories, including a system-site-packages
             # venv's user dependencies, while excluding all checkout import paths.
             dependencies=[p for p in sys.path if Path(p).name in ('site-packages','dist-packages')]
-            script="import sys,json; from pathlib import Path; sys.path.extend(json.loads(sys.argv[2])); sys.path.insert(0,sys.argv[1]); from backend.app import app; assert app.openapi()['info']['version']=='1.0.0'; import ml3_http; assert Path(ml3_http.__file__).parent==Path(sys.argv[1])"
+            script="import sys,json; from pathlib import Path; sys.path.extend(json.loads(sys.argv[2])); sys.path.insert(0,sys.argv[1]); from backend.app import app; assert '/api/v1/sessions/{session_id}/image' in app.openapi()['paths']; import ml3_http; assert Path(ml3_http.__file__).parent==Path(sys.argv[1])"
             result=subprocess.run([sys.executable,'-I','-c',script,str(target),json.dumps(dependencies)],cwd=target,capture_output=True,text=True,timeout=30)
             self.assertEqual(result.returncode,0,result.stderr)

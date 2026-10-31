@@ -20,6 +20,7 @@ from .store import Store
 from .workflow import Workflow, public
 from .smoke import MAX_IMAGE_BYTES, MAX_PIXELS, upload as smoke_upload
 from .limits import BodyLimit
+from .contract import CreateSession, AndroidEvent, SessionSnapshot, internal_event, snapshot
 
 
 def validate_image(data, content_type):
@@ -55,7 +56,7 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
             workflow.stop.set()
             if worker:await run_in_threadpool(worker.join,35)
 
-    app=FastAPI(title='Git-Good circuit mentor API',version='1.0.0',lifespan=lifespan)
+    app=FastAPI(title='Git-Good circuit mentor API',version='1.1.0',lifespan=lifespan)
     app.add_middleware(BodyLimit)
 
     @app.exception_handler(RequestValidationError)
@@ -70,7 +71,7 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
     Auth=Annotated[object,Depends(principal)]
 
     @app.get('/health')
-    def health():return {'status':'ok','mode':'integrated','api_version':'1.0'}
+    def health():return {'status':'ok','mode':'integrated','api_version':'1.1'}
 
     @app.get('/ready')
     def ready():
@@ -101,8 +102,8 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
         from reasoning.spice import find_ngspice
         return {'reasoning':supported(),'ngspice_available':bool(find_ngspice()),'probabilities_calibrated':False}
 
-    @app.post('/api/v1/sessions',response_model=SessionResponse,status_code=202)
-    async def create(user:Auth, experiment_id:Annotated[str,Form(min_length=1,max_length=100)],
+    @app.post('/api/legacy/v1/sessions',response_model=SessionResponse,status_code=202,deprecated=True)
+    async def create_legacy(user:Auth, experiment_id:Annotated[str,Form(min_length=1,max_length=100)],
                      description:Annotated[str,Form(min_length=1,max_length=2000)],
                      image:Annotated[UploadFile,File()],
                      idempotency_key:Annotated[UUID,Header()],
@@ -115,19 +116,46 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
             return public(record)
         finally:await image.close()
 
-    @app.get('/api/v1/sessions/{session_id}',response_model=SessionResponse)
-    def get(session_id:UUID,user:Auth):return public(app.state.workflow.get(str(session_id),user))
+    @app.post('/api/v1/sessions',response_model=SessionSnapshot,status_code=201)
+    def create(body:CreateSession,user:Auth,idempotency_key:Annotated[UUID,Header()]):
+        record=app.state.workflow.create(user,body.experiment_id,body.experiment_version,body.description,None,None,str(idempotency_key))
+        return snapshot(public(record))
 
-    @app.post('/api/v1/sessions/{session_id}/events',response_model=SessionResponse)
-    def event(session_id:UUID,event:SessionEvent,user:Auth):return app.state.workflow.event(str(session_id),user,event)
+    @app.post('/api/v1/sessions/{session_id}/image',response_model=SessionSnapshot,status_code=202)
+    async def upload_image(session_id:UUID,user:Auth,image:Annotated[UploadFile,File()],
+                           expected_session_version:Annotated[int,Form(ge=1)],
+                           idempotency_key:Annotated[UUID,Header()]):
+        try:
+            app.state.workflow.get(str(session_id),user)
+            data=await image.read(MAX_IMAGE_BYTES+1)
+            receipt=await run_in_threadpool(validate_image,data,image.content_type)
+            result=await run_in_threadpool(app.state.workflow.attach_image,str(session_id),user,data,receipt,str(idempotency_key),expected_session_version)
+            return snapshot(result)
+        finally:await image.close()
 
+    @app.get('/api/v1/sessions/{session_id}',response_model=SessionSnapshot)
+    def get(session_id:UUID,user:Auth):return snapshot(public(app.state.workflow.get(str(session_id),user)))
+
+    @app.get('/api/legacy/v1/sessions/{session_id}',response_model=SessionResponse,deprecated=True)
+    def get_legacy(session_id:UUID,user:Auth):return public(app.state.workflow.get(str(session_id),user))
+
+    @app.post('/api/legacy/v1/sessions/{session_id}/events',response_model=SessionResponse,deprecated=True)
+    def legacy_event(session_id:UUID,event:SessionEvent,user:Auth):return app.state.workflow.event(str(session_id),user,event)
+
+    @app.post('/api/v1/sessions/{session_id}/events',response_model=SessionSnapshot)
+    def event(session_id:UUID,event:AndroidEvent,user:Auth):
+        return snapshot(app.state.workflow.event(str(session_id),user,internal_event(event)))
+
+    @app.get('/api/legacy/v1/sessions/{session_id}/image',deprecated=True)
     @app.get('/api/v1/sessions/{session_id}/image')
     def image(session_id:UUID,user:Auth):
         workflow=app.state.workflow
         record=workflow.get(str(session_id),user)
+        if not record['image']:raise HTTPException(404,'No image uploaded')
         with workflow.store.connect() as db:data=db.execute('SELECT image FROM sessions WHERE id=?',(str(session_id),)).fetchone()['image']
         return Response(bytes(data),media_type=record['image']['content_type'],headers={'Cache-Control':'private, no-store'})
 
+    @app.delete('/api/legacy/v1/sessions/{session_id}',status_code=204,deprecated=True)
     @app.delete('/api/v1/sessions/{session_id}',status_code=204)
     def delete(session_id:UUID,user:Auth):
         workflow=app.state.workflow
@@ -135,7 +163,7 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
             record=workflow.store.get(db,str(session_id),user.actor_id)
             if not record or record['lab_id']!=user.lab_id:raise HTTPException(404,'Session not found')
             if record['state'] in ('extracting','diagnosing','completing'):raise HTTPException(409,'Wait for processing before deleting')
-            for table in ('events','jobs'):db.execute('DELETE FROM '+table+' WHERE session_id=?',(str(session_id),))
+            for table in ('events','jobs','uploads'):db.execute('DELETE FROM '+table+' WHERE session_id=?',(str(session_id),))
             db.execute('DELETE FROM sessions WHERE id=?',(str(session_id),))
         return Response(status_code=204)
 

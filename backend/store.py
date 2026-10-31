@@ -33,6 +33,9 @@ class Store:
                 id TEXT PRIMARY KEY,session_id TEXT NOT NULL,kind TEXT NOT NULL,
                 state TEXT NOT NULL,started REAL,created REAL NOT NULL);
             CREATE INDEX IF NOT EXISTS jobs_state ON jobs(state,created);
+            CREATE TABLE IF NOT EXISTS uploads (
+                session_id TEXT NOT NULL,request_key TEXT NOT NULL,digest TEXT NOT NULL,
+                response TEXT NOT NULL,PRIMARY KEY(session_id,request_key));
             ''')
 
     @contextmanager

@@ -80,6 +80,11 @@ class Retry(EventBase):
     type: Literal['retry_extraction']
 
 
+class CloseSession(EventBase):
+    type: Literal['close_session']
+    resolved: bool = Field(default=False,strict=True)
+
+
 SessionEvent = Annotated[CorrectEndpoint | ReplaceCandidate | ConfirmCandidate | Correspondence |
                          Measurements | SourceSettings | Message | CheckResult | Complete | Retry,
                          Field(discriminator='type')]
@@ -89,14 +94,14 @@ class SessionResponse(BaseModel):
     api_version: Literal['1.0'] = '1.0'
     session_id: str
     version: int
-    state: Literal['extracting','awaiting_review','diagnosing','awaiting_measurement','awaiting_check_result','completing','completed','failed']
+    state: Literal['awaiting_image','extracting','awaiting_review','diagnosing','awaiting_measurement','awaiting_check_result','completing','completed','closed','failed']
     experiment_id: str
     experiment_version: str
     description: str
     candidate_revision: int | None
     candidate: dict | None
     board: dict
-    image: dict
+    image: dict | None
     messages: list[dict]
     actions: list[dict]
     diagnostic: dict | None

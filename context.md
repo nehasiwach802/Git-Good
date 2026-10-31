@@ -26,7 +26,7 @@ origin/Abhiram 07b38aa and ML3 from newly pushed origin/Manit c084375; previous
 missing-ML3 blocker is superseded. Kept ML2 size/revision/overflow hardening and
 ML1 external-terminal 0.2, rail review and annotation features together.
 
-backend/app.py now provides authenticated API 1.0: experiment/capability lookup,
+backend/app.py now provides authenticated API 1.1: experiment/capability lookup,
 multipart session creation (202), snapshots, typed revision-checked/idempotent
 events, image retrieval and deletion. SQLite persists images/sessions/jobs/events;
 one background worker connects real labvision.upload.extract_upload,
@@ -224,3 +224,45 @@ imports. Package wheel rebuilt and confirmed to include ml3_http.py. No credenti
 or product datapacks accessed. Commit/push and rebuild Render deployment required;
 no remote deployment performed by this fix. Docker unavailable locally.
 Verification for this fix: 261 tests passed, zero failures/skips; wheel build and module inspection passed; git diff --check passed.
+
+## Readiness/contract troubleshooting (2026-11-01)
+
+User reports deployed /ready503 and Android contract mismatch. Local readiness
+shows credential presence and enabled vision configuration are blockers. The
+approved_real_experiments count is informational for /ready; only CLI --production
+requires it to be positive. Do not mislabel synthetic records as real approvals.
+Recommended host config uses Firebase secret file plus GOOGLE_APPLICATION_CREDENTIALS,
+matching project ID, and VISION_ENABLED=false/QWEN_ENABLED=false for manual/template
+integration. Real experiments still need instructor-approved records. Requested
+Android finalized contract branch/path or exact mismatch; message did not contain
+it and current cached origin/neha tree exposes no matching contract. Live ready/
+OpenAPI retrieval via web tool failed, so remote state not independently verified.
+No runtime changes, tests or deployment performed for this troubleshooting task.
+
+## Android finalized contract alignment (2026-11-01)
+
+User supplied the four concrete mismatches and explicitly confirmed the proposed
+exact upload route/envelope. Owner ML2/backend implementing the Android contract:
+POST /api/v1/sessions is now JSON metadata creation (201 awaiting_image), then
+POST /api/v1/sessions/{session_id}/image accepts multipart image and
+expected_session_version (202 extracting), each with UUID Idempotency-Key.
+Events use {event_id,expected_session_version,type,payload} with typed nested
+payloads and close_session. Snapshots use session_version and api_version1.1;
+OpenAPI info.version is1.1.0. Flat events/expected_version are rejected on the
+canonical route. The prior combined multipart and flat interface remains only
+under /api/legacy/v1/sessions; old smoke /api/sessions remains diagnosis-free.
+
+Added backend/contract.py adapter and persisted upload receipts table. Creation
+without image queues no model work. Upload image+job+version persist atomically;
+retries replay the original response, conflicts and stale versions return409.
+close_session on an idle draft closes with no diagnostic outcome; evaluated
+sessions complete ML3 outcome processing before exposing closed. Busy sessions
+reject edits/close. A closed session is immutable; deletion remains separate.
+
+Updated actual OpenAPI, Android contract, deployment guide, archived v1 contract,
+README and synthetic demo. Docker build import and isolated-artifact regression
+now assert the new separate upload route instead of a fixed old API version.
+Existing session records are preserved; SQLite creates the new receipts table.
+Firebase/provider readiness configuration and instructor approvals are unchanged.
+No credentials were read or host settings changed; commit/push/redeploy required.
+Verification: 268 tests passed, zero failures/skips; API1.1 synthetic demo passed; package wheel build passed. Docker/live deployment not run locally.

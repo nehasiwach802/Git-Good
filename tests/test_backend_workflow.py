@@ -1,4 +1,4 @@
-﻿from io import BytesIO
+from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
@@ -30,13 +30,13 @@ class WorkflowTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None,None,None);self.temp.cleanup()
     def upload(self):
-        response=self.client.post('/api/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Synthetic integration check'},files={'image':('test.png',png(),'image/png')})
+        response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Synthetic integration check'},files={'image':('test.png',png(),'image/png')})
         self.assertEqual(response.status_code,202,response.text)
         self.sid=response.json()['session_id'];return response.json()
-    def get(self):return self.client.get('/api/v1/sessions/'+self.sid,headers=self.headers).json()
+    def get(self):return self.client.get('/api/legacy/v1/sessions/'+self.sid,headers=self.headers).json()
     def send(self,kind,**values):
         current=self.get()
-        return self.client.post('/api/v1/sessions/'+self.sid+'/events',headers=self.headers,json=dict(type=kind,event_id=str(uuid4()),expected_version=current['version'],**values))
+        return self.client.post('/api/legacy/v1/sessions/'+self.sid+'/events',headers=self.headers,json=dict(type=kind,event_id=str(uuid4()),expected_version=current['version'],**values))
     def reviewed(self):
         self.upload();self.app.state.workflow.run_one()
         candidate=json.loads(Path('examples/7400-not.candidate.json').read_text())
@@ -71,18 +71,18 @@ class WorkflowTests(unittest.TestCase):
         initial=self.upload()
         repeated=self.upload();self.assertEqual(initial['session_id'],repeated['session_id'])
         other={'Authorization':'Bearer another-student'}
-        self.assertEqual(self.client.get('/api/v1/sessions/'+self.sid,headers=other).status_code,404)
-        self.assertEqual(self.client.get('/api/v1/sessions/'+self.sid+'/image',headers=other).status_code,404)
+        self.assertEqual(self.client.get('/api/legacy/v1/sessions/'+self.sid,headers=other).status_code,404)
+        self.assertEqual(self.client.get('/api/legacy/v1/sessions/'+self.sid+'/image',headers=other).status_code,404)
         self.app.state.workflow.run_one()
         payload=dict(type='message',event_id=str(uuid4()),expected_version=self.get()['version'],text='What next?')
-        url='/api/v1/sessions/'+self.sid+'/events'
+        url='/api/legacy/v1/sessions/'+self.sid+'/events'
         first=self.client.post(url,headers=self.headers,json=payload)
         self.assertEqual(first.status_code,200,first.text)
         self.assertEqual(self.client.post(url,headers=self.headers,json=payload).json(),first.json())
         payload['event_id']=str(uuid4())
         self.assertEqual(self.client.post(url,headers=self.headers,json=payload).status_code,409)
     def test_rejected_images_and_no_forged_diagnosis(self):
-        response=self.client.post('/api/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'test'},files={'image':('bad.png',b'bad','image/png')})
+        response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'test'},files={'image':('bad.png',b'bad','image/png')})
         self.assertEqual(response.status_code,415)
         self.upload();self.app.state.workflow.run_one()
         self.assertEqual(self.send('diagnose',diagnostic={'status':'evaluated'}).status_code,422)
@@ -100,7 +100,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_streamed_limits_image_deletion_and_mounted_ml3_ownership(self):
         self.upload();self.app.state.workflow.run_one()
-        url='/api/v1/sessions/'+self.sid
+        url='/api/legacy/v1/sessions/'+self.sid
         image=self.client.get(url+'/image',headers=self.headers)
         self.assertEqual(image.content,png())
         self.assertEqual(image.headers['cache-control'],'private, no-store')
@@ -115,7 +115,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.client.get(url,headers=self.headers).status_code,404)
 
     def test_rc_source_settings_and_real_solver(self):
-        response=self.client.post('/api/v1/sessions',headers=self.headers,data={'experiment_id':'rc-lowpass-example','description':'Synthetic RC'},files={'image':('test.png',png(),'image/png')})
+        response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'rc-lowpass-example','description':'Synthetic RC'},files={'image':('test.png',png(),'image/png')})
         self.assertEqual(response.status_code,202,response.text)
         self.sid=response.json()['session_id'];self.app.state.workflow.run_one()
         fixture=json.loads(Path('examples/vision-rc.json').read_text())
@@ -151,9 +151,9 @@ class WorkflowTests(unittest.TestCase):
         import time
         app=create_app(replace(self.settings,worker_enabled=True),catalog=self.catalog,verify=lambda token:Principal(token,'test-lab','student'))
         with TestClient(app) as client:
-            response=client.post('/api/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Worker test'},files={'image':('test.png',png(),'image/png')})
+            response=client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Worker test'},files={'image':('test.png',png(),'image/png')})
             self.assertEqual(response.status_code,202,response.text)
-            url='/api/v1/sessions/'+response.json()['session_id']
+            url='/api/legacy/v1/sessions/'+response.json()['session_id']
             deadline=time.monotonic()+5
             while time.monotonic()<deadline:
                 record=client.get(url,headers=self.headers).json()

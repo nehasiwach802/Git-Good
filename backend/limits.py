@@ -8,7 +8,9 @@ class BodyLimit:
     async def __call__(self,scope,receive,send):
         if scope['type']!='http' or scope['method'] not in ('POST','PUT','PATCH'):
             return await self.app(scope,receive,send)
-        limit=6*1024*1024 if scope['path'] in ('/api/sessions','/api/v1/sessions') else 512*1024
+        import re
+        upload=scope['path'] in ('/api/sessions','/api/legacy/v1/sessions') or re.fullmatch(r'/api/v1/sessions/[0-9a-fA-F-]{36}/image',scope['path'])
+        limit=6*1024*1024 if upload else 512*1024
         chunks=[];size=0
         while True:
             part=await receive()
