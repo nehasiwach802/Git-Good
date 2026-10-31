@@ -1,6 +1,7 @@
 """Dependency-free candidate validation, revision handling and netlist compilation.
 
-Draft v0.1 contract. Electrical observations are retained even when wiring is wrong.
+Hole-only v0.1 and opt-in external-terminal v0.2 draft contracts.
+Electrical observations are retained even when wiring is wrong.
 """
 
 from copy import deepcopy
@@ -9,6 +10,7 @@ import re
 
 
 SCHEMA_VERSION = "0.1"
+EXTERNAL_SCHEMA_VERSION = "0.2"
 PART_PINS = {
     "7400": {str(i) for i in range(1, 15)},
     "resistor": {"1", "2"},
@@ -71,9 +73,19 @@ def endpoints(candidate):
         yield port["id"], port["endpoint"], False
 
 
+def resolved(point):
+    return point.get("hole") is not None or point.get("external_terminal") is not None
+
+
+def endpoint_label(point):
+    return point.get("hole") or ("external:" + point["external_terminal"]
+                                 if point.get("external_terminal") else "?")
+
+
 def validate(candidate, board):
     require(isinstance(candidate, dict), "candidate must be an object")
-    require(candidate.get("schema_version") == SCHEMA_VERSION, "unsupported schema_version")
+    require(candidate.get("schema_version") in (SCHEMA_VERSION, EXTERNAL_SCHEMA_VERSION),
+            "unsupported schema_version")
     require(isinstance(candidate.get("candidate_id"), str) and candidate["candidate_id"],
             "candidate_id required")
     revision = candidate.get("revision")
@@ -120,6 +132,14 @@ def validate(candidate, board):
     for name, point, physical in endpoints(candidate):
         require(isinstance(point, dict), f"{name}: endpoint must be an object")
         hole = point.get("hole")
+        external = point.get("external_terminal")
+        if external is not None:
+            require(candidate["schema_version"] == EXTERNAL_SCHEMA_VERSION,
+                    "external terminals require schema_version 0.2")
+            require(isinstance(external, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", external),
+                    f"{name}: invalid external terminal ID")
+            require(hole is None, f"{name}: choose a hole OR an external terminal")
+            require(not point.get("alternatives"), f"{name}: external terminal cannot have alternative holes")
         require(hole is None or (isinstance(hole, str) and hole in holes),
                 f"{name}: invalid hole {hole}")
         alternatives = point.get("alternatives")
@@ -141,6 +161,8 @@ def pending(candidate, board):
     result = []
     if not candidate["board_confirmed"]:
         result.append("board topology/orientation not confirmed")
+    if board.get("unverified_rail_holes"):
+        result.append("rail connectivity not verified")
     for component in candidate["components"]:
         if not component["identity_confirmed"]:
             result.append(f"{component['id']}: identity/orientation not confirmed")
@@ -148,8 +170,8 @@ def pending(candidate, board):
                 component.get("value_si") is None or not component["value_confirmed"]):
             result.append(f"{component['id']}: value not confirmed")
     for name, point, _ in endpoints(candidate):
-        if point["hole"] is None:
-            result.append(f"{name}: unknown hole")
+        if not resolved(point):
+            result.append(f"{name}: unknown hole or external terminal")
         elif not point["confirmed"] or point["alternatives"]:
             result.append(f"{name}: review required")
     if not candidate["ports"]:
@@ -165,7 +187,7 @@ def correct(candidate, board, target, hole, expected_revision):
     result = deepcopy(candidate)
     matches = [p for name, p, _ in endpoints(result) if name == target]
     require(len(matches) == 1, f"unknown endpoint: {target}")
-    matches[0].update(hole=hole, alternatives=[], confidence="likely", source="manual",
+    matches[0].update(hole=hole, external_terminal=None, alternatives=[], confidence="likely", source="manual",
                       reason="student correction", confirmed=True)
     result["revision"] += 1
     result["reviewed_revision"] = None
@@ -181,7 +203,7 @@ def confirm(candidate, board, expected_revision):
     require(candidate["revision"] == expected_revision, "stale revision")
     result = deepcopy(candidate)
     for name, point, _ in endpoints(result):
-        require(point["hole"] is not None, f"{name}: resolve unknown hole before review")
+        require(resolved(point), f"{name}: resolve unknown endpoint before review")
         require(not point["alternatives"], f"{name}: resolve alternatives before review")
         point["confirmed"] = True
     for component in result["components"]:
@@ -201,7 +223,15 @@ def compile_netlist(candidate, board):
     unresolved = pending(candidate, board)
     require(not unresolved, "Cannot export: " + "; ".join(unresolved))
     groups = board_groups(board)
-    parent = {name: name for name in set(groups.values())}
+
+    def terminal_group(point):
+        if point.get("external_terminal") is not None:
+            return ("external", point["external_terminal"])
+        return ("board", groups[point["hole"]])
+
+    terminals = set(("board", group) for group in groups.values())
+    terminals.update(terminal_group(p) for _, p, _ in endpoints(candidate))
+    parent = {name: name for name in terminals}
 
     def root(name):
         while parent[name] != name:
@@ -210,16 +240,16 @@ def compile_netlist(candidate, board):
         return name
 
     for wire in candidate["wires"]:
-        a, b = root(groups[wire["a"]["hole"]]), root(groups[wire["b"]["hole"]])
+        a, b = root(terminal_group(wire["a"])), root(terminal_group(wire["b"]))
         parent[max(a, b)] = min(a, b)
-    used = {root(groups[p["hole"]]) for _, p, _ in endpoints(candidate)}
+    used = {root(terminal_group(p)) for _, p, _ in endpoints(candidate)}
     nodes = {group: f"N{i}" for i, group in enumerate(sorted(used))}
 
     def node(point):
-        return nodes[root(groups[point["hole"]])]
+        return nodes[root(terminal_group(point))]
 
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": candidate["schema_version"],
         "candidate_id": candidate["candidate_id"], "revision": candidate["revision"],
         "board_profile_id": board["id"], "status": "reviewed_connectivity",
         "components": [{"id": c["id"], "part": c["part"],
@@ -228,8 +258,11 @@ def compile_netlist(candidate, board):
                        for c in candidate["components"]],
         "ports": [{"id": p["id"], "role": p["role"], "node": node(p["endpoint"])}
                   for p in candidate["ports"]],
-        "nodes": {n: sorted(h for h, g in groups.items() if root(g) == group)
+        "nodes": {n: sorted(h for h, g in groups.items() if root(("board", g)) == group)
                   for group, n in nodes.items()},
+        **({"external_terminals": {p["external_terminal"]: node(p)
+                                   for _, p, _ in endpoints(candidate) if p.get("external_terminal")}}
+           if candidate["schema_version"] == EXTERNAL_SCHEMA_VERSION else {}),
         "provenance": {name: deepcopy(p) for name, p, _ in endpoints(candidate)},
         "issues": list(candidate["issues"]),
         "limitations": ["Reviewed observations do not verify physical continuity or device health.",

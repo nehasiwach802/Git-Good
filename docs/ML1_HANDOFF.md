@@ -1,5 +1,19 @@
 # ML1 handoff: draft v0.1
 
+Read [TEAM_INTEGRATION.md](TEAM_INTEGRATION.md) first for the current integration.
+The backend is already deployed at https://git-good-1.onrender.com/ and keeps its
+multipart `/api/sessions` contract. ML2 already has observation adapters. ML1
+supplies library entry points in `upload.py` and `handoff.py`, not replacements
+for the backend or Android app.
+
+Latest measured status: one user-reviewed real-photo netlist now exists
+(v0.2, revision 45), and its saved session recompiles identically. It is an
+observed circuit with a supply-routing inconsistency, not a known-correct
+reference. `outputs/real-dataset-v1` contains one partial real label example.
+The first automatic endpoint development check matched 2 of 7 central-grid
+wire ends with 2 extra proposals; Gemini image requests timed out. See
+`reports/FIRST_REAL_NETLIST_REVIEW.md` and `reports/VISION_BASELINE.md`.
+
 Implementation owner: ML person 1, developed with the coding assistant. This local format is implemented and ready for teammate review; it is not a team-ratified backend API. The digital experiment is an initial prototype selected from the 7400 hardware discussion, not a replacement for the entire project scope.
 
 ## Entry points
@@ -21,6 +35,26 @@ netlist = compile_netlist(candidate, board)
 There is no HTTP service or Android review UI in this milestone. Integrate these functions into the team's backend after agreeing its authentication/session model. The CLI is a local review/development interface.
 
 ## Candidate observations
+
+### External terminals: opt-in draft v0.2
+
+Hole-only candidates and netlists remain v0.1. A candidate with an external
+connection uses `schema_version: "0.2"`. Its endpoint has `hole: null` and
+`external_terminal: "CLIP_BOTTOM"`, with the usual evidence/review fields and
+no alternative holes. Exactly one hole or terminal may be assigned. Names
+identify physical connection points, not voltage or polarity. Reuse a name only
+when the same physical terminal is established; different names remain distinct.
+Logical ports may point to the same terminal as a wire. Unknown endpoints stay
+unresolved and continue to block reviewed export.
+
+ML person 2 must explicitly accept v0.2 before consuming these records; older
+v0.1 validators reject the version rather than mistaking `hole: null` for a
+resolved external connection. `compile_netlist` emits a v0.2 netlist with
+`external_terminals: {"CLIP_BOTTOM": "N..."}` alongside the existing node-to-hole
+map. External points are never projected onto the breadboard plane or added as
+fake holes. Training labels containing this information also use label v0.2.
+This extension is implemented by the coding assistant for ML person 1 and is
+pending team API agreement.
 
 See `examples/7400-not.candidate.json` for the full runnable fixture. Version is `0.1` (not the earlier planning document's illustrative `0.1-draft`). Components use `part` rather than the planning sketch's `type`. These are explicit draft implementation choices to discuss with ML person 2.
 

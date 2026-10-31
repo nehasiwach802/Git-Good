@@ -5,9 +5,9 @@ from pathlib import Path
 
 from .annotation import (add_component, add_port, add_wire, annotate, candidate_from_session,
                          invalidate, new_session, remove_item, set_calibration, verify_session)
-from .annotation import training_record, add_outer_hole
+from .annotation import training_record, add_outer_hole, set_external_terminal, set_rail_groups
 from .assistance import accept_object_draft
-from .core import CandidateError, compile_netlist, confirm, endpoints, require
+from .core import CandidateError, compile_netlist, confirm, endpoints, require, endpoint_label
 from .geometry import board_fingerprint, calibration_quality, hole_positions, project
 
 
@@ -53,17 +53,19 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
             ttk.Button(pane, text="Pick 4 known hole centers", command=self.start_calibration).pack(fill="x")
             ttk.Button(pane, text="Check another known hole", command=lambda: self.set_mode("check")).pack(fill="x")
             ttk.Button(pane, text="Add outer rail hole", command=lambda: self.set_mode("outer")).pack(fill="x")
+            ttk.Button(pane, text="Review rail connections", command=self.guard(self.rails)).pack(fill="x")
             ttk.Label(pane, text="2  Add and label objects", font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(12, 0))
             for text, action in (("Add component", self.component), ("Add wire (a + b)", self.wire),
                                  ("Add input/output/supply port", self.port),
                                  ("Edit selected component value", self.value),
                                  ("Remove selected object", self.remove)):
                 ttk.Button(pane, text=text, command=self.guard(action)).pack(fill="x")
-            self.listbox = tk.Listbox(pane, width=36, height=10, exportselection=False)
+            self.listbox = tk.Listbox(pane, width=36, height=8, exportselection=False)
             self.listbox.pack(fill="both", expand=True, pady=6)
             self.listbox.bind("<<ListboxSelect>>", lambda _: self.show_selected())
             ttk.Button(pane, text="Accept object's draft", command=self.guard(self.accept_draft)).pack(fill="x")
             ttk.Button(pane, text="Click selected endpoint", command=lambda: self.set_mode("annotate")).pack(fill="x")
+            ttk.Button(pane, text="Label as external terminal", command=self.guard(self.external)).pack(fill="x")
             ttk.Button(pane, text="Mark selected endpoint hidden", command=self.guard(self.hidden)).pack(fill="x")
             ttk.Label(pane, text="3  Save and export", font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(12, 0))
             ttk.Checkbutton(pane, text="Board topology and part orientation checked", variable=self.board_ack).pack(anchor="w")
@@ -127,7 +129,7 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
             for name, p, _ in endpoints(self.session["candidate"]):
                 self.targets.append(name)
                 marker = "~" if p.get("source") == "vision" else " "
-                self.listbox.insert("end", f"{marker} {name:12}  {p['hole'] or '?'}")
+                self.listbox.insert("end", f"{marker} {name:12}  {endpoint_label(p)}")
             if self.targets:
                 self.listbox.selection_set(self.targets.index(old) if old in self.targets else 0)
             self.draw()
@@ -172,7 +174,38 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
                 return
             target = self.selected()
             p = next(p for name, p, _ in endpoints(self.session["candidate"]) if name == target)
-            self.status.set(f"{target}: {p['hole'] or 'unresolved'}. {p.get('reason', '')}")
+            self.status.set(f"{target}: {endpoint_label(p)}. {p.get('reason', '')}")
+
+        def external(self):
+            target = self.selected()
+            identifier = simpledialog.askstring("External terminal",
+                "Terminal ID, e.g. CLIP_BOTTOM. Reuse a name only for the same physical connection.\n"
+                "An existing click outside the grid is preserved. Supply polarity stays unknown.", parent=self.root)
+            if identifier:
+                set_external_terminal(self.session, target, identifier.strip())
+                self.refresh(target)
+                self.status.set(f"{target}: external:{identifier.strip()}. Supply role still needs verification.")
+
+        def rails(self):
+            board = self.session["board"]
+            holes = set(board.get("rail_holes", board.get("unverified_rail_holes", [])))
+            require(holes, "add outer rail holes first")
+            groups = [g for g in board["groups"] if set(g) <= holes]
+            text = simpledialog.askstring("Rail connections",
+                "One connected segment per group. Separate holes by commas and groups by semicolons.\n"
+                "Keep different tracks and the two halves separate; include every recorded rail hole.",
+                initialvalue="; ".join(",".join(g) for g in groups), parent=self.root)
+            if not text:
+                return
+            groups = [[h.strip().upper() for h in group.split(",")]
+                      for group in text.split(";")]
+            if messagebox.askyesno("Verify rail connectivity",
+                    "Have you checked that each group is electrically connected on the actual board, "
+                    "and that rail breaks and different tracks remain separate?", parent=self.root):
+                set_rail_groups(self.session, groups, reviewed=True,
+                                evidence="User explicitly verified rail groups in annotation UI")
+                self.refresh()
+                self.status.set("Rail groups reviewed. Whole-circuit review still required before netlist export.")
 
         def accept_draft(self):
             identifier = self.selected().split(".")[0]

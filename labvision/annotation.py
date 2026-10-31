@@ -1,4 +1,4 @@
-"""Image-bound annotation sessions; candidate schema stays at version 0.1."""
+"""Image-bound annotation sessions with hole and external-terminal observations."""
 
 from copy import deepcopy
 import hashlib
@@ -6,7 +6,8 @@ import math
 from pathlib import Path
 import uuid
 
-from .core import PART_PINS, CandidateError, endpoint, endpoints, require, validate
+from .core import (PART_PINS, EXTERNAL_SCHEMA_VERSION, CandidateError, endpoint,
+                   endpoints, require, validate)
 from .geometry import board_fingerprint, calibrate, calibration_quality, hole_positions, point, project, snap
 
 
@@ -27,7 +28,7 @@ def new_session(image_path, image_size, board, assembly_id, candidate=None):
     for _, p, _ in endpoints(candidate):
         p["confirmed"] = False
         if candidate.get("image_sha256") is None:
-            p.update(hole=None, alternatives=[], confidence="unknown", image_xy=None,
+            p.update(hole=None, external_terminal=None, alternatives=[], confidence="unknown", image_xy=None,
                      reason="Import has no image binding; annotate endpoint on this image")
     for component in candidate["components"]:
         component["identity_confirmed"] = False
@@ -72,12 +73,37 @@ def set_calibration(session, anchors, checks=None):
     # Commit only after validation; old clicked endpoints belong to the old mapping.
     result = calibrate(session["board"], anchors, checks)
     for _, p, _ in endpoints(session["candidate"]):
+        if p.get("external_terminal") is not None:
+            p["confirmed"] = False
+            continue
         if p.get("image_xy") is not None:
             p.update(hole=None, alternatives=[], confidence="unknown", confirmed=False,
                      reason="Calibration changed; annotate this endpoint again")
         else:
             p["confirmed"] = False
     session["calibration"] = result
+    invalidate(session)
+
+
+def set_rail_groups(session, groups, reviewed=False, evidence=""):
+    """Group only recorded rail holes; preserve separate halves and tracks."""
+    board = deepcopy(session["board"])
+    rail_holes = set(board.get("rail_holes", board.get("unverified_rail_holes", [])))
+    require(rail_holes, "no outer rail holes recorded")
+    require(isinstance(groups, list) and groups and all(isinstance(g, list) and g for g in groups),
+            "enter nonempty rail groups")
+    flat = [h for group in groups for h in group]
+    require(all(isinstance(h, str) for h in flat) and len(set(flat)) == len(flat)
+            and set(flat) == rail_holes, "each recorded rail hole must appear exactly once")
+    require(all(not (set(g) & rail_holes) or set(g) <= rail_holes for g in board["groups"]),
+            "rail profile unexpectedly includes terminal-strip holes")
+    board["groups"] = [g for g in board["groups"] if not set(g) & rail_holes] + deepcopy(groups)
+    board["rail_holes"] = sorted(rail_holes)
+    board["unverified_rail_holes"] = [] if reviewed is True else sorted(rail_holes)
+    board["rail_group_review"] = {"reviewed": reviewed is True, "evidence": evidence}
+    hole_positions(board)
+    session["board"] = board
+    session["calibration"]["board_fingerprint"] = board_fingerprint(board)
     invalidate(session)
 
 
@@ -140,6 +166,43 @@ def annotate(session, target, xy=None, visible=True):
                        reason="Insertion point occluded or not established; do not infer it")
     matches[0].clear()
     matches[0].update(updated)
+    for wire in session["candidate"]["wires"]:
+        if target in (wire["id"] + ".a", wire["id"] + ".b"):
+            wire["pairing_reviewed"] = False
+    invalidate(session)
+    return updated
+
+
+def set_external_terminal(session, target, identifier, xy=None):
+    """Assign a named external connection without projecting it onto the board."""
+    import re
+    require(isinstance(identifier, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", identifier),
+            "terminal ID must start with a letter; use letters, digits, '-' and '_'")
+    candidate = session["candidate"]
+    matches = [p for name, p, _ in endpoints(candidate) if name == target]
+    require(len(matches) == 1, "select an existing endpoint")
+    old = matches[0]
+    # Preserve an existing click outside the hole grid, e.g. on a crocodile clip.
+    if xy is None and old.get("hole") is None and old.get("visible") is True:
+        xy = old.get("image_xy")
+    if xy is not None:
+        xy = point(xy)
+        width, height = session["image_size"]
+        require(0 <= xy[0] < width and 0 <= xy[1] < height, "point is outside image")
+    updated = dict(endpoint(source="manual", confidence="likely"),
+                   external_terminal=identifier, image_xy=xy,
+                   visible=True if xy is not None else None,
+                   reason="Named external terminal; no supply polarity or voltage inferred")
+    proposed = deepcopy(candidate)
+    proposed["schema_version"] = EXTERNAL_SCHEMA_VERSION
+    next(p for name, p, _ in endpoints(proposed) if name == target).update(updated)
+    validate(proposed, session["board"])
+    old.clear()
+    old.update(updated)
+    candidate["schema_version"] = EXTERNAL_SCHEMA_VERSION
+    for wire in candidate["wires"]:
+        if target in (wire["id"] + ".a", wire["id"] + ".b"):
+            wire["pairing_reviewed"] = False
     invalidate(session)
     return updated
 
@@ -181,9 +244,12 @@ def training_record(session, reviewed=False):
                 "hole": p["hole"] if observed else None,
                 "observable_hole": p["hole"] if observed else None,
                 "visible": True if observed else False if hidden else None,
-                "label_status": "annotated" if observed else "occluded" if hidden else "unlabelled"}
+                "label_status": "annotated" if observed else "occluded" if hidden else "unlabelled",
+                **({"external_terminal": p.get("external_terminal") if observed else None,
+                    "endpoint_kind": "external" if p.get("external_terminal") else "hole"}
+                   if session["candidate"]["schema_version"] == EXTERNAL_SCHEMA_VERSION else {})}
 
-    return {"label_version": "0.1", "image_type": session["image_type"],
+    return {"label_version": session["candidate"]["schema_version"], "image_type": session["image_type"],
             "image_name": session["image_name"], "image_sha256": session["image_sha256"],
             "image_size": session["image_size"], "assembly_id": session["assembly_id"],
             "label_reviewed": True, "board_profile_id": session["board"]["id"],

@@ -47,6 +47,35 @@ board; the application does not manufacture those facts.
 
 ## Annotate
 
+### Review an assisted draft
+
+Assistant observations can be imported into a separate session with
+`tools/prepare_photo_draft.py --image ... --session ... --observations ... --out ...`.
+The observations are bound to the photo hash and board geometry. This is an
+assisted annotation workflow, not a trained detector or an accuracy evaluation.
+Existing manually entered endpoints are preserved. Output must use a new/empty
+directory; source sessions are not overwritten.
+
+Draft endpoints show `~` in the list. Select any endpoint to show its evidence
+and all proposals for that object. **Accept object's draft** accepts mapped
+positions for that component/wire after visual review, without re-clicking each
+one. For a complete wire this also acknowledges its pairing. `?` endpoints stay
+unresolved; correct them by clicking, and mark hidden only when actually hidden.
+For a chip, review its notch orientation and row placement before accepting the
+whole object. The **Show hole grid** and **Show all endpoint labels** toggles
+reduce clutter during this review.
+
+Unaccepted proposals are excluded from reviewed training labels. Accepting a
+pose-derived pin assignment does not make an obscured pin a visible pixel label:
+such positions keep unknown visibility until independently annotated. Rail
+continuity still blocks netlist export. Partial wire fragments do not establish
+the total number of distinct physical wires.
+
+The first saved draft is in `outputs/assisted-labels/review-v1/`, with a session,
+board, candidate, `REVIEW.md`, and `review-cards.png`. It contains 26 mapped
+proposals (14 pose-derived chip pins and 12 wire ends), 7 measured outer-hole
+positions, and 6 unresolved endpoints. All proposals remain unreviewed.
+
 For visible outer rail holes missing from the profile, click **Add outer rail hole**
 then its center. This creates R1, R2, etc. without changing central-grid labels.
 Select a wire endpoint and click the new hole to label it normally. Reuse a hole
@@ -87,6 +116,25 @@ python -m labvision annotate "C:\path\to\breadboard.jpeg" --board outputs/7400-p
 ```
 
 ## Exports
+
+For an external clip end, select the endpoint and click **Label as external
+terminal**. Give it a neutral name such as `CLIP_BOTTOM`. An existing click on
+the clip is preserved without snapping to the grid. A terminal name says
+nothing about supply voltage or polarity. Use the same name on other endpoints
+only when their physical connection is verified. An off-frame end can have a
+terminal identity with unknown pixel visibility; do not invent a location.
+External-terminal candidates/netlists and their training labels use v0.2;
+hole-only records remain v0.1. Normal board and circuit review gates still apply.
+
+**Review rail connections** opens the recorded outer-hole groups for review.
+Separate holes with commas and electrically distinct segments with semicolons.
+For the current photo the proposed groups are `R1,R2,R3,R5; R4; R6,R7`.
+These groups keep the observed left inner track, left outer track and right
+inner track separate, and place contacts within their respective half of the
+board. The user reports a midpoint split; the proposed group membership still
+needs checking on the physical board. Confirming this dialog clears the rail
+review gate and invalidates whole-circuit review; it does not establish supply
+polarity. Recalibration is unnecessary when only electrical groups change.
 
 - **Save annotation session:** editable image-bound progress, including unknowns.
 - **Export unreviewed candidate:** existing candidate schema v0.1. Requires a

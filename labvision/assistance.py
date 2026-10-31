@@ -6,7 +6,7 @@ These helpers import observations; they are not a trained image detector.
 from copy import deepcopy
 
 from .annotation import add_component, add_outer_hole, add_wire, invalidate
-from .core import endpoints, require, validate
+from .core import endpoints, require, validate, resolved
 from .geometry import board_fingerprint, hole_positions, point, project, snap
 
 
@@ -41,7 +41,7 @@ def prepare_draft(session, observations):
         old = lookup[target]
         # Preserve real edits, including a user's explicit hidden endpoint.
         if old.get("source") == "manual" and (old.get("image_xy") is not None
-                or old.get("hole") is not None or old.get("visible") is False):
+                or resolved(old) or old.get("visible") is False):
             continue
         xy = observation.get("xy")
         if observation.get("projected_hole"):
@@ -81,14 +81,14 @@ def accept_object_draft(session, identifier):
     selected = [(name, p) for name, p, _ in endpoints(candidate)
                 if name.split(".")[0] == identifier]
     accepted = [p for _, p in selected if p.get("source") == "vision"
-                and p.get("hole") is not None and not p.get("alternatives")]
+                and resolved(p) and not p.get("alternatives")]
     require(accepted, "No mapped draft to accept; unresolved endpoints need a correction")
     for p in accepted:
         p.update(source="manual", proposal_reviewed=True, confirmed=False)
         p["reason"] = "User accepted assistant proposal: " + p["reason"]
     for wire in candidate["wires"]:
         if wire["id"] == identifier:
-            wire["pairing_reviewed"] = all(p.get("hole") is not None
+            wire["pairing_reviewed"] = all(resolved(p)
                 and not p.get("alternatives") and p.get("source") == "manual"
                 for p in (wire["a"], wire["b"]))
     invalidate(session)

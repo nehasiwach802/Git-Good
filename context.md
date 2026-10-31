@@ -1,5 +1,34 @@
 # Project Context: AI Lab Mentor (HackCBS 9.0)
 
+## Current ML1 integration status (2026-11-01)
+
+- Read shared/promoted Meko records before cross-team changes; ordinary
+  agent-scoped recall omitted existing teammate work during an earlier task.
+- User confirms the backend is deployed. Verified live URL:
+  https://git-good-1.onrender.com/; `/health` reports `mode=stub`. Its published
+  contract is multipart POST `/api/sessions` with `experiment_id`, `description`,
+  `image`. Preserve the existing backend and Android interfaces.
+- ML2 already implements generalized 2.0 reasoning and `ml1_v0.1` / `internal_v1`
+  adapters on `origin/tanu`. ML3's shared records describe its memory adapter
+  and MCP transport. Those implementations remain teammate-owned.
+- ML1: calibration/review/export works, one reviewed real netlist revision 45,
+  matched saved session, 18 visible real-data labels; automatic extraction is
+  experimental. Local development baseline matched 2/7 central wire ends; Gemini
+  image requests timed out. Supply routing in the reviewed graph needs checking.
+- ML1-only `extract_upload` accepts the existing backend's image bytes and returns
+  an unreviewed candidate or explicit manual fallback. `reasoning_input` delegates
+  v0.1 to ML2's existing adapter and exports reviewed v0.2 through `internal_v1`.
+  Tested against actual ML2 code; unsupported LED is retained, not simulated away.
+- Duplicate standalone API, database, Docker and Android client files created
+  before checking teammate status were backed up under ignored outputs and removed.
+  No replacement service is running. Original ML1 work and user labels are preserved.
+- Latest checks: 67 ML1 tests pass; real v0.2 handoff passes ML2's parser. Backend
+  currently exposes an upload smoke test with models marked `not_run`; integrating
+  the ML1 library into that existing route is distinct from deploying a new backend.
+- Authoritative ML1 integration details: `docs/TEAM_INTEGRATION.md`.
+
+The original product plan follows; its unchecked implementation status is historical.
+
 Team: 4 (1 Android dev, 3 ML). Status: idea selected for further work, pending validation. Alternative still on the table: the laptop repair-quote idea (see the last section).
 
 ---
