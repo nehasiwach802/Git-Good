@@ -6,11 +6,27 @@ and a small 7400 NAND-as-NOT reference check.
 
 **Status:** working local software prototype using synthetic labelled fixtures.
 Real-photo extraction accuracy has not been measured. The attached circuit photos
-have not been assigned verified hole-level labels. No Android/backend UI yet.
+have not been assigned verified hole-level labels. A local desktop annotation UI
+and a 200-image procedural dataset are now available. No Android/backend UI yet.
+
+## Label photos and generate synthetic data
+
+```powershell
+python -m labvision annotate "C:\path\to\breadboard.jpeg" --board outputs/7400-photo.board.json --assembly-id 7400-build-001
+python -m labvision synthetic --count 200 --seed 42 --variants 2 --out outputs/synthetic-v2
+```
+
+The desktop UI supports four-hole calibration, independent grid checks, paired
+wire endpoints, component pins, unknown points, resumable sessions and candidate/
+training-label/netlist exports. Pillow is required (`requirements-vision.txt`).
+See [annotation and synthetic data instructions](docs/ANNOTATION_AND_SYNTHETIC.md).
+The first dataset is in `outputs/synthetic-v1/`; it is stylized 2D data and has not
+been used to train or evaluate a detector.
 
 ## Run locally
 
-Python 3.10+; no third-party dependencies. Run from this directory:
+Python 3.10+; core commands need no third-party dependencies. Image annotation and
+synthetic generation use Pillow. Run from this directory:
 
 ```powershell
 python -m labvision inspect examples/7400-not.candidate.json --board examples/board-30.json
@@ -86,5 +102,5 @@ python -m unittest discover -s tests -v
 - [Official experiment resources](EXPERIMENT_RESOURCES.md)
 - [Project context](context.md)
 
-Pending: real-photo evaluation, board alignment/overlays, Android confirmation UI,
+Pending: real-photo evaluation, automatic board/endpoint detection, Android confirmation UI,
 team API agreement, and ML person 2's full reasoning/simulation integration.

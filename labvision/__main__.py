@@ -1,4 +1,4 @@
-"""Run with python -m labvision; no third-party packages required."""
+"""Run with python -m labvision; core commands are dependency-free, image tools use Pillow."""
 
 import argparse
 import json
@@ -32,6 +32,21 @@ def main(argv=None):
     board_cmd = sub.add_parser("board", help="generate a terminal-strip-only profile")
     board_cmd.add_argument("--rows", type=int, default=63)
     board_cmd.add_argument("--out", required=True)
+    annotation_cmd = sub.add_parser("annotate", help="open local calibration/endpoint annotation window")
+    annotation_cmd.add_argument("image")
+    annotation_cmd.add_argument("--board", required=True)
+    annotation_cmd.add_argument("--assembly-id", default="assembly-001")
+    annotation_cmd.add_argument("--candidate", help="optional candidate to annotate; image binding is checked")
+    annotation_cmd.add_argument("--session", help="resume saved annotations for this image")
+    synth_cmd = sub.add_parser("synthetic", help="generate stylized PNG scenes and exact labels")
+    synth_cmd.add_argument("--out", required=True)
+    synth_cmd.add_argument("--count", type=int, default=200)
+    synth_cmd.add_argument("--seed", type=int, default=42)
+    synth_cmd.add_argument("--variants", type=int, default=2)
+    calibration_cmd = sub.add_parser("calibrate", help="fit a homography from anchors/checks JSON")
+    calibration_cmd.add_argument("anchors")
+    calibration_cmd.add_argument("--board", required=True)
+    calibration_cmd.add_argument("--out", required=True)
     for name in ("inspect", "report", "correct", "confirm", "export", "check-not", "extract", "prompt"):
         cmd = sub.add_parser(name)
         cmd.add_argument("--board", required=True)
@@ -64,6 +79,20 @@ def main(argv=None):
     try:
         if args.command == "board":
             result = make_board(args.rows)
+        elif args.command == "annotate":
+            from .annotator import launch
+            launch(args.image, read(args.board), args.assembly_id,
+                   read(args.candidate) if args.candidate else None, args.session)
+            return 0
+        elif args.command == "synthetic":
+            from .synthetic import generate
+            result = generate(args.out, args.count, args.seed, args.variants)
+            write(result)
+            return 0
+        elif args.command == "calibrate":
+            from .geometry import calibrate
+            anchors = read(args.anchors)
+            result = calibrate(read(args.board), anchors["anchors"], anchors.get("checks", []))
         else:
             board = read(args.board)
             if args.command == "extract":

@@ -80,3 +80,18 @@ accepts optional timeout, raw-response path, supported thinking level and a list
 of student-reported part identities. The CLI also has a `report` command for
 Markdown endpoint review sheets. These additions do not change netlist schema
 v0.1 or permit model self-confirmation.
+
+## Calibration and annotation milestone
+
+Local modules `geometry`, `annotation`, `annotator` and `synthetic` now implement
+four-hole perspective calibration, independent holdout checks, endpoint annotation,
+reviewed training-label export and procedural synthetic data. See
+`docs/ANNOTATION_AND_SYNTHETIC.md`. Annotation sessions/labels use their own version
+0.1 records; the candidate/netlist schema remains v0.1. Pixel annotations remain
+unreviewed candidate observations until explicit circuit review.
+
+Training labels distinguish unlabelled (`visible=null`) from occluded
+(`visible=false`) endpoints. Synthetic labels additionally preserve latent truth;
+use `observable_hole`/visibility for observable endpoint supervision. Keep all
+captures/variants of one `assembly_id` in a single split. The generated 200-scene
+batch is local under ignored `outputs/synthetic-v1`; no detector is trained.

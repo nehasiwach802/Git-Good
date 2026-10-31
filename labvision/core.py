@@ -175,6 +175,8 @@ def correct(candidate, board, target, hole, expected_revision):
 
 def confirm(candidate, board, expected_revision):
     """Caller explicitly acknowledges reviewing ALL observations and board topology."""
+    require(not board.get("unverified_rail_holes"),
+            "Rail connectivity is unverified; define actual connected groups and clear unverified_rail_holes before review")
     validate(candidate, board)
     require(candidate["revision"] == expected_revision, "stale revision")
     result = deepcopy(candidate)
@@ -194,6 +196,8 @@ def confirm(candidate, board, expected_revision):
 
 
 def compile_netlist(candidate, board):
+    require(not board.get("unverified_rail_holes"),
+            "Rail connectivity is unverified; cannot compile a reviewed netlist")
     unresolved = pending(candidate, board)
     require(not unresolved, "Cannot export: " + "; ".join(unresolved))
     groups = board_groups(board)
