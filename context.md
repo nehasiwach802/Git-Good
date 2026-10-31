@@ -19,6 +19,30 @@ Deterministic components produce findings; the explanation layer communicates th
 
 ## Implemented baseline
 
+### Android connection-test branch
+
+Current work: backend/android-connection-test, created from committed tanu.
+backend/app.py provides FastAPI GET /health, POST /api/sessions multipart upload,
+/docs and /openapi.json. Fields: experiment_id, description, image (JPEG/PNG).
+Success is HTTP 200 with connection_ok, mode=stub and receipt metadata. ML1 and
+ML2 explicitly return not_run; no ML3, real model, Meko or ngspice is invoked.
+No image/session is retained; request_id is a receipt, not a persistent session.
+Uploads are bounded to 5 MiB/20 megapixels and checked against actual image data.
+
+Dockerfile.backend, requirements-backend.txt and .dockerignore prepare hosted
+deployment. No hosting account was selected and no public HTTPS URL exists yet.
+Explain hosting as the internet-accessible server Android calls; do not claim a
+local test establishes phone-to-deployed-server connectivity. Docker build was
+not verified because Docker is unavailable. See docs/ANDROID_CONNECTION_TEST.md,
+schemas/backend-openapi.json and examples/backend-upload-response.json.
+
+Verification for this branch: 108 tests passed with no skips in the isolated
+.venv-backend environment (five new backend tests plus 103 existing tests).
+Uvicorn real-HTTP upload smoke test also passed; its temporary process was stopped.
+CI installs backend/test extras. Run with .venv-backend/Scripts/python.exe, or
+install .[backend,test] in another environment. No model keys/database required
+for this temporary connection example; authentication/persistence remain future work.
+
 - Python 3.11+ package with no third-party runtime Python dependencies.
 - Validated SI-valued R/C/V/ideal-OPAMP circuits, wire alias normalization and
   topology comparison independent of net labels; passive terminal reversal allowed.

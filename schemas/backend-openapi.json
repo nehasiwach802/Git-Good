@@ -1,0 +1,184 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Git-Good Android connection test",
+    "description": "Upload connectivity test only. ML1 and ML2 are stubs. No images are retained, no diagnosis is performed.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions": {
+      "post": {
+        "summary": "Upload",
+        "operationId": "upload_api_sessions_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_sessions_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StubResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Image exceeds 5 MiB"
+          },
+          "415": {
+            "description": "Unsupported or invalid image"
+          },
+          "422": {
+            "description": "Missing or invalid form fields"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_upload_api_sessions_post": {
+        "properties": {
+          "experiment_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Experiment Id"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "image": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Image",
+            "description": "A JPEG or PNG image, up to 5 MiB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "experiment_id",
+          "description",
+          "image"
+        ],
+        "title": "Body_upload_api_sessions_post"
+      },
+      "ImageReceipt": {
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_type",
+          "size_bytes",
+          "sha256",
+          "width",
+          "height"
+        ],
+        "title": "ImageReceipt"
+      },
+      "StubResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "mode": {
+            "type": "string",
+            "const": "stub",
+            "title": "Mode",
+            "default": "stub"
+          },
+          "status": {
+            "type": "string",
+            "const": "connection_ok",
+            "title": "Status",
+            "default": "connection_ok"
+          },
+          "experiment_id": {
+            "type": "string",
+            "title": "Experiment Id"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageReceipt"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "ml1": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Ml1"
+          },
+          "ml2": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Ml2"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "experiment_id",
+          "description",
+          "image",
+          "message"
+        ],
+        "title": "StubResponse"
+      }
+    }
+  }
+}

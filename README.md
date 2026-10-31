@@ -1,5 +1,15 @@
 # Git-Good — AI Lab Mentor reasoning core
 
+Android connection-test backend: see [upload contract and deployment](docs/ANDROID_CONNECTION_TEST.md).
+It provides FastAPI POST /api/sessions (multipart experiment_id, description,
+image) with explicit ML1/ML2 stub responses. Dockerfile.backend supports hosted
+deployment. This smoke test stores no images or sessions and runs no real models.
+
+```powershell
+python -m pip install -e ".[backend,test]"
+python -m uvicorn backend.app:app --host 0.0.0.0 --port 8000
+```
+
 ML person 2 implementation: circuit validation and connectivity comparison,
 ngspice AC predictions, evidence-linked diagnostic ledger and next-check rules.
 Python 3.11+; the core and local HTTP server need no Python dependencies.

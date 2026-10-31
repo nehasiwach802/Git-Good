@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+.venv*
+.tools
+outputs
+**/__pycache__
+*.egg-info
+ckt breadboard
