@@ -16,7 +16,7 @@ backend = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1", "python-multipart>=0.0.20,<1
 backend = ["catalog.json"]
 
 [tool.setuptools]
-py-modules = ["lab_memory", "meko_transport", "mentor", "ml3_service", "knowledge_lifecycle", "outcome_writer", "equipment_flags", "qwen_transport"]
+py-modules = ["lab_memory", "meko_transport", "mentor", "ml3_service", "ml3_http", "knowledge_lifecycle", "outcome_writer", "equipment_flags", "qwen_transport"]
 
 [tool.setuptools.packages.find]
 include = ["reasoning*", "labvision*", "backend*"]

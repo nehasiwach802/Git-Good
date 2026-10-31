@@ -6,7 +6,8 @@ RUN pip install --no-cache-dir -r requirements-backend.txt
 COPY backend/ backend/
 COPY reasoning/ reasoning/
 COPY labvision/ labvision/
-COPY lab_memory.py meko_transport.py mentor.py ml3_service.py knowledge_lifecycle.py outcome_writer.py equipment_flags.py qwen_transport.py ./
+COPY lab_memory.py meko_transport.py mentor.py ml3_service.py ml3_http.py knowledge_lifecycle.py outcome_writer.py equipment_flags.py qwen_transport.py ./
+RUN python -c "from backend.app import app; assert app.openapi()['info']['version'] == '1.0.0'"
 RUN useradd --create-home appuser && mkdir -p /app/data && chown appuser:appuser /app/data
 RUN sed -i 's/\r$//' backend/docker-entrypoint.sh && chmod 755 backend/docker-entrypoint.sh
 ENV PORT=8000

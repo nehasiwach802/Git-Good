@@ -213,3 +213,14 @@ configuration and zero approved real experiments. Docker is unavailable here;
 container build/boot is configured in CI but not claimed executed. Host credentials,
 approved experiment configuration and commit/push/deploy remain external steps.
 See docs/BACKEND_DEPLOYMENT.md for the concrete procedure.
+
+## Deployment fix: ml3_http import (2026-11-01)
+
+ML2/backend Codex fixed an omitted runtime module: Dockerfile.backend COPY and
+setuptools py-modules now include ml3_http.py. Docker build also imports the full
+FastAPI app before image completion. Added an isolated-artifact regression test
+that copies only Docker-declared runtime files and boots the app without checkout
+imports. Package wheel rebuilt and confirmed to include ml3_http.py. No credentials
+or product datapacks accessed. Commit/push and rebuild Render deployment required;
+no remote deployment performed by this fix. Docker unavailable locally.
+Verification for this fix: 261 tests passed, zero failures/skips; wheel build and module inspection passed; git diff --check passed.
