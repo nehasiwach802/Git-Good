@@ -1,5 +1,24 @@
 # Android upload connection test
 
+Historical connectivity endpoint only. The integrated application now uses
+[API 1.0](BACKEND_API.md) and [deployment configuration](BACKEND_DEPLOYMENT.md).
+The previously verified public smoke deployment is not proof that these new
+working-tree changes have been deployed.
+
+## Verified public service
+
+Base URL: https://git-good-1.onrender.com/
+
+- GET https://git-good-1.onrender.com/health
+- POST https://git-good-1.onrender.com/api/sessions
+- API documentation: https://git-good-1.onrender.com/docs
+
+Verified on 2026-11-01: health and OpenAPI retrieval succeeded; actual multipart
+upload of examples/connection-test.png returned HTTP 200, connection_ok, stub
+mode, 77 bytes and the matching image SHA-256. Android-to-service testing still
+needs to be performed on the phone; this verification was a remote HTTP client.
+The service does not run ML1/ML2 or retain a session.
+
 Branch: backend/android-connection-test. ML1 and ML2 are explicit stubs; ML3,
 Gemini, Qwen, Meko and ngspice are not called. This is a request/response smoke
 test, not a persistent chatbot/session service. The /api/sessions path reserves
@@ -11,8 +30,8 @@ no stored session or GET-session endpoint yet. Uploaded images are discarded.
 Deploy this branch on a container host with HTTPS and use Dockerfile.backend.
 Configure the host's Dockerfile path to Dockerfile.backend, expose its PORT
 (default 8000), and set the health check to /health. No model keys or database
-are required. The repository includes deployment artifacts; no public service
-has been provisioned by the coding agent.
+are required. The user deployed the public service listed above; the coding agent
+verified its health and upload endpoint. These instructions also cover redeployment.
 
 The host will provide https://YOUR-SERVICE.example. Give that URL to Android;
 use a trailing slash for Retrofit's baseUrl. GET /health should return mode=stub.

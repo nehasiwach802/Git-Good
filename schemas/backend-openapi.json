@@ -1,15 +1,30 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Git-Good Android connection test",
-    "description": "Upload connectivity test only. ML1 and ML2 are stubs. No images are retained, no diagnosis is performed.",
-    "version": "0.1.0"
+    "title": "Git-Good circuit mentor API",
+    "version": "1.0.0"
   },
   "paths": {
     "/health": {
       "get": {
         "summary": "Health",
         "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_ready_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -41,20 +56,444 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StubResponse"
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/v1/experiments": {
+      "get": {
+        "summary": "Experiments",
+        "operationId": "experiments_api_v1_experiments_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_api_v1_capabilities_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_api_v1_sessions_post",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_api_v1_sessions_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
                 }
               }
             }
           },
-          "413": {
-            "description": "Image exceeds 5 MiB"
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}": {
+      "get": {
+        "summary": "Get",
+        "operationId": "get_api_v1_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
           },
-          "415": {
-            "description": "Unsupported or invalid image"
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
           },
           "422": {
-            "description": "Missing or invalid form fields"
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete",
+        "operationId": "delete_api_v1_sessions__session_id__delete",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/events": {
+      "post": {
+        "summary": "Event",
+        "operationId": "event_api_v1_sessions__session_id__events_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CorrectEndpoint"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplaceCandidate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ConfirmCandidate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Correspondence"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Measurements"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SourceSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CheckResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Complete"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Retry"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "type",
+                  "mapping": {
+                    "correct_endpoint": "#/components/schemas/CorrectEndpoint",
+                    "replace_candidate": "#/components/schemas/ReplaceCandidate",
+                    "confirm_candidate": "#/components/schemas/ConfirmCandidate",
+                    "set_correspondence": "#/components/schemas/Correspondence",
+                    "measurements": "#/components/schemas/Measurements",
+                    "source_settings": "#/components/schemas/SourceSettings",
+                    "message": "#/components/schemas/Message",
+                    "check_result": "#/components/schemas/CheckResult",
+                    "complete": "#/components/schemas/Complete",
+                    "retry_extraction": "#/components/schemas/Retry"
+                  }
+                },
+                "title": "Event"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/image": {
+      "get": {
+        "summary": "Image",
+        "operationId": "image_api_v1_sessions__session_id__image_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         }
       }
@@ -62,6 +501,46 @@
   },
   "components": {
     "schemas": {
+      "Body_create_api_v1_sessions_post": {
+        "properties": {
+          "experiment_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Experiment Id"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "image": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Image"
+          },
+          "experiment_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experiment Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "experiment_id",
+          "description",
+          "image"
+        ],
+        "title": "Body_create_api_v1_sessions_post"
+      },
       "Body_upload_api_sessions_post": {
         "properties": {
           "experiment_id": {
@@ -92,92 +571,665 @@
         ],
         "title": "Body_upload_api_sessions_post"
       },
-      "ImageReceipt": {
+      "CheckResult": {
         "properties": {
-          "content_type": {
+          "event_id": {
             "type": "string",
-            "title": "Content Type"
+            "format": "uuid",
+            "title": "Event Id"
           },
-          "size_bytes": {
+          "expected_version": {
             "type": "integer",
-            "title": "Size Bytes"
+            "minimum": 1.0,
+            "title": "Expected Version"
           },
-          "sha256": {
+          "type": {
             "type": "string",
-            "title": "Sha256"
+            "const": "check_result",
+            "title": "Type"
           },
-          "width": {
-            "type": "integer",
-            "title": "Width"
+          "check_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Check Id"
           },
-          "height": {
+          "observation": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Observation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "check_id",
+          "observation"
+        ],
+        "title": "CheckResult"
+      },
+      "Complete": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
             "type": "integer",
-            "title": "Height"
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "complete",
+            "title": "Type"
+          },
+          "resolved": {
+            "type": "boolean",
+            "title": "Resolved"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "resolved"
+        ],
+        "title": "Complete"
+      },
+      "ConfirmCandidate": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "confirm_candidate",
+            "title": "Type"
+          },
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "acknowledgement": {
+            "type": "string",
+            "const": "reviewed_all_connections_and_board",
+            "title": "Acknowledgement"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "candidate_revision",
+          "acknowledgement"
+        ],
+        "title": "ConfirmCandidate"
+      },
+      "CorrectEndpoint": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "correct_endpoint",
+            "title": "Type"
+          },
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "target": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Target"
+          },
+          "hole": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hole"
+          },
+          "external_terminal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Terminal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "candidate_revision",
+          "target"
+        ],
+        "title": "CorrectEndpoint"
+      },
+      "Correspondence": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "set_correspondence",
+            "title": "Type"
+          },
+          "component_map": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Component Map"
+          },
+          "port_map": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Port Map"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "component_map"
+        ],
+        "title": "Correspondence"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
           }
         },
         "type": "object",
-        "required": [
-          "content_type",
-          "size_bytes",
-          "sha256",
-          "width",
-          "height"
-        ],
-        "title": "ImageReceipt"
+        "title": "HTTPValidationError"
       },
-      "StubResponse": {
+      "Measurements": {
         "properties": {
-          "request_id": {
+          "event_id": {
             "type": "string",
-            "title": "Request Id"
+            "format": "uuid",
+            "title": "Event Id"
           },
-          "mode": {
-            "type": "string",
-            "const": "stub",
-            "title": "Mode",
-            "default": "stub"
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
           },
-          "status": {
+          "type": {
             "type": "string",
-            "const": "connection_ok",
-            "title": "Status",
-            "default": "connection_ok"
+            "const": "measurements",
+            "title": "Type"
+          },
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "measurements": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Measurements"
+          },
+          "student_expectations": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "items": {},
+                "type": "array"
+              }
+            ],
+            "title": "Student Expectations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "candidate_revision",
+          "measurements"
+        ],
+        "title": "Measurements"
+      },
+      "Message": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "message",
+            "title": "Type"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "text"
+        ],
+        "title": "Message"
+      },
+      "ReplaceCandidate": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "replace_candidate",
+            "title": "Type"
+          },
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "candidate": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Candidate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "candidate_revision",
+          "candidate"
+        ],
+        "title": "ReplaceCandidate"
+      },
+      "Retry": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "retry_extraction",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type"
+        ],
+        "title": "Retry"
+      },
+      "SessionResponse": {
+        "properties": {
+          "api_version": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Api Version",
+            "default": "1.0"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "extracting",
+              "awaiting_review",
+              "diagnosing",
+              "awaiting_measurement",
+              "awaiting_check_result",
+              "completing",
+              "completed",
+              "failed"
+            ],
+            "title": "State"
           },
           "experiment_id": {
             "type": "string",
             "title": "Experiment Id"
           },
+          "experiment_version": {
+            "type": "string",
+            "title": "Experiment Version"
+          },
           "description": {
             "type": "string",
             "title": "Description"
           },
-          "image": {
-            "$ref": "#/components/schemas/ImageReceipt"
+          "candidate_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Revision"
           },
-          "message": {
-            "type": "string",
-            "title": "Message"
+          "candidate": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate"
+          },
+          "board": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Board"
+          },
+          "image": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Image"
+          },
+          "messages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "actions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
           },
           "ml1": {
             "additionalProperties": true,
             "type": "object",
             "title": "Ml1"
           },
-          "ml2": {
+          "ml3": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Ml2"
+            "title": "Ml3"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "simulated": {
+            "type": "boolean",
+            "title": "Simulated"
+          },
+          "memory_available": {
+            "type": "boolean",
+            "title": "Memory Available"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
           }
         },
         "type": "object",
         "required": [
-          "request_id",
+          "session_id",
+          "version",
+          "state",
           "experiment_id",
+          "experiment_version",
           "description",
+          "candidate_revision",
+          "candidate",
+          "board",
           "image",
-          "message"
+          "messages",
+          "actions",
+          "diagnostic",
+          "explanation",
+          "ml1",
+          "ml3",
+          "error",
+          "simulated",
+          "memory_available",
+          "job_id"
         ],
-        "title": "StubResponse"
+        "title": "SessionResponse"
+      },
+      "SourceSettings": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "source_settings",
+            "title": "Type"
+          },
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "sources": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_version",
+          "type",
+          "candidate_revision",
+          "sources"
+        ],
+        "title": "SourceSettings"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

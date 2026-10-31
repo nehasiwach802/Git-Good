@@ -2,7 +2,7 @@ from io import BytesIO
 import unittest
 from PIL import Image
 from fastapi.testclient import TestClient
-from backend.app import app, MAX_IMAGE_BYTES
+from backend.smoke import app, MAX_IMAGE_BYTES
 
 
 def png():

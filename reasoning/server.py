@@ -47,8 +47,6 @@ class Handler(BaseHTTPRequestHandler):
                    {"status": "ok"} if self.path == "/health" else {"error": "not_found"})
 
     def do_POST(self):
-        if self.path != "/v1/diagnose":
-            return self.reply(404, {"error": "not_found"})
         try:
             if self.headers.get("Transfer-Encoding"):
                 return self.reply(400, {"error":"unsupported_transfer_encoding"})
@@ -58,7 +56,10 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < size <= 262144:
                 return self.reply(413, {"error": "body_limit_256KiB"})
             self.connection.settimeout(10)
-            request = strict_json(self.rfile.read(size))
+            data = self.rfile.read(size)
+            if self.path != "/v1/diagnose":
+                return self.reply(404, {"error": "not_found"})
+            request = strict_json(data)
             self.reply(200, diagnose_input(request))
         except ValidationError as exc:
             self.reply(400, {"error": "invalid_request", "code": exc.code,

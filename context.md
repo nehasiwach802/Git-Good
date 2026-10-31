@@ -1,6 +1,6 @@
 # Git-Good project context
 
-Last updated: 2026-10-31 (Asia/Calcutta).
+Last updated: 2026-11-01 (Asia/Calcutta).
 Maintainer: Codex acting as ML person 2.
 Build memory: `gitgood-build`. Agent namespace: `codex:Git-Good`.
 
@@ -19,29 +19,46 @@ Deterministic components produce findings; the explanation layer communicates th
 
 ## Implemented baseline
 
-### Android connection-test branch
+### Integrated Android backend (2026-11-01)
 
-Current work: backend/android-connection-test, created from committed tanu.
-backend/app.py provides FastAPI GET /health, POST /api/sessions multipart upload,
-/docs and /openapi.json. Fields: experiment_id, description, image (JPEG/PNG).
-Success is HTTP 200 with connection_ok, mode=stub and receipt metadata. ML1 and
-ML2 explicitly return not_run; no ML3, real model, Meko or ngspice is invoked.
-No image/session is retained; request_id is a receipt, not a persistent session.
-Uploads are bounded to 5 MiB/20 megapixels and checked against actual image data.
+Current branch: backend/android-connection-test. Actual ML1 source imported from
+origin/Abhiram 07b38aa and ML3 from newly pushed origin/Manit c084375; previous
+missing-ML3 blocker is superseded. Kept ML2 size/revision/overflow hardening and
+ML1 external-terminal 0.2, rail review and annotation features together.
 
-Dockerfile.backend, requirements-backend.txt and .dockerignore prepare hosted
-deployment. No hosting account was selected and no public HTTPS URL exists yet.
-Explain hosting as the internet-accessible server Android calls; do not claim a
-local test establishes phone-to-deployed-server connectivity. Docker build was
-not verified because Docker is unavailable. See docs/ANDROID_CONNECTION_TEST.md,
-schemas/backend-openapi.json and examples/backend-upload-response.json.
+backend/app.py now provides authenticated API 1.0: experiment/capability lookup,
+multipart session creation (202), snapshots, typed revision-checked/idempotent
+events, image retrieval and deletion. SQLite persists images/sessions/jobs/events;
+one background worker connects real labvision.upload.extract_upload,
+reasoning.api.diagnose_input and ML3Service. Student review precedes reasoning;
+correction invalidates review. Provider failure yields manual unknowns, not fake
+connections. Structured chat supports review, source settings, readings, checks
+and completion; free text does not autonomously edit circuits.
 
-Verification for this branch: 108 tests passed with no skips in the isolated
-.venv-backend environment (five new backend tests plus 103 existing tests).
-Uvicorn real-HTTP upload smoke test also passed; its temporary process was stopped.
-CI installs backend/test extras. Run with .venv-backend/Scripts/python.exe, or
-install .[backend,test] in another environment. No model keys/database required
-for this temporary connection example; authentication/persistence remain future work.
+Firebase Admin verifies Android ID tokens; missing configuration fails closed.
+Owner and lab checks protect records. ML3 HTTP service is mounted at /api/v1/ml3
+with authoritative server callbacks, personal-memory isolation, outcome ledger,
+instructor equipment review and optional supplementary Qwen wording. No product
+datapack calls were made by the coding agent. Missing memory yields an explicit
+unavailable state; uncertain outcome writes are retained for reconciliation.
+
+User preference: probabilities are preferred in ML3. Supplied ML2 probabilities
+are preserved and displayed. Current ML2 only supplies ordinal support: honest
+integration returns cause_probabilities=null and probability_status=not_calibrated.
+No arbitrary ordinal-to-percentage mapping was introduced. Probability calibration
+still requires an agreed method and labelled validation data.
+
+Contract: docs/BACKEND_API.md, schemas/backend-openapi.json and separate mounted
+schemas/backend-ml3-openapi.json. Deployment: docs/BACKEND_DEPLOYMENT.md and
+Dockerfile.backend now copy all modules and install ngspice. Requires one instance,
+one uvicorn worker and a persistent DATA_DIR volume. Bundled two reference records
+are synthetic examples, workflow_approved=false; real approved experiment catalog
+and source/equipment bindings remain operator/instructor configuration.
+
+Legacy /api/sessions remains an explicit deprecated smoke endpoint, separate from
+actual /api/v1/sessions. Existing public Render URL git-good-1.onrender.com was
+previously verified for that smoke version only; these local changes are not
+committed/pushed/deployed by this task. Docker itself is unavailable locally.
 
 - Python 3.11+ package with no third-party runtime Python dependencies.
 - Validated SI-valued R/C/V/ideal-OPAMP circuits, wire alias normalization and
@@ -118,25 +135,22 @@ subject to team agreement.
 
 ## Latest verification
 
-Latest verification during generalized-core implementation on 2026-10-31:
+Latest verification: integrated backend implementation, 2026-11-01.
 
-- `python -m reasoning examples/rc.json --validate-only`: passed.
-- `python tools/run_checks.py`: 103 tests passed, zero failed and zero skipped;
-  includes real ngspice RC/op-amp, digital gate checks, candidate conversion,
-  session boundaries, provider-failure mocks, CLI, HTTP and JSON Schema checks.
-- New coverage: partial observations, alternatives, explicit identity/port maps,
-  draft references, unknown values, capability gaps, catalog versions, model
-  version changes, extraction correction and compatibility with existing routes.
-- `python tools/demo_generalized.py`: RC 0.707106781 V, divider 0.5 V, isolated
-  7400 ideal truth table; uncertain/unknown RC requires confirmation without
-  confirmed wiring support. Outputs saved under outputs/generalized/.
-- Real solver testing exposed and fixed v(0) ground-vector handling. Degenerate
-  circuits are rejected; differential/zero readings are tested.
-- `python tools/demo.py`: all four synthetic scenarios produced expected checks;
-  RC prediction 0.707106781 V; 7400 truth table 0->1 and 1->0.
-- `git diff --check`: passed; Git reported a line-ending conversion warning.
-- CI workflow exists for Python 3.11/3.14 with ngspice on Ubuntu; remote execution
-  has not been verified remotely. Provider mocks do not establish photo accuracy.
+- `.venv-backend/Scripts/python.exe tools/run_checks.py`: 260 tests passed,
+  zero failures/skips. Includes imported ML1/ML3 suites, real ngspice RC/op-amp,
+  actual backend ML1 -> ML2 -> ML3 flow, analog source settings, background worker,
+  Firebase verification mocks, ownership/lab boundaries, streaming limits,
+  idempotency/stale revisions, recovery, mounted ML3 and probability preservation.
+- `python tools/demo_backend.py`: passed; synthetic HTTP transcript saved to
+  outputs/backend/synthetic-transcript.json. Sequence: extracting -> review ->
+  diagnosis/measurements -> evaluated -> completed. No product memory configured;
+  final memory outcome truthfully requires reconciliation, not claimed stored.
+- Package wheel build passed; `pip check` reports no broken requirements.
+- `git diff --check`: passed (line-ending warnings only).
+- Real-photo accuracy, live Firebase/Gemini/Qwen/Meko, Docker image build, phone
+  integration, remote CI and deployment of these changes were not verified.
+- Existing ngspice47 local binary is ignored; Dockerfile installs ngspice separately.
 
 ## Blockers and next steps
 
@@ -149,16 +163,15 @@ Latest verification during generalized-core implementation on 2026-10-31:
    produced a complete netlist in ML1's first-run report.
 4. Finalize instructor-approved probes/checks, measurement conventions/tolerances,
    equipment metadata and ML3 evidence semantics.
-5. Integrate with Android/shared backend and define deployment, authentication,
-   session storage and retention.
+5. Configure deployment disk, Firebase/provider credentials, approved experiments and
+   personal-memory mappings; test Android against deployed API 1.0. Define retention.
 
 Current limits: ideal op-amp excludes rails/clipping; no DC/transient/phase modes,
 calibrated probabilities or calculated information gain. Ambiguous wiring cannot
 always be localized. Digital mode is isolated 7400 NAND-as-NOT only, without TTL
 voltage/timing/loading or device-health simulation. Vision extraction code is
-present but no paid/live extraction ran for integration. Product memory integration,
-Android orchestration, authentication and persistent backend storage remain outside
-this implementation. Software tests cannot prove every possible physical fault.
+present but no paid/live extraction ran for integration. Live provider acceptance and Android phone-side integration remain unverified;
+backend orchestration, authentication and persistent storage are now implemented. Software tests cannot prove every possible physical fault.
 
 ## Context maintenance and Meko
 
@@ -179,3 +192,24 @@ Synchronization is performed by the coding agent during tasks, not by a running
 background service. If Meko fails, record pending synchronization here and retry
 on the next task. Never access product datapacks or store secrets, personal data
 or raw student sessions in this context or the build datapack.
+
+## Deployment repository preparation (2026-11-01)
+
+Owner: ML2/backend Codex, following the user's request to prepare the repo.
+Added Render Blueprint render.yaml targeting git-good-1/backend branch, explicit
+Dockerfile, one paid starter instance, 1 GB persistent disk, shutdown grace and
+manual deploy trigger. It does not provision/purchase resources automatically.
+Added .env.example, pinned verified direct runtime requirements, Docker entrypoint
+that initializes volume ownership then drops to appuser, container health check,
+LF shell attributes and container build/volume/HTTP smoke workflow in CI.
+Added backend.preflight CLI and expanded /ready checks for credential presence,
+solver, storage, catalog, worker and enabled providers. --production additionally
+requires approved real experiments. Checks never call model/product services or
+print secrets. Four deployment tests added. CI Python tests use runtime pins.
+
+Verification: 260 tests passed, zero skips/failures; pip check passed; Render YAML
+parsed locally. Preflight correctly reports current missing Firebase/provider
+configuration and zero approved real experiments. Docker is unavailable here;
+container build/boot is configured in CI but not claimed executed. Host credentials,
+approved experiment configuration and commit/push/deploy remain external steps.
+See docs/BACKEND_DEPLOYMENT.md for the concrete procedure.

@@ -1,9 +1,12 @@
 # Git-Good — AI Lab Mentor reasoning core
 
-Android connection-test backend: see [upload contract and deployment](docs/ANDROID_CONNECTION_TEST.md).
-It provides FastAPI POST /api/sessions (multipart experiment_id, description,
-image) with explicit ML1/ML2 stub responses. Dockerfile.backend supports hosted
-deployment. This smoke test stores no images or sessions and runs no real models.
+Integrated backend: see [Android API contract](docs/BACKEND_API.md) and
+[deployment configuration](docs/BACKEND_DEPLOYMENT.md). FastAPI connects the
+actual ML1 extraction/review, ML2 diagnostics and ML3 explanation/memory adapters.
+Firebase authentication, durable sessions/jobs and explicit review events are
+implemented. Bundled experiments are synthetic and require instructor configuration.
+The deprecated `/api/sessions` remains a diagnosis-free connectivity smoke test;
+Android should use `/api/v1/sessions` for the integrated flow.
 
 ```powershell
 python -m pip install -e ".[backend,test]"

@@ -7,3 +7,14 @@ outputs
 **/__pycache__
 *.egg-info
 ckt breadboard
+data
+*.sqlite3*
+memory-scopes.json
+firebase-service-account.json
+.checks-latest.log
+.checks-*.log
+build
+dist
+.agents
+.codex
+.aws
