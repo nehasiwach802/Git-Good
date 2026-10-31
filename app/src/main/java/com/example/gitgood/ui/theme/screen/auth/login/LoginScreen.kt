@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,7 +64,8 @@ fun LoginScreenLayout(
     onForgotPasswordClick: () -> Unit,
     onSignUpClick: () -> Unit,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onGoogleClick: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -100,7 +102,7 @@ fun LoginScreenLayout(
                 )
 
                 Text(
-                    text = "Good to see you. Log in to Circuitly.",
+                    text = "Good to see you. Log in to Git Good.",
                     fontSize = 15.sp,
                     color = SecondaryTextColor,
                     lineHeight = 22.sp
@@ -183,6 +185,25 @@ fun LoginScreenLayout(
                     }
                 }
 
+                uiState.errorMessage?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
+                uiState.message?.let { Text(it, color = PrimaryGreen) }
+                OutlinedButton(
+                    onClick = onGoogleClick,
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Image(
+                        painter = androidx.compose.ui.res.painterResource(com.example.gitgood.R.drawable.google_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    Text("Continue with Google", color = PrimaryTextColor)
+                }
+
                 Button(
                     onClick = onLoginClick,
                     enabled = !uiState.isLoading,
@@ -234,7 +255,7 @@ fun LoginScreenLayout(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "New to Circuitly? ",
+                text = "New to Git Good? ",
                 fontSize = 13.sp,
                 color = SecondaryTextColor
             )
