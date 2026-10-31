@@ -1,4 +1,4 @@
-package com.example.gitgood.ui.theme.screen
+package com.example.gitgood.ui.theme.screen.auth.loading
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -30,9 +30,9 @@ import com.example.gitgood.ui.theme.SecondaryTextColor
 
 
 @Composable
-fun CircuitlyWelcomeScreen(
-    onGetStarted: () -> Unit = {},
-    onLogin: () -> Unit = {}
+fun CircuitlyWelcomeScreenLayout(
+    onGetStartedClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -138,7 +138,7 @@ fun CircuitlyWelcomeScreen(
         ) {
 
             Button(
-                onClick = onGetStarted,
+                onClick = onGetStartedClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -171,7 +171,7 @@ fun CircuitlyWelcomeScreen(
             }
 
             OutlinedButton(
-                onClick = onLogin,
+                onClick = onLoginClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -202,5 +202,5 @@ fun CircuitlyWelcomeScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun CircuitlyWelcomeScreenPreview() {
-    CircuitlyWelcomeScreen()
+    CircuitlyWelcomeScreenLayout()
 }
