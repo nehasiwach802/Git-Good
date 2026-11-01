@@ -1,5 +1,25 @@
 # Project Context: AI Lab Mentor (HackCBS 9.0)
 
+## Automatic central-grid prototype (2026-11-01)
+
+- User chose automatic grid alignment plus manual wire-end taps. Added
+  labvision/autocalibration.py: image-bound detect_grid, provisional touch snapping,
+  and explicit label_mapping supporting independent row directions per strip.
+- Opt-in process_video(auto_grid=True) tries every sampled frame, prefers the
+  sharpest supported alignment, and returns additive grid_proposal metadata.
+  Existing default and explicit frame selection remain intact. No circuit review
+  or manual-calibration validation is automatically granted.
+- Real 63-row video smoke: F1 aligned, F2-F6 rejected; selected candidate and grid
+  image hashes match. Overlay outputs/auto-grid-preview-v1/overlay.png inspected.
+  F1 geometric coverage 94.3%, held-out p90 residual 0.089 pitch, NOT measured
+  physical-hole accuracy. Portrait/near-overhead/full-board scope; rails excluded.
+- 106 tests pass, compilation passes. docs/AUTO_GRID_HANDOFF.md specifies ML1
+  contract and backend/Android ownership of orientation approval and touch UI.
+  Local implementation only; no backend/Android deployment or new training.
+- Android implementation.md supplied by user describes active git-good-3 backend,
+  MP4-only transport, selected-frame review and text hole corrections. Calibration
+  UI/API support is not established there; no live deployment verification here.
+
 ## ML1 callable video handoff (2026-11-01)
 
 - User selected backend video processing, then clarified ML2 owns backend.
@@ -411,3 +431,6 @@ When *different* students running *different* experiments show the same anomaly 
 ## 7. Alternative idea (decision pending)
 
 **Laptop repair-quote clarity:** owners can't tell what evidence supports a quote or what they're authorising. Problem relevancy was rated roughly 8/10 against about 7/10 for the generalised lab problem, but validation is weaker (only secondary evidence) and the ML role is shakier. Choose based on which one our evidence supports better; if both pass, repair has more impact potential and lab has the cleaner build and demo.
+
+### Wire-hole exercise (2026-11-01)
+User reports app/backend integrated and requests a simple wire-only experiment identifying connected holes. Added draft examples/wire-hole-practice.experiment.json and docs/WIRE_HOLE_PRACTICE.md: three unpowered jumpers E5-F5, E12-F12, E20-F20; changed endpoint F12 to F13 for second capture. Reference is isolated from vision. Existing detector proposes regions; exact holes require frame calibration and explicit pairing/review. Six reference holes validated against board-30. No deployed catalog/backend/app changes; ML2/Android own registering/displaying this optional exercise. Draft only, not approved catalog or observed labels.

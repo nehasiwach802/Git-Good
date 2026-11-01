@@ -1,0 +1,34 @@
+{
+  "experiment_id": "wire-hole-practice-v1",
+  "title": "Identify jumper-wire connection holes",
+  "status": "draft_exercise_not_backend_catalog_payload",
+  "workflow_approved": false,
+  "task": "identify_connected_holes",
+  "board_profile_file": "board-30.json",
+  "board_scope": "Central A-J terminal strips, rows 1-30; match the actual board orientation before use. No power rails.",
+  "reported_parts": [],
+  "power_required": false,
+  "readings_required": [],
+  "reference_only": {
+    "wires": [
+      {"id": "W1", "a": "E5", "b": "F5"},
+      {"id": "W2", "a": "E12", "b": "F12"},
+      {"id": "W3", "a": "E20", "b": "F20"}
+    ],
+    "do_not_supply_to_vision": true,
+    "not_observed_ground_truth": true
+  },
+  "review_requirements": [
+    "Calibrate the selected frame with four known hole centers and two independent check holes.",
+    "Review exact insertion holes; proposal-box centers may miss the actual contact.",
+    "Explicitly pair the endpoints belonging to each physical wire.",
+    "Keep hidden or ambiguous endpoints unresolved.",
+    "Changing selected frame invalidates calibration and connection review."
+  ],
+  "evaluation": {
+    "endpoint_order_matters": false,
+    "wire_ids_are_arbitrary": true,
+    "exact_holes_and_electrical_equivalence_are_separate": true,
+    "variant": "Move only the F12 endpoint to F13 and capture again; compare against the original reference only after extraction."
+  }
+}
