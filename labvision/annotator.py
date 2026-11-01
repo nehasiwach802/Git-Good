@@ -7,6 +7,7 @@ from .annotation import (add_component, add_port, add_wire, annotate, candidate_
                          invalidate, new_session, remove_item, set_calibration, verify_session)
 from .annotation import training_record, add_outer_hole, set_external_terminal, set_rail_groups
 from .assistance import accept_object_draft
+from .detector_review import import_predictions, assign_proposal
 from .core import CandidateError, compile_netlist, confirm, endpoints, require, endpoint_label
 from .geometry import board_fingerprint, calibration_quality, hole_positions, project
 
@@ -64,6 +65,8 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
             self.listbox.pack(fill="both", expand=True, pady=6)
             self.listbox.bind("<<ListboxSelect>>", lambda _: self.show_selected())
             ttk.Button(pane, text="Accept object's draft", command=self.guard(self.accept_draft)).pack(fill="x")
+            ttk.Button(pane, text="Load detector predictions", command=self.guard(self.load_detector)).pack(fill="x")
+            ttk.Button(pane, text="Use proposal for selected endpoint", command=self.guard(self.use_detector)).pack(fill="x")
             ttk.Button(pane, text="Click selected endpoint", command=lambda: self.set_mode("annotate")).pack(fill="x")
             ttk.Button(pane, text="Label as external terminal", command=self.guard(self.external)).pack(fill="x")
             ttk.Button(pane, text="Mark selected endpoint hidden", command=self.guard(self.hidden)).pack(fill="x")
@@ -167,6 +170,28 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
                 color = "#ffdf61" if name == selected else ("#ffab40" if p.get("source") == "vision" else "#ff6a97")
                 self.canvas.create_oval(x-4, y-4, x+4, y+4, outline=color, width=2)
                 self.canvas.create_text(x+6, y-6, text=name, fill=color, anchor="sw")
+
+            for proposal in self.session.get('detector_proposals', {}).get('proposals', []):
+                box = [v*self.scale for v in proposal['box']]
+                self.canvas.create_rectangle(*box, outline='#00ffff', width=2)
+                self.canvas.create_text(box[0], box[1], text=proposal['id'], fill='#00ffff', anchor='sw')
+
+        def load_detector(self):
+            filename = filedialog.askopenfilename(filetypes=[('Prediction JSON', '*.json')])
+            if not filename:
+                return
+            count = import_predictions(self.session, json.loads(Path(filename).read_text(encoding='utf-8')))
+            self.draw()
+            self.status.set(f'{count} proposals loaded. Add a wire, select its endpoint, then choose a proposal. Pairing is your review decision.')
+
+        def use_detector(self):
+            target = self.selected()
+            identifier = simpledialog.askstring('Detector proposal', f'Proposal ID for {target} (for example P1):', parent=self.root)
+            if not identifier:
+                return
+            result = assign_proposal(self.session, target, identifier.strip())
+            self.refresh(target)
+            self.status.set(f"{target}: {result['hole'] or 'unresolved'}. Inspect insertion point; click to correct. No pairing confirmed.")
 
         def show_selected(self):
             self.draw()
@@ -276,10 +301,10 @@ def launch(image_path, board, assembly_id, candidate=None, session_path=None):
             return f"{prefix}{i}"
 
         def component(self):
-            part = simpledialog.askstring("Component", "Part: 7400, resistor, capacitor, led", initialvalue="7400", parent=self.root)
+            part = simpledialog.askstring("Component", "Part: 7400, resistor, capacitor, led, diode, opamp\nOpamp uses functional terminals; verify actual package pinout.", initialvalue="7400", parent=self.root)
             if not part:
                 return
-            prefix = {"7400": "U", "resistor": "R", "capacitor": "C", "led": "D"}.get(part, "U")
+            prefix = {"7400": "U", "resistor": "R", "capacitor": "C", "led": "D", "diode": "D", "opamp": "U"}.get(part, "U")
             value = None
             if part in ("resistor", "capacitor"):
                 value = simpledialog.askfloat("Component value", "SI value (ohms or farads); Cancel if unknown", parent=self.root)

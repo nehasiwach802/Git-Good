@@ -14,7 +14,7 @@ from .vision import extract
 
 
 def extract_upload(image_bytes, board, *, known_parts=None, try_vision=True,
-                   timeout=20, extractor=None):
+                   timeout=20, extractor=None, detector=None):
     """Return unreviewed ML1 data for backend.app's existing ml1 response field.
 
     The backend owns experiment lookup, HTTP, sessions, identity and ML2/ML3.
@@ -37,9 +37,18 @@ def extract_upload(image_bytes, board, *, known_parts=None, try_vision=True,
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError):
         raise CandidateError("invalid uploaded image") from None
     mode, candidate, error_code = "manual", None, None
+    detection = {'status': 'disabled'}
     with tempfile.TemporaryDirectory(prefix="labvision-upload-") as directory:
         path = Path(directory)/("capture.jpg" if format_name == "JPEG" else "capture.png")
         path.write_bytes(image_bytes)
+        try:
+            if detector is None:
+                from .detection import configured_detector
+                detector = configured_detector()
+            if detector is not None:
+                detection = detector(path, size, hashlib.sha256(image_bytes).hexdigest())
+        except (CandidateError, ImportError, RuntimeError, OSError, ValueError):
+            detection = {'status': 'unavailable', 'error_code': 'endpoint_detector_unavailable'}
         if try_vision:
             try:
                 candidate = (extractor or extract)(path, board, timeout=timeout, known_parts=known_parts)
@@ -52,7 +61,7 @@ def extract_upload(image_bytes, board, *, known_parts=None, try_vision=True,
         if candidate is None:
             counts = {}
             for part in known_parts:
-                prefix = {"7400": "U", "led": "D", "resistor": "R", "capacitor": "C"}[part]
+                prefix = {"7400": "U", "opamp": "U", "led": "D", "diode": "D", "resistor": "R", "capacitor": "C"}[part]
                 counts[prefix] = counts.get(prefix, 0)+1
                 add_component(session, part, prefix+str(counts[prefix]))
         candidate = session["candidate"]
@@ -68,6 +77,7 @@ def extract_upload(image_bytes, board, *, known_parts=None, try_vision=True,
             wire["pairing_reviewed"] = False
     points = list(endpoints(candidate))
     return {"mode": mode, "status": "needs_confirmation" if mode == "gemini" else "manual_entry_required",
+            "endpoint_detection": detection,
             "candidate": candidate, "board": board, "netlist": None,
             "image": {"sha256": session["image_sha256"], "width": size[0], "height": size[1],
                       "content_type": "image/jpeg" if format_name == "JPEG" else "image/png",

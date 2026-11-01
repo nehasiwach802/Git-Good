@@ -13,14 +13,16 @@ def reasoning_input(candidate, board):
     """Return an input spec accepted by ML2's existing generalized contract.
 
     v0.1 uses ML2's existing ml1_v0.1 adapter (including partial observations).
-    Reviewed v0.2 uses internal_v1 so external terminals aren't lost by that
-    older hole-only adapter. Partial v0.2 is explicitly blocked until review.
+    Reviewed v0.2 and candidates with opamp/diode use internal_v1 so terminals
+    aren't lost by the older adapter. These paths require complete review.
     """
     validate(candidate, board)
-    if candidate["schema_version"] == "0.1":
+    extended_parts = any(c['part'] in ('diode', 'opamp') for c in candidate['components'])
+    if candidate["schema_version"] == "0.1" and not extended_parts:
         return {"adapter": "ml1_v0.1", "payload": {"candidate": deepcopy(candidate), "board": deepcopy(board)}}
     netlist = compile_netlist(candidate, board)
-    aliases = {"7400": "7400", "resistor": "R", "capacitor": "C", "led": "LED"}
+    aliases = {"7400": "7400", "resistor": "R", "capacitor": "C", "led": "LED",
+               "diode": "DIODE", "opamp": "OPAMP"}
 
     def point(target, node):
         source = netlist["provenance"][target]
@@ -36,7 +38,7 @@ def reasoning_input(candidate, board):
         components.append({"id": component["id"], "model": aliases[component["part"]],
                            "identity_confirmed": original["identity_confirmed"],
                            "properties": {"value": original["value_si"]} if passive else {},
-                           "properties_confirmed": original.get("value_confirmed", True),
+                           "properties_confirmed": False if component['part'] in ('opamp', 'diode') else original.get("value_confirmed", True),
                            "pins": {pin: point(component["id"]+"."+pin, node)
                                     for pin, node in component["pins"].items()}})
     observation = {"id": candidate["candidate_id"], "revision": candidate["revision"],
@@ -45,10 +47,10 @@ def reasoning_input(candidate, board):
                    "components": components,
                    "ports": {p["id"]: point(p["id"], p["node"]) for p in netlist["ports"]},
                    "pending_evidence": [],
-                   "source": {"adapter": "ml1_reviewed_v0.2", "board_id": board["id"],
+                   "source": {"adapter": "ml1_reviewed_extended" if extended_parts else "ml1_reviewed_v0.2", "board_id": board["id"],
                               "board_topology_id": board_fingerprint(board),
                               "image_sha256": candidate.get("image_sha256"),
-                              "physical_schema_version": "0.2",
+                              "physical_schema_version": candidate['schema_version'],
                               "external_terminals": deepcopy(netlist.get("external_terminals", {})),
                               "endpoint_provenance": deepcopy(netlist["provenance"]),
                               "port_roles": {p["id"]: p["role"] for p in netlist["ports"]}}}

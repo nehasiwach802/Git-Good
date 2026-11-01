@@ -1,0 +1,5 @@
+-r requirements-video.txt
+# Optional experimental DINOv2 LoRA path; torch CUDA is installed separately.
+transformers>=5,<6
+safetensors>=0.4
+huggingface-hub>=1,<2

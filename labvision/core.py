@@ -16,6 +16,8 @@ PART_PINS = {
     "resistor": {"1", "2"},
     "capacitor": {"1", "2"},
     "led": {"anode", "cathode"},
+    "diode": {"anode", "cathode"},
+    "opamp": {"+", "-", "out", "vcc", "vee"},
 }
 NAND_GATES = [("1", "2", "3"), ("4", "5", "6"),
               ("9", "10", "8"), ("12", "13", "11")]

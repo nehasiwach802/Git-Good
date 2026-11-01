@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', required=True)
     parser.add_argument('--run-checks', action='store_true')
+    parser.add_argument('--weights', type=Path, help='Include explicit trusted local endpoint checkpoint')
     args = parser.parse_args()
     target = Path(args.out)
     require(not target.exists(), 'Use a new archive path to preserve earlier releases')
@@ -31,6 +32,7 @@ def main():
     files.extend(ROOT/name for name in ('LICENSE', 'AGENTS.md', 'context.md',
         'requirements-vision.txt', 'requirements-local-vision.txt', 'ML1_PLAN.md',
         'EXPERIMENT_RESOURCES.md', 'VISION_DATA_STRATEGY.md'))
+    files.extend(ROOT.glob('requirements-*.txt'))
     names = [p.relative_to(ROOT).as_posix() for p in files]
     require(not any(name.startswith(('backend/', 'reasoning/', 'integrations/', '.env')) for name in names),
             'Release contains files outside ML1 scope')
@@ -53,11 +55,16 @@ def main():
     manifest = {'scope': 'ML1 library, reviewed observations and tests only',
                 'source_commit': commit, 'working_tree_changes_included': dirty,
                 'existing_backend': 'https://git-good-1.onrender.com/',
-                'existing_upload_route': 'POST /api/sessions (multipart)',
+                'existing_upload_route': 'Use current teammate backend API contract; no routes supplied by this release',
                 'http_server_included': False, 'android_client_included': False,
                 'reference_or_reasoning_engine_included': False,
                 'sha256': {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                            for p in sorted(set(files))}}
+    if args.weights:
+        require(args.weights.is_file(), 'Weights file missing')
+        manifest['endpoint_checkpoint'] = {'file': 'models/endpoints.pt',
+            'sha256': hashlib.sha256(args.weights.read_bytes()).hexdigest(),
+            'target': 'wire_end_region', 'real_accuracy_established': False}
     target.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(set(files)):
@@ -65,6 +72,8 @@ def main():
         archive.writestr('ML1_RELEASE.md', '# ML1 handoff\n\nStart with docs/TEAM_INTEGRATION.md. '
             'Use the existing deployed backend and ML2 adapters. Automatic vision is experimental.\n')
         archive.writestr('release-manifest.json', json.dumps(manifest, indent=2)+'\n')
+        if args.weights:
+            archive.write(args.weights, 'models/endpoints.pt')
         if checks is not None:
             archive.writestr('verification.txt', checks)
     with zipfile.ZipFile(target) as archive:
