@@ -519,3 +519,24 @@ Integration ownership/branch decisions saved and promoted to gitgood-build.
 Next push reviewed backend merges, then separately consolidate main/Android and
 perform configured deployment/device verification. Local verification summary
 synchronized to build memory; no product datapacks accessed.
+
+## Main and neha consolidation (2026-11-01)
+
+User requested all integrated work on main and neha. Refreshed origin/neha3b956d6
+with latest Android parsing/grid fixes. Main92ac6ad merges backend0ae9cc9;
+main6123246 joins unrelated Android history without rewriting either branch.
+README conflict preserves Circuitly branding/current setup; .gitignore combines
+backend and Android rules. App source remains identical to fetched Neha branch;
+backend/ML runtime remains identical to verified backend0ae9cc9. README now covers
+root Android Gradle project; .dockerignore excludes Android/cache artifacts.
+
+No API changes, stash, push, deployment or credential/product-memory access.
+Android test/build attempted: Windows wrapper mangles non-ASCII path; direct JAR
+with workspace cache downloads Gradle but native SystemInfo service fails before
+compilation on Java26. Installed Android SDK36.1 also does not satisfy requested37.
+Android APK/device checks remain unverified. Final Python release check:485 tests
+passed, zero skips/failures, exit0 (outputs/main-release-checks.txt). Backend runtime
+and Android sources verified unchanged from their respective integrated tips;
+all five source tips are ancestors. Local neha will fast-forward to this main
+commit, preserving all history. No remote branches advanced. Build-memory summary
+synchronization recorded for this follow-up.

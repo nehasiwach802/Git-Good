@@ -22,8 +22,8 @@ The combined release suite includes optional ML1 training tests. Install
 CI includes this extra. Production backend dependencies do not include PyTorch
 unless an operator separately enables a detector/training configuration.
 
-All merges are local until pushed. The individual source branches, `main`, and
-Android branch are not advanced by this backend consolidation. Deployment and
+All merges are local until pushed. The first consolidation advanced only the backend branch; the follow-up below
+combines main and Android. Deployment and
 real-device/provider checks remain separate from local integration verification.
 
 Verification: 485 tests passed with zero skips/failures using tools/run_checks.py
@@ -31,3 +31,24 @@ Verification: 485 tests passed with zero skips/failures using tools/run_checks.p
 ML3 probes preserve diagnostic facts and never fabricate probabilities. pip check
 passes; all three source tips are ancestors; no unresolved conflict entries or
 markers remain. Log: outputs/merged-release-checks.txt (local, ignored).
+
+
+## Main and Android follow-up
+
+User requested the combined code on both main and neha. Refreshed origin/neha
+at 3b956d6 (latest parsing/grid fixes). Main merges backend0ae9cc9 through92ac6ad
+and Neha through6123246. Android had an unrelated root history; joined it explicitly
+without rewriting either history. Kept Circuitly branding, current backend README
+setup, all Android sources and the existing Android backend address. Combined
+ignore rules and excluded Android/cache files from the backend Docker context.
+README now documents the app/ Gradle project at the repository root.
+
+Android build verification was attempted but did not reach compilation: Gradle9.5
+reports native SystemInfo service unavailable on this Windows/Java26 setup. The
+installed SDK only has API36.1 while this app requests37. Use Android Studio with
+compatible JDK/SDK tooling for APK and device verification. No claim of a verified
+Android binary or live provider integration. Existing HTTP contract is unchanged.
+
+Combined main verification:485 Python tests pass, zero failures/skips, exit0.
+Backend runtime and Android sources match their input branches. Local neha is
+fast-forwarded to the same combined main commit; remote refs remain unchanged.

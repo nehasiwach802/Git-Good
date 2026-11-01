@@ -18,3 +18,15 @@ dist
 .agents
 .codex
 .aws
+.gradle
+.idea
+.kotlin
+app
+gradle
+gradlew
+gradlew.bat
+*.gradle.kts
+gradle.properties
+local.properties
+output
+tmp

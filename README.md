@@ -45,7 +45,7 @@ FastAPI owns authentication, session state, durable background jobs, revision ch
 
 | Layer                    | Technologies and role                                                                                                                       |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Android integration      | Firebase ID tokens and a Retrofit/OkHttp reference client; the complete Android application is maintained separately                        |
+| Android integration      | Kotlin/Compose Android app in app/, Firebase ID tokens, HTTP session client and wire-review UI                        |
 | Backend                  | Python 3.11+, FastAPI, Uvicorn, Pydantic validation, multipart uploads                                                                      |
 | Video and vision — ML1 | OpenCV headless, NumPy, Pillow; optional Gemini REST extraction and Ultralytics/PyTorch endpoint detection with separately supplied weights |
 | Reasoning — ML2        | Python circuit/observation validation, topology comparison, evidence rules, ngspice AC simulation                                           |
@@ -164,7 +164,11 @@ The agreed **API 1.1** sequence is:
 
 Send `Authorization: Bearer <Firebase ID token>` on session operations and UUID `Idempotency-Key` headers for creation/upload. The route/field names `image` and state `awaiting_image` are retained for compatibility: **user uploads are MP4 only, not JPEG/PNG**. Upload limits are 50 MiB and 60 seconds; internal JPEGs are video frames. Old combined image-upload POSTs return 410.
 
-For an Android emulator, use `http://10.0.2.2:8000/` to reach the laptop. A physical device needs a reachable laptop address and Uvicorn bound to `0.0.0.0`; Android's development network configuration must permit local HTTP. Use HTTPS for deployed operation. This checkout supplies a [Retrofit reference](examples/android/VideoSessionApi.kt), not a runnable Android project.
+The Android application is now included in `app/`, with its Gradle project at the repository root. Open this root in Android Studio and install the SDK requested by `app/build.gradle.kts` (currently API 37). The app's backend address is configured in `BackendHttpClient.kt`; the merge preserves Neha's selected HTTPS host. Configure Firebase client setup for the app separately from backend Admin credentials.
+
+For an Android emulator using a local backend, use `http://10.0.2.2:8000/`. A physical device needs a reachable laptop address and Uvicorn bound to `0.0.0.0`; Android's development network configuration must permit local HTTP. Use HTTPS for deployed operation. The [Retrofit example](examples/android/VideoSessionApi.kt) remains a contract reference.
+
+Run Android unit tests and build a debug APK with `./gradlew :app:testDebugUnitTest :app:assembleDebug` (Windows: `gradlew.bat`). If the Windows wrapper cannot handle a non-ASCII checkout path, use `java -jar gradle/wrapper/gradle-wrapper.jar :app:testDebugUnitTest :app:assembleDebug` from the repository root with the configured JDK and Android SDK.
 
 Optional grid/wire events and read-only preview: [grid-review-1](docs/BACKEND_GRID_API.md).
 
