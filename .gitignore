@@ -17,3 +17,5 @@ data/
 memory-scopes.json
 firebase-service-account.json
 .checks-*.log
+venv/
+.test-deps/

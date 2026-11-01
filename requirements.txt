@@ -1,0 +1,4 @@
+# MCP v1 API used by meko_transport.py; do not silently upgrade across major versions.
+mcp>=1.28,<2
+httpx>=0.28,<1
+fastapi>=0.115,<1

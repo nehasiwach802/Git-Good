@@ -1,9 +1,5 @@
 > ML2/backend update: public grid-review-1 operations are now implemented.
 > This ML1 document predates them. Use [BACKEND_GRID_API.md](BACKEND_GRID_API.md)
-> for exact payloads; UI/overlay recommendations below still apply.
-
-> ML2/backend update: public grid-review-1 operations are now implemented.
-> This ML1 document predates them. Use [BACKEND_GRID_API.md](BACKEND_GRID_API.md)
 > for exact deployed-code payloads; UI/overlay recommendations below still apply.
 
 # Android handoff: automatic grid and touch-based wire review
