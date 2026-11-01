@@ -13,7 +13,8 @@ def file_hash(path):
     return digest.hexdigest()
 
 
-def extract_frames(path, output, count=6, samples=48):
+def extract_frames(path, output, count=6, samples=48, *, max_pixels=None,
+                   max_duration_s=None):
     """Decode bounded samples, choosing sharpness within temporal bins.
 
     Sharpness is a relative full-frame heuristic, not board visibility or accuracy.
@@ -27,6 +28,12 @@ def extract_frames(path, output, count=6, samples=48):
         total = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         if not capture.isOpened() or not np.isfinite(fps) or fps <= 0 or total < 1:
             raise ValueError(f'Unreadable video or invalid frame metadata: {path}')
+        if max_duration_s is not None and total/fps > max_duration_s:
+            raise ValueError('Video duration exceeds preprocessing limit')
+        if max_pixels is not None:
+            width, height = capture.get(cv2.CAP_PROP_FRAME_WIDTH), capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            if not np.isfinite([width,height]).all() or width <= 0 or height <= 0 or width*height > max_pixels:
+                raise ValueError('Video dimensions exceed preprocessing limit')
         indices = np.unique(np.linspace(0, total - 1, min(samples, total)).astype(int))
         selected = []
         for bucket in np.array_split(indices, min(count, len(indices))):
@@ -36,6 +43,8 @@ def extract_frames(path, output, count=6, samples=48):
                 ok, frame = capture.read()
                 if not ok:
                     continue
+                if max_pixels is not None and frame.shape[0]*frame.shape[1] > max_pixels:
+                    raise ValueError('Decoded frame exceeds preprocessing limit')
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 factor = min(1.0, 640 / max(gray.shape))
                 small = cv2.resize(gray, None, fx=factor, fy=factor)

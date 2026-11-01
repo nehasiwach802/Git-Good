@@ -1,5 +1,23 @@
 # Project Context: AI Lab Mentor (HackCBS 9.0)
 
+## ML1 callable video handoff (2026-11-01)
+
+- User selected backend video processing, then clarified ML2 owns backend.
+  Isolated outputs/backend-video-worktree created for read-only inspection;
+  no backend code modified. All implementation is in ML1 checkout.
+- Added labvision.video_upload.process_video(local_path, board, ...): bounded
+  frame selection, normalized JPEG bytes/metadata, optional cached detector per
+  frame and existing extract_upload result for the selected JPEG. Cloud extraction
+  runs only on selected frame when enabled. No fusion, inferred pairing or review.
+- Contract docs/VIDEO_PROCESSOR_HANDOFF.md: ml1-video-1 result includes ml1,
+  selected_frame_id, frames (bytes plus hashes/timestamps/dimensions/proposals),
+  video provenance. ML2 stores bytes separately and binds candidate to selected
+  JPEG hash; routes/jobs/storage/Android rendering remain teammate-owned.
+- Actual MP4 smoke with CPU YOLO returned six frames and selected F1 in
+  outputs/video-upload-callable-v1. 100 tests pass, compilation/diff checks pass.
+  Missing detector keeps frame processing; bad decode/limits raise CandidateError.
+  No wall-clock decoder guarantee; backend worker owns hard execution deadlines.
+
 ## Backend-compatible detector delivery (2026-11-01)
 
 - extract_upload now optionally runs cached trusted local YOLO weights via process
@@ -14,11 +32,13 @@
   tests and tools/check_backend_detector.py. Review UI importer accepts upload
   results as well as standalone predictions. Android box rendering still needs
   its owner; no backend/API replacement. Source and checkpoint release supported.
-- See docs/UPLOAD_DETECTOR_INTEGRATION.md. Uncommitted source changes remain local
-  until separately integrated; no live host configuration changed.
+- See docs/UPLOAD_DETECTOR_INTEGRATION.md. Implemented source pushed to
+  origin/Abhiram through 0467bc7; no live host configuration changed.
 - Verification: 95 tests pass, compilation and diff checks pass. Release archive
   outputs/releases/gitgood-ml1-detector-integration-v2.zip includes explicit
   original endpoint checkpoint and optional runtime requirements.
+- Release v2 SHA256: 9a638e12a545c86c0a75a5ea53ab39fd83f3bb6b0c199adec1d0ecec37cca076.
+  Raw source videos remain untracked; local training outputs are not in Git.
 
 ## Multi-view experiment (2026-11-01)
 

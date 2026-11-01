@@ -69,7 +69,9 @@ def main():
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(set(files)):
             archive.write(path, path.relative_to(ROOT).as_posix())
-        archive.writestr('ML1_RELEASE.md', '# ML1 handoff\n\nStart with docs/TEAM_INTEGRATION.md. '
+        archive.writestr('ML1_RELEASE.md', '# ML1 handoff\n\nStart with docs/VIDEO_PROCESSOR_HANDOFF.md '
+            'for video and docs/UPLOAD_DETECTOR_INTEGRATION.md for images. '
+            'docs/TEAM_INTEGRATION.md includes historical deployment notes. '
             'Use the existing deployed backend and ML2 adapters. Automatic vision is experimental.\n')
         archive.writestr('release-manifest.json', json.dumps(manifest, indent=2)+'\n')
         if args.weights:
