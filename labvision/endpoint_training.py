@@ -98,4 +98,3 @@ def audit_groups(records):
             if key in seen and seen[key] != split:
                 raise ValueError('Image or assembly leaks across splits')
             seen[key] = split
-

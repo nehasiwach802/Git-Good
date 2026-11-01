@@ -67,5 +67,3 @@ def extract_frames(path, output, count=6, samples=48):
                 'layout_review_required': True}
     finally:
         capture.release()
-
-

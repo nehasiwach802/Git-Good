@@ -17,7 +17,7 @@
 - See docs/UPLOAD_DETECTOR_INTEGRATION.md. Uncommitted source changes remain local
   until separately integrated; no live host configuration changed.
 - Verification: 95 tests pass, compilation and diff checks pass. Release archive
-  outputs/releases/gitgood-ml1-detector-integration-v1.zip includes explicit
+  outputs/releases/gitgood-ml1-detector-integration-v2.zip includes explicit
   original endpoint checkpoint and optional runtime requirements.
 
 ## Multi-view experiment (2026-11-01)
