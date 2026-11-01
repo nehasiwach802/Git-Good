@@ -27,13 +27,19 @@ val localExperiments = listOf(
     Experiment("ohms-law", "Verification of Ohm’s Law", "1", "Review the relationship between voltage, current, and resistance."),
     Experiment("rc-low-pass-filter", "RC Low-Pass Filter", "1", "Review a resistor-capacitor low-pass filter circuit."),
     Experiment("inverting-op-amp", "Inverting Op-Amp Amplifier", "1", "Review an operational amplifier configured as an inverting amplifier."),
-    Experiment("half-wave-rectifier", "Half-Wave Rectifier", "1", "Review a half-wave rectifier circuit.")
+    Experiment("half-wave-rectifier", "Half-Wave Rectifier", "1", "Review a half-wave rectifier circuit."),
+    Experiment("simple-wire", "Simple Wire", "1", "Review simple wire connections on a breadboard.")
 ).map { it.copy(availability = ExperimentAvailability.UNAVAILABLE) }
 
-/** Stable five-item product catalog, with explicit backend availability and provenance. */
+/** Stable six-item product catalog, with explicit backend availability and provenance. */
 fun resolveExperiments(server: List<BackendExperiment>): List<Experiment> = localExperiments.map { item ->
     val matches = server.filter {
-        it.experiment_id == item.id || it.name.trim().equals(item.name, ignoreCase = true)
+        it.experiment_id == item.id || it.name.trim().equals(item.name, ignoreCase = true) ||
+            (item.id == "simple-wire" && (
+                it.experiment_id == "wire-hole-practice-v1" ||
+                    it.name.trim().equals("Wire Connections", ignoreCase = true) ||
+                    it.name.trim().equals("Breadboard Wire Connections", ignoreCase = true)
+                ))
     }
     // These are explicit demo bindings, never represented as approved real experiments.
     val demoId = when (item.id) {

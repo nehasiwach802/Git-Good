@@ -172,11 +172,48 @@ class ConversationViewModel @Inject constructor(
     fun retry() = runOperation {
         val pending = saved.get<String>("pendingEvent")
         if (pending != null) {
-            val event = json.decodeFromString<BackendEvent>(pending)
-            val result = repository.event(session.value!!.session_id, event)
-            saved.remove<String>("pendingEvent")
-            if (event.type == "message") draft("")
-            applySnapshot(result)
+            var event = json.decodeFromString<BackendEvent>(pending)
+            while (true) {
+                val before = uiState.value.wireReview
+                val result = repository.event(session.value!!.session_id, event)
+                saved.remove<String>("pendingEvent")
+                if (event.type == "message") draft("")
+                applySnapshot(result)
+                if (event.type == "add_wire") {
+                    val review = uiState.value.wireReview
+                    val id = (event.payload["wire_id"] as? JsonPrimitive)?.contentOrNull
+                    if (review != null && before != null && review.baseline.any { it.id == id } &&
+                        before.identity.copy(candidateRevision = review.identity.candidateRevision) == review.identity) {
+                        val remaining = before.wires.filter { wire ->
+                            wire.id != id && before.baseline.none { it.id == wire.id }
+                        }
+                        if (remaining.isNotEmpty()) {
+                            check(remaining.none { draft -> review.baseline.any { it.id == draft.id } }) {
+                                "Wire IDs changed. Review the latest wiring before saving more pairs."
+                            }
+                            uiState.value = uiState.value.copy(wireReview = review.copy(wires = review.baseline + remaining))
+                            val next = remaining.first()
+                            fun coordinates(end: WireEndpoint) = buildJsonArray {
+                                val point = requireNotNull(end.point)
+                                add(point.x)
+                                add(point.y)
+                            }
+                            val payload = buildJsonObject {
+                                event.payload.forEach { (key, value) -> put(key, value) }
+                                put("candidate_revision", review.identity.candidateRevision)
+                                put("wire_id", next.id)
+                                put("a_xy", coordinates(next.a))
+                                put("b_xy", coordinates(next.b))
+                            }
+                            event = BackendEvent(uuid(), result.session_version, "add_wire", payload)
+                            saved["pendingEvent"] = json.encodeToString(event)
+                            continue
+                        }
+                        uiState.value = uiState.value.copy(wireReview = review.copy(notice = "$id saved."))
+                    }
+                }
+                break
+            }
         } else if (saved.get<String>("createRequest") != null) initializeSession()
         else session.value?.let { applySnapshot(repository.get(it.session_id)) }
     }
@@ -239,7 +276,7 @@ class ConversationViewModel @Inject constructor(
         }
         val parsedReview = parseWireReview(value, owner)
         val previousReview = uiState.value.wireReview
-        val nextReview = if (parsedReview?.identity == previousReview?.identity) previousReview else parsedReview?.copy(
+        val nextReview = if (parsedReview != null && parsedReview.identity == previousReview?.identity) previousReview.copy(gridApproved = parsedReview.gridApproved) else parsedReview?.copy(
             notice = if (previousReview?.dirty == true) "Frame, board or revision changed. Local wire edits were cleared for a fresh review." else null
         )
         val firstUser = value.messages.firstOrNull { it.role == "user" }?.id

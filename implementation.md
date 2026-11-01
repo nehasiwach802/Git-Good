@@ -1083,3 +1083,13 @@ and MainActivity.kt. Regression coverage: WireReviewTest.kt.
 
 Physical-device gesture checks with matching ML grid responses remain necessary;
 unit tests do not establish model accuracy.
+
+
+## Backend host and sixth experiment — November 1, 2026
+
+The active Android host is https://backend-circuitly.onrender.com. Public OpenAPI
+was reachable and retained the existing API 1.1 session/video endpoints. The catalog
+requires Firebase authentication; no signed-in device run was performed here.
+Simple Wire is the sixth product choice. It binds by its published ID/name or the
+Wire Connections catalog name, preserving the server ID, version, review contract
+and approval/demo status. Missing or unapproved workflows remain unavailable.

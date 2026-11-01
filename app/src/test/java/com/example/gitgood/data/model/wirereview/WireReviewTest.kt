@@ -128,6 +128,22 @@ class WireReviewTest {
         }), "student")!!.identity)
     }
 
+    @Test fun approvalFollowsServerPermissionAcrossWireRevisions() {
+        val approved = snapshot().copy(
+            actions = listOf(buildJsonObject {
+                put("type", "review_candidate")
+                put("event_types", buildJsonArray { add("add_wire") })
+            }),
+            ml1 = buildJsonObject {
+                snapshot().ml1.forEach { (key, value) -> put(key, value) }
+                put("media", buildJsonObject { put("grid_review", buildJsonObject { put("accepted", true) }) })
+            })
+        assertTrue(parseWireReview(approved, "student")!!.gridApproved)
+        assertTrue(parseWireReview(approved.copy(candidate_revision = 4), "student")!!.gridApproved)
+        assertFalse(parseWireReview(approved.copy(actions = emptyList()), "student")!!.gridApproved)
+        assertFalse(parseWireReview(snapshot(), "student")!!.gridApproved)
+    }
+
     @Test fun absentGridKeepsManualReviewAvailable() {
         val state = parseWireReview(snapshot().copy(ml1 = JsonObject(emptyMap())), "student")!!
         assertTrue(state.grid.holes.isEmpty())

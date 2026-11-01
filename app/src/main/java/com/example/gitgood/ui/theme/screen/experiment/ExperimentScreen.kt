@@ -86,7 +86,7 @@ fun ExperimentScreen(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Choose from five experiments. Available demos are labeled; other workflows will unlock when the backend supports them.",
+                text = "Choose from six experiments. Available demos are labeled; other workflows will unlock when the backend supports them.",
                 modifier = Modifier.padding(14.dp),
                 fontSize = 13.sp,
                 lineHeight = 19.sp,

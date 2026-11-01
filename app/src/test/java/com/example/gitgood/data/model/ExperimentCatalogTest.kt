@@ -5,10 +5,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ExperimentCatalogTest {
-    @Test fun allFiveRemainVisibleWithoutPublishedWorkflows() {
+    @Test fun allSixRemainVisibleWithoutPublishedWorkflows() {
         val catalog = resolveExperiments(emptyList())
-        assertEquals(listOf("not-gate-7400", "ohms-law", "rc-low-pass-filter", "inverting-op-amp", "half-wave-rectifier"), catalog.map { it.id })
+        assertEquals(listOf("not-gate-7400", "ohms-law", "rc-low-pass-filter", "inverting-op-amp", "half-wave-rectifier", "simple-wire"), catalog.map { it.id })
         assertTrue(catalog.none { it.canStart })
+    }
+    @Test fun simpleWireUsesPublishedIdentityAndApproval() {
+        val wire = resolveExperiments(listOf(BackendExperiment("wire-hole-practice-v1", "2", "Breadboard Wire Connections", workflow_approved = true)))
+            .single { it.id == "simple-wire" }
+        assertEquals("Simple Wire", wire.name)
+        assertEquals("wire-hole-practice-v1", wire.backendId)
+        assertEquals("2", wire.version)
+        assertTrue(wire.canStart)
+        assertFalse(resolveExperiments(emptyList()).last().canStart)
     }
     @Test fun twoKnownDemosRetainExactServerIdsAndVersions() {
         val catalog = resolveExperiments(listOf(

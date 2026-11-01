@@ -24,7 +24,7 @@ class FakeSessionRepositoryTest {
     @Test fun catalogAndSnapshotsAreExplicitlyDemo() = runTest {
         val repo = FakeSessionRepository(this)
         assertTrue(repo.demoNotice.contains("DEMO MODE"))
-        assertEquals(5, repo.getExperiments().data.experiments.size)
+        assertEquals(6, repo.getExperiments().data.experiments.size)
         assertTrue(repo.getExperiments().data.experiments.all { !it.capabilities.imageAnalysis && !it.capabilities.instructorHelp })
         val s = create(repo)
         assertEquals(SessionMode.STUB, s.mode)

@@ -3,6 +3,7 @@ package com.example.gitgood.viewModel
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import com.example.gitgood.data.backend.*
+import com.example.gitgood.data.model.wirereview.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
 import kotlinx.serialization.encodeToString
@@ -81,6 +82,33 @@ class ConversationViewModelTest {
         vm.retry(); runCurrent()
         assertEquals(api.events[0], api.events[1])
         assertEquals("", vm.uiState.value.draft)
+    }
+    @Test fun savingTwoPairsUsesAcknowledgedRevisionForSecondWire() = runTest(dispatcher) {
+        val initial = snapshot().copy(image = buildJsonObject {
+            put("sha256", "a".repeat(64)); put("width", 200); put("height", 100)
+        })
+        val vm = viewModel(saved(initial))
+        val identity = vm.uiState.value.wireReview!!.identity
+        repeat(2) { i ->
+            vm.reviewWire(identity, WireReviewAction.AddWire)
+            vm.reviewWire(identity, WireReviewAction.Tap(FramePoint(10.0 + i, 20.0)))
+            vm.reviewWire(identity, WireReviewAction.Tap(FramePoint(50.0 + i, 60.0)))
+        }
+        for (count in 1..2) {
+            api.responses.add(initial.copy(session_version = 7 + count, candidate_revision = 3 + count,
+                candidate = buildJsonObject {
+                    put("wires", buildJsonArray {
+                        for (n in 1..count) add(buildJsonObject { put("id", "W$n") })
+                    })
+                }))
+        }
+        vm.submit("add_wire", buildJsonObject { put("wire_id", "W1"); put("candidate_revision", 3) })
+        runCurrent()
+        assertEquals(listOf("W1", "W2"), api.events.map { it.payload.getValue("wire_id").jsonPrimitive.content })
+        assertEquals(listOf(7, 8), api.events.map { it.expected_session_version })
+        assertEquals(4, api.events.last().payload.getValue("candidate_revision").jsonPrimitive.int)
+        assertFalse(vm.uiState.value.wireReview!!.dirty)
+        vm.exit()
     }
     @Test fun staleConfirmationRefreshesAndRequiresNewExplicitEvent() = runTest(dispatcher) {
         val vm = viewModel(saved(snapshot()))
@@ -211,6 +239,7 @@ class ConversationViewModelTest {
         var eventGate: CompletableDeferred<BackendSession>? = null
         var frameCalls = 0
         val events = mutableListOf<BackendEvent>()
+        val responses = ArrayDeque<BackendSession>()
         override suspend fun experiments() = emptyList<BackendExperiment>()
         override suspend fun create(request: CreateSession, key: String): BackendSession {
             creates++; createKey = key
@@ -219,6 +248,7 @@ class ConversationViewModelTest {
         override suspend fun get(id: String) = latest
         override suspend fun event(id: String, event: BackendEvent): BackendSession {
             events.add(event)
+            responses.removeFirstOrNull()?.let { return it }
             eventFailure?.let { throw it }
             eventGate?.let { return it.await() }
             return latest.copy(session_version = event.expected_session_version + 1,

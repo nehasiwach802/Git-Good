@@ -109,5 +109,11 @@ fun parseWireReview(session: BackendSession, account: String?): WireReviewState?
         ReviewWire(item.text("id")?.take(80) ?: "W${index+1}", endpoint(item["a"]), endpoint(item["b"]))
     }.orEmpty().distinctBy { it.id }
     return WireReviewState(ReviewIdentity(account, session.session_id, hash, width, height,
-        (boardGeometry?.first ?: "unsupported") + ":" + boardStamp, revision, digest(rawGrid?.let(::canonical) ?: "none")), grid(), regions, wires)
+        (boardGeometry?.first ?: "unsupported") + ":" + boardStamp, revision, digest(rawGrid?.let(::canonical) ?: "none")), grid(), regions, wires,
+        gridApproved = session.actions.any { action ->
+            action.text("type") == "review_candidate" &&
+                (action["event_types"] as? JsonArray)?.any {
+                    (it as? JsonPrimitive)?.contentOrNull == "add_wire"
+                } == true
+        } && media?.get("grid_review") is JsonObject)
 }

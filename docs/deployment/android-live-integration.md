@@ -1,11 +1,11 @@
-# Android video integration — git-good-3
+# Android video integration — backend-circuitly
 
-The active Android backend is **https://git-good-3.onrender.com**. Its public OpenAPI schema still identifies API **1.1.0**, but the upload contract has changed to MP4-only. The checked schema is saved as `deployed-openapi-v1.1.json` in this directory. This guide supersedes the earlier photo-only and preview-only Home instructions.
+The active Android backend is **https://backend-circuitly.onrender.com**. Its public OpenAPI schema still identifies API **1.1.0**, but the upload contract has changed to MP4-only. The checked schema is saved as `deployed-openapi-v1.1.json` in this directory. This guide supersedes the earlier photo-only and preview-only Home instructions.
 
 ## What the app now does
 
 1. Sign in using Firebase email/password or Google. Login also links to the dedicated Forgot Password screen.
-2. Select an experiment. All five product choices remain visible; exact published workflows determine availability. Known NAND/RC synthetic workflows are explicitly labeled demos. Missing or unapproved real workflows cannot start sessions.
+2. Select an experiment. All six product choices, including Simple Wire, remain visible; exact published workflows determine availability. Known NAND/RC synthetic workflows are explicitly labeled demos. Missing or unapproved real workflows cannot start sessions.
 3. On Home, select **Upload video** or **Record video**. The camera result and library videos have local playback/removal; no photo input is offered.
 4. Enter a required description and press **Continue**.
 5. The app copies and validates the video privately before creating a session, creates the session with a stable idempotency key, then streams the video upload with its own stable key.

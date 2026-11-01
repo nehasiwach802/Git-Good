@@ -25,7 +25,7 @@ class ExperimentViewModelTest {
         vm.refresh(); runCurrent()
         assertTrue(vm.requiresSignIn.value)
         assertNull(vm.selectedId.value)
-        assertEquals(5, vm.experiments.value.size)
+        assertEquals(6, vm.experiments.value.size)
         assertTrue(vm.experiments.value.none { it.canStart })
         assertTrue(vm.error.value!!.contains("after refreshing"))
     }
@@ -37,7 +37,7 @@ class ExperimentViewModelTest {
         vm.refresh(); runCurrent()
         assertFalse(vm.requiresSignIn.value)
         assertNull(vm.error.value)
-        assertEquals(5, vm.experiments.value.size)
+        assertEquals(6, vm.experiments.value.size)
         assertTrue(vm.experiments.value.single { it.id == "rc-low-pass-filter" }.canStart)
     }
     @Test fun networkFailureDoesNotAskUserToSignOut() = runTest(dispatcher) {

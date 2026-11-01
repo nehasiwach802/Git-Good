@@ -16,7 +16,7 @@ interface IdTokenProvider {
 /** No automatic mutation retries. Callers retain idempotency/event IDs for explicit retry. */
 class BackendHttpClient(
     private val tokens: IdTokenProvider,
-    private val baseUrl: String = "https://git-good-3.onrender.com"
+    private val baseUrl: String = "https://backend-circuitly.onrender.com"
 ) {
     val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     suspend fun request(method: String, path: String, body: ByteArray? = null,

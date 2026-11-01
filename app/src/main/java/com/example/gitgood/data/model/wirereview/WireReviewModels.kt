@@ -29,7 +29,8 @@ data class WireReviewState(
     val alignmentLooksCorrect: Boolean = false,
     val leftTop: String = "",
     val rightTop: String = "",
-    val notice: String? = null
+    val notice: String? = null,
+    val gridApproved: Boolean = false
 ) {
     val dirty get() = wires != baseline || firstEnd != null
     // Raw ML1 reviewed/labels_confirmed flags never grant public server approval.

@@ -59,6 +59,7 @@ fun SessionActions(
                             }
                             wireReview?.let { draft ->
                                 WireReviewPanel(reviewFrame, draft, enabled,
+                                    ((session.ml1["media"] as? JsonObject)?.get("selected_frame_id") as? JsonPrimitive)?.contentOrNull, submit,
                                     { onWireAction(draft.identity, it) }, onRefreshReview, onNewVideo)
                             }
                             CandidateReview(session, enabled, contract, session.image == null || reviewFrame != null,
