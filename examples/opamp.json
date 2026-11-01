@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0",
+  "safety_profile": "instructor_approved_low_voltage",
+  "experiment": {
+    "id": "inverting_opamp",
+    "circuit": {
+      "components": [
+        {
+          "id": "V1",
+          "type": "V",
+          "ac": 1,
+          "pins": {
+            "+": "input",
+            "-": "0"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "R1",
+          "type": "R",
+          "value": 1000,
+          "pins": {
+            "1": "input",
+            "2": "sum"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "R2",
+          "type": "R",
+          "value": 2000,
+          "pins": {
+            "1": "sum",
+            "2": "output"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "U1",
+          "type": "OPAMP",
+          "gain": 100000,
+          "pins": {
+            "+": "0",
+            "-": "sum",
+            "out": "output",
+            "vcc": "vcc",
+            "vee": "vee"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "VP",
+          "type": "V",
+          "dc": 5,
+          "pins": {
+            "+": "vcc",
+            "-": "0"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "VN",
+          "type": "V",
+          "dc": -5,
+          "pins": {
+            "+": "vee",
+            "-": "0"
+          },
+          "confirmed": true
+        }
+      ]
+    },
+    "probes": [
+      {
+        "id": "output",
+        "positive": "output",
+        "negative": "0",
+        "frequency_hz": 159.154943,
+        "relative_tolerance": 0.05,
+        "absolute_tolerance_v": 0.01
+      }
+    ]
+  },
+  "student_circuit": {
+    "components": [
+      {
+        "id": "V1",
+        "type": "V",
+        "ac": 1,
+        "pins": {
+          "+": "input",
+          "-": "0"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "R1",
+        "type": "R",
+        "value": 1000,
+        "pins": {
+          "1": "input",
+          "2": "sum"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "R2",
+        "type": "R",
+        "value": 2000,
+        "pins": {
+          "1": "sum",
+          "2": "output"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "U1",
+        "type": "OPAMP",
+        "gain": 100000,
+        "pins": {
+          "+": "0",
+          "-": "sum",
+          "out": "output",
+          "vcc": "vcc",
+          "vee": "vee"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "VP",
+        "type": "V",
+        "dc": 5,
+        "pins": {
+          "+": "vcc",
+          "-": "0"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "VN",
+        "type": "V",
+        "dc": -5,
+        "pins": {
+          "+": "vee",
+          "-": "0"
+        },
+        "confirmed": true
+      }
+    ]
+  },
+  "measurements": [
+    {
+      "probe_id": "output",
+      "value": 1.99994,
+      "unit": "V",
+      "convention": "ac_magnitude"
+    }
+  ],
+  "student_expectations": {}
+}

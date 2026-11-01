@@ -1,0 +1,24 @@
+{
+  "experiment_id": "7400-not-v1",
+  "title": "Implement NOT using one NAND gate in a 7400",
+  "review_status": "draft_reference_requires_instructor_approval",
+  "domain": "combinational_digital",
+  "component_library": ["7400"],
+  "package": "14-pin DIP, top-view pin numbering",
+  "gate": 1,
+  "pin_roles": {"1": "A", "2": "A", "3": "Y", "7": "GND", "14": "VCC"},
+  "truth_table": [{"A": 0, "Y": 1}, {"A": 1, "Y": 0}],
+  "expected_relation": "Y = NOT(A AND A) = NOT(A)",
+  "supply_reference_v": 5,
+  "supply_recommended_range_v": [4.75, 5.25],
+  "logic_input_thresholds_v": {"low_max": 0.8, "high_min": 2.0},
+  "source_url": "https://www.ti.com/lit/ds/symlink/sn7400.pdf",
+  "source_sections": ["5 Pin Configuration and Functions", "6.3 Recommended Operating Conditions"],
+  "limitations": [
+    "Supply configuration is a reference requirement, not a measurement from the photo.",
+    "Do not classify output voltage from input thresholds; output limits depend on loading and part family.",
+    "LED polarity/loading is not modeled by the isolated-gate checker.",
+    "Unused inputs must have explicit defined states; unused outputs stay disconnected.",
+    "The actual photograph's pin-to-hole assignments and LED connections remain unlabelled."
+  ]
+}

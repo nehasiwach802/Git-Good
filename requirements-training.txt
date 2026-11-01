@@ -1,0 +1,3 @@
+-r requirements-video.txt
+# Install matching torch/torchvision CUDA wheels separately in an isolated venv.
+ultralytics>=8.3,<9

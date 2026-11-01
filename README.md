@@ -26,7 +26,7 @@ flowchart TD
 
 1. **Capture:** the student selects an experiment and submits a problem description and MP4 video.
 2. **Extract and review ML1:** the backend samples up to six video frames and selects one for extraction and review. Optional endpoint detection and Gemini extraction propose observations. Opt-in automatic grid alignment supplies provisional hole centers; printed labels still require review. Unclear connections remain unknown; the student corrects and explicitly confirms the circuit.
-3. **Diagnose  ML2:** the reasoning core compares the reviewed observation against a server-owned, versioned reference circuit. It checks connectivity and supported component properties, uses ngspice for supported analog predictions, and compares student measurements with expected behaviour.
+3. **Diagnose ML2:** the reasoning core compares the reviewed observation against a server-owned, versioned reference circuit. It checks connectivity and supported component properties, uses ngspice for supported analog predictions, and compares student measurements with expected behaviour.
 4. **Explain and iterate ML3:** the mentor layer explains ML2 evidence and requests a useful next check. Optional Qwen generation improves wording; it does not determine circuit facts. New measurements and check results drive the next diagnostic step.
 5. **Remember:** when configured, authorized personal history is stored/retrieved through isolated Meko datapacks. SQLite remains the authoritative session and job store. Instructor equipment-review and knowledge-lifecycle services are separate from student observations.
 
@@ -43,17 +43,17 @@ FastAPI owns authentication, session state, durable background jobs, revision ch
 
 ## Tech stack
 
-| Layer | Technologies and role |
-|---|---|
-| Android integration | Firebase ID tokens and a Retrofit/OkHttp reference client; the complete Android application is maintained separately |
-| Backend | Python 3.11+, FastAPI, Uvicorn, Pydantic validation, multipart uploads |
-| Video and vision ML1 | OpenCV headless, NumPy, Pillow; optional Gemini REST extraction and Ultralytics/PyTorch endpoint detection with separately supplied weights |
-| Reasoning ML2 | Python circuit/observation validation, topology comparison, evidence rules, ngspice AC simulation |
-| Mentor ML3 | Grounded explanations, optional Qwen-compatible chat API, outcome and equipment-review services |
-| Authentication | Firebase Admin SDK; server-side ID-token verification with revocation checking |
-| Storage and memory | SQLite plus private video/frame storage; optional Meko MCP transport for isolated personal memory |
-| Packaging and deployment | setuptools, pinned backend runtime dependencies, Docker, Render configuration |
-| Verification | unittest release checks, JSON Schemas, generated OpenAPI, synthetic pipeline demos |
+| Layer                    | Technologies and role                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android integration      | Firebase ID tokens and a Retrofit/OkHttp reference client; the complete Android application is maintained separately                        |
+| Backend                  | Python 3.11+, FastAPI, Uvicorn, Pydantic validation, multipart uploads                                                                      |
+| Video and vision — ML1 | OpenCV headless, NumPy, Pillow; optional Gemini REST extraction and Ultralytics/PyTorch endpoint detection with separately supplied weights |
+| Reasoning — ML2        | Python circuit/observation validation, topology comparison, evidence rules, ngspice AC simulation                                           |
+| Mentor — ML3           | Grounded explanations, optional Qwen-compatible chat API, outcome and equipment-review services                                             |
+| Authentication           | Firebase Admin SDK; server-side ID-token verification with revocation checking                                                              |
+| Storage and memory       | SQLite plus private video/frame storage; optional Meko MCP transport for isolated personal memory                                           |
+| Packaging and deployment | setuptools, pinned backend runtime dependencies, Docker, Render configuration                                                               |
+| Verification             | unittest release checks, JSON Schemas, generated OpenAPI, synthetic pipeline demos                                                          |
 
 ## Run on your laptop
 
@@ -70,7 +70,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements-backend.txt
-python -m pip install -e ".[test]"
+python -m pip install -e ".[test,training-test]"
 ```
 
 The integrated backend currently lives on `backend/android-connection-test`. After it is merged into `main`, use `main` instead. The final install command adds the editable package and test dependencies; runtime pins come from `requirements-backend.txt`.
@@ -136,8 +136,8 @@ The server can start without Firebase credentials, but authenticated operations 
 
 Open:
 
-- **Health:** <http://127.0.0.1:8000/health> process liveness.
-- **Readiness:** <http://127.0.0.1:8000/ready> offline configuration/storage checks; 200 or 503 with check results.
+- **Health:** <http://127.0.0.1:8000/health> — process liveness.
+- **Readiness:** <http://127.0.0.1:8000/ready> — offline configuration/storage checks; 200 or 503 with check results.
 - **Interactive API:** <http://127.0.0.1:8000/docs>.
 - **OpenAPI:** <http://127.0.0.1:8000/openapi.json>.
 
@@ -153,14 +153,14 @@ Real experiments require an approved catalog via `EXPERIMENT_CATALOG_PATH`. Use 
 
 The agreed **API 1.1** sequence is:
 
-| Step | Endpoint and payload |
-|---|---|
-| Create | `POST /api/v1/sessions` with JSON `experiment_id`, optional `experiment_version`, and `description` |
-| Upload | `POST /api/v1/sessions/{session_id}/image` with multipart file field **`image` containing MP4**, MIME `video/mp4`, and `expected_session_version` |
-| Poll | `GET /api/v1/sessions/{session_id}` |
-| Interact | `POST /api/v1/sessions/{session_id}/events` with `{event_id, expected_session_version, type, payload}` |
-| Review frame | `GET /api/v1/sessions/{session_id}/image` returns the internally extracted frame |
-| Complete | Send the existing `close_session` event; deletion is separate |
+| Step         | Endpoint and payload                                                                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create       | `POST /api/v1/sessions` with JSON `experiment_id`, optional `experiment_version`, and `description`                                               |
+| Upload       | `POST /api/v1/sessions/{session_id}/image` with multipart file field **`image` containing MP4**, MIME `video/mp4`, and `expected_session_version` |
+| Poll         | `GET /api/v1/sessions/{session_id}`                                                                                                               |
+| Interact     | `POST /api/v1/sessions/{session_id}/events` with `{event_id, expected_session_version, type, payload}`                                            |
+| Review frame | `GET /api/v1/sessions/{session_id}/image` returns the internally extracted frame                                                                  |
+| Complete     | Send the existing `close_session` event; deletion is separate                                                                                     |
 
 Send `Authorization: Bearer <Firebase ID token>` on session operations and UUID `Idempotency-Key` headers for creation/upload. The route/field names `image` and state `awaiting_image` are retained for compatibility: **user uploads are MP4 only, not JPEG/PNG**. Upload limits are 50 MiB and 60 seconds; internal JPEGs are video frames. Old combined image-upload POSTs return 410.
 
@@ -183,13 +183,13 @@ The release runner fails if any test fails **or is skipped**; install ngspice be
 
 ### Repository guide
 
-| Path | Purpose |
-|---|---|
-| `backend/` | FastAPI app, authentication, catalog, sessions, persistence and orchestration |
-| `labvision/` | ML1 video/frame processing, extraction, detection and handoff |
-| `reasoning/` | ML2 adapters, reviewed observations, diagnosis and simulation |
-| `ml3_service.py`, `mentor.py`, `lab_memory.py` | ML3 explanation and personal-memory services |
-| `schemas/`, `docs/` | API contracts, schemas, architecture and deployment guidance |
-| `examples/`, `tools/`, `tests/` | Fixtures, demos and verification |
+| Path                                           | Purpose                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `backend/`                                     | FastAPI app, authentication, catalog, sessions, persistence and orchestration |
+| `labvision/`                                   | ML1 video/frame processing, extraction, detection and handoff                 |
+| `reasoning/`                                   | ML2 adapters, reviewed observations, diagnosis and simulation                 |
+| `ml3_service.py`, `mentor.py`, `lab_memory.py` | ML3 explanation and personal-memory services                                  |
+| `schemas/`, `docs/`                            | API contracts, schemas, architecture and deployment guidance                  |
+| `examples/`, `tools/`, `tests/`                | Fixtures, demos and verification                                              |
 
 For hosting, use [Dockerfile.backend](Dockerfile.backend) and the [deployment guide](docs/BACKEND_DEPLOYMENT.md). The current deployment design uses one instance, one Uvicorn worker and persistent `DATA_DIR` storage. Local README commands do not deploy or modify the hosted service.

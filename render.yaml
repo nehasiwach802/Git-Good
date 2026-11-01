@@ -1,0 +1,32 @@
+# Review the paid service/disk plan in Render before applying this blueprint.
+services:
+  - type: web
+    name: git-good-1
+    runtime: docker
+    plan: starter
+    branch: backend/android-connection-test
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    autoDeployTrigger: "off"
+    numInstances: 1
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 180
+    disk:
+      name: gitgood-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /app/data
+      - key: WORKER_ENABLED
+        value: "true"
+      - key: VISION_ENABLED
+        value: "false"
+      - key: QWEN_ENABLED
+        value: "false"
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: DEFAULT_LAB_ID
+        sync: false

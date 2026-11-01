@@ -1,0 +1,24 @@
+name: Backend container
+on: [push, pull_request]
+jobs:
+  container-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deployable image
+        run: docker build --file Dockerfile.backend --tag gitgood-backend .
+      - name: Check mounted storage and HTTP boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker volume create gitgood-smoke-data
+          docker run -d --name gitgood-smoke -p 18000:8000 -v gitgood-smoke-data:/app/data -e VISION_ENABLED=false -e QWEN_ENABLED=false gitgood-backend
+          trap 'docker logs gitgood-smoke; docker rm -f gitgood-smoke; docker volume rm gitgood-smoke-data' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:18000/health > /tmp/gitgood-health.json; then break; fi
+            sleep 1
+          done
+          python -c "import json; assert json.load(open('/tmp/gitgood-health.json'))['mode']=='integrated'"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18000/api/v1/experiments)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18000/ready)" = 503
+          docker exec gitgood-smoke gosu appuser python -c "from backend.catalog import load_catalog; from backend.config import Settings; from reasoning.spice import find_ngspice; assert find_ngspice(); assert load_catalog(Settings().catalog_path)"

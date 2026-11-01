@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "findings": [],
+  "predictions": [],
+  "hypotheses": {
+    "wiring": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "concept": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "apparatus": {
+      "support": "unresolved",
+      "evidence_ids": []
+    }
+  },
+  "vision_source": {
+    "candidate_id": "synthetic-7400-not-001",
+    "revision": 1,
+    "reviewed_revision": null,
+    "board_profile_id": "terminal-strips-30-no-rails"
+  },
+  "limitations": [
+    "Review is not proof of correct wiring, safe hardware or device health.",
+    "Digital analysis is isolated 7400 NAND-as-NOT ideal Boolean logic; no voltage/timing prediction."
+  ],
+  "status": "needs_confirmation",
+  "pending": [
+    "board topology/orientation not confirmed",
+    "U1: identity/orientation not confirmed",
+    "U1.1: review required",
+    "U1.2: review required",
+    "U1.3: review required",
+    "U1.4: review required",
+    "U1.5: review required",
+    "U1.6: review required",
+    "U1.7: review required",
+    "U1.8: review required",
+    "U1.9: review required",
+    "U1.10: review required",
+    "U1.11: review required",
+    "U1.12: review required",
+    "U1.13: review required",
+    "U1.14: review required",
+    "W1.a: review required",
+    "W1.b: review required",
+    "W2.a: review required",
+    "W2.b: review required",
+    "W3.a: review required",
+    "W3.b: review required",
+    "W4.a: review required",
+    "W4.b: review required",
+    "W5.a: review required",
+    "W5.b: review required",
+    "W6.a: review required",
+    "W6.b: review required",
+    "W7.a: review required",
+    "W7.b: review required",
+    "A: review required",
+    "Y: review required",
+    "VCC: review required",
+    "GND: review required",
+    "whole-circuit review required"
+  ],
+  "next_check": {
+    "kind": "confirm_connections",
+    "reason": "Review ML1 candidate, board, values and omissions before analysis",
+    "check_id": "check_1dd28cf19146b283",
+    "input_type": "connection_confirmation",
+    "requires_instructor": false,
+    "evidence_ids": []
+  }
+}

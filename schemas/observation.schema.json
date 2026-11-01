@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gitgood:observation:1",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reviewed_revision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "completeness_confirmed": {
+      "type": "boolean"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "identity_confirmed": {
+            "type": "boolean"
+          },
+          "properties_confirmed": {
+            "type": "boolean"
+          },
+          "properties": {
+            "type": "object",
+            "maxProperties": 20,
+            "additionalProperties": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "pins": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 100,
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "net": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "alternatives": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "maxItems": 10,
+                  "minItems": 0,
+                  "uniqueItems": true
+                },
+                "confirmed": {
+                  "type": "boolean"
+                },
+                "confidence": {
+                  "enum": [
+                    "likely",
+                    "uncertain",
+                    "unknown"
+                  ]
+                },
+                "evidence_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "maxItems": 100,
+                  "minItems": 0
+                }
+              },
+              "required": [
+                "net"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "model",
+          "pins"
+        ]
+      },
+      "maxItems": 100,
+      "minItems": 1
+    },
+    "ports": {
+      "type": "object",
+      "maxProperties": 100,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "net": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "maxItems": 10,
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "confirmed": {
+            "type": "boolean"
+          },
+          "confidence": {
+            "enum": [
+              "likely",
+              "uncertain",
+              "unknown"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "maxItems": 100,
+            "minItems": 0
+          }
+        },
+        "required": [
+          "net"
+        ]
+      }
+    },
+    "pending_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "maxItems": 1000,
+      "minItems": 0
+    },
+    "source": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "id",
+    "revision",
+    "components"
+  ]
+}

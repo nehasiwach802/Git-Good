@@ -1,0 +1,472 @@
+{
+  "schema_version": "1.0",
+  "findings": [
+    {
+      "id": "e_de5e3a39d4541e6f",
+      "kind": "digital_topology_mismatch",
+      "detail": "U1.2 must connect to the input for NAND-as-NOT"
+    }
+  ],
+  "predictions": [],
+  "hypotheses": {
+    "wiring": {
+      "support": "supported",
+      "evidence_ids": [
+        "e_de5e3a39d4541e6f"
+      ]
+    },
+    "concept": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "apparatus": {
+      "support": "unresolved",
+      "evidence_ids": []
+    }
+  },
+  "vision_source": {
+    "candidate_id": "synthetic-7400-not-001",
+    "revision": 2,
+    "reviewed_revision": 2,
+    "board_profile_id": "terminal-strips-30-no-rails"
+  },
+  "limitations": [
+    "Review is not proof of correct wiring, safe hardware or device health.",
+    "Digital analysis is isolated 7400 NAND-as-NOT ideal Boolean logic; no voltage/timing prediction."
+  ],
+  "logic_check": {
+    "check": "7400_as_not",
+    "component_id": "U1",
+    "gate": 1,
+    "topology_matches": false,
+    "issues": [
+      "U1.2 must connect to the input for NAND-as-NOT"
+    ],
+    "warnings": [],
+    "truth_table": [],
+    "scope": "Ideal Boolean reference only; no measured voltage, timing, loading or device-health claim."
+  },
+  "reviewed_connectivity": {
+    "schema_version": "0.1",
+    "candidate_id": "synthetic-7400-not-001",
+    "revision": 2,
+    "board_profile_id": "terminal-strips-30-no-rails",
+    "status": "reviewed_connectivity",
+    "components": [
+      {
+        "id": "U1",
+        "part": "7400",
+        "value_si": null,
+        "pins": {
+          "1": "N0",
+          "2": "N1",
+          "3": "N2",
+          "4": "N3",
+          "5": "N3",
+          "6": "N4",
+          "7": "N3",
+          "8": "N7",
+          "9": "N3",
+          "10": "N3",
+          "11": "N6",
+          "12": "N3",
+          "13": "N3",
+          "14": "N5"
+        }
+      }
+    ],
+    "ports": [
+      {
+        "id": "A",
+        "role": "input",
+        "node": "N0"
+      },
+      {
+        "id": "Y",
+        "role": "output",
+        "node": "N2"
+      },
+      {
+        "id": "VCC",
+        "role": "vcc",
+        "node": "N5"
+      },
+      {
+        "id": "GND",
+        "role": "gnd",
+        "node": "N3"
+      }
+    ],
+    "nodes": {
+      "N0": [
+        "A10",
+        "A17",
+        "B10",
+        "B17",
+        "C10",
+        "C17",
+        "D10",
+        "D17",
+        "E10",
+        "E17"
+      ],
+      "N1": [
+        "A11",
+        "B11",
+        "C11",
+        "D11",
+        "E11"
+      ],
+      "N2": [
+        "A12",
+        "B12",
+        "C12",
+        "D12",
+        "E12"
+      ],
+      "N3": [
+        "A13",
+        "A14",
+        "A16",
+        "B13",
+        "B14",
+        "B16",
+        "C13",
+        "C14",
+        "C16",
+        "D13",
+        "D14",
+        "D16",
+        "E13",
+        "E14",
+        "E16",
+        "F11",
+        "F12",
+        "F14",
+        "F15",
+        "G11",
+        "G12",
+        "G14",
+        "G15",
+        "H11",
+        "H12",
+        "H14",
+        "H15",
+        "I11",
+        "I12",
+        "I14",
+        "I15",
+        "J11",
+        "J12",
+        "J14",
+        "J15"
+      ],
+      "N4": [
+        "A15",
+        "B15",
+        "C15",
+        "D15",
+        "E15"
+      ],
+      "N5": [
+        "F10",
+        "G10",
+        "H10",
+        "I10",
+        "J10"
+      ],
+      "N6": [
+        "F13",
+        "G13",
+        "H13",
+        "I13",
+        "J13"
+      ],
+      "N7": [
+        "F16",
+        "G16",
+        "H16",
+        "I16",
+        "J16"
+      ]
+    },
+    "provenance": {
+      "U1.1": {
+        "hole": "E10",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.2": {
+        "hole": "E11",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.3": {
+        "hole": "E12",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.4": {
+        "hole": "E13",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.5": {
+        "hole": "E14",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.6": {
+        "hole": "E15",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.7": {
+        "hole": "E16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.8": {
+        "hole": "F16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.9": {
+        "hole": "F15",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.10": {
+        "hole": "F14",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.11": {
+        "hole": "F13",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.12": {
+        "hole": "F12",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.13": {
+        "hole": "F11",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "U1.14": {
+        "hole": "F10",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W1.a": {
+        "hole": "A10",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W1.b": {
+        "hole": "A17",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "student correction",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W2.a": {
+        "hole": "A13",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W2.b": {
+        "hole": "A16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W3.a": {
+        "hole": "A14",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W3.b": {
+        "hole": "B16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W4.a": {
+        "hole": "J15",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W4.b": {
+        "hole": "C16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W5.a": {
+        "hole": "J14",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W5.b": {
+        "hole": "D16",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W6.a": {
+        "hole": "J12",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W6.b": {
+        "hole": "B13",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W7.a": {
+        "hole": "J11",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "W7.b": {
+        "hole": "B14",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "A": {
+        "hole": "B10",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "Y": {
+        "hole": "B12",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "VCC": {
+        "hole": "J10",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      },
+      "GND": {
+        "hole": "C13",
+        "alternatives": [],
+        "confidence": "likely",
+        "reason": "",
+        "source": "manual",
+        "confirmed": true
+      }
+    },
+    "issues": [
+      "Synthetic software fixture, not extracted from a real photograph.",
+      "14-pin DIP, notch toward row 10. Rails deliberately excluded.",
+      "No LED/load included; ideal Boolean test fixture only."
+    ],
+    "limitations": [
+      "Reviewed observations do not verify physical continuity or device health.",
+      "Node IDs are local to this revision; compare graph connectivity."
+    ]
+  },
+  "status": "evaluated",
+  "next_check": {
+    "kind": "review_wiring",
+    "reason": "Reviewed 7400 wiring differs from isolated NAND-as-NOT topology",
+    "check_id": "check_ab1eb8f0498bd89a",
+    "input_type": "corrected_circuit",
+    "requires_instructor": false,
+    "evidence_ids": [
+      "e_de5e3a39d4541e6f"
+    ]
+  }
+}

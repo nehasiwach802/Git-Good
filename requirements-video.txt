@@ -1,0 +1,4 @@
+# Optional ML1 video preprocessing; existing image pipeline remains independent.
+opencv-python-headless>=4.10,<6
+numpy>=2,<3
+Pillow>=10

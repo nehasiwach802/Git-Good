@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "findings": [],
+  "predictions": [],
+  "hypotheses": {
+    "wiring": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "concept": {
+      "support": "unresolved",
+      "evidence_ids": []
+    },
+    "apparatus": {
+      "support": "unresolved",
+      "evidence_ids": []
+    }
+  },
+  "limitations": [
+    "Scores are ordinal evidence labels, not probabilities.",
+    "AC magnitude only; ideal op-amp model excludes clipping and supply faults."
+  ],
+  "status": "needs_confirmation",
+  "next_check": {
+    "kind": "confirm_connections",
+    "components": [
+      "R1"
+    ],
+    "reason": "Unconfirmed topology cannot support diagnosis",
+    "check_id": "check_38014468b97ceec4",
+    "input_type": "connection_confirmation",
+    "requires_instructor": false,
+    "evidence_ids": []
+  }
+}

@@ -1,0 +1,4 @@
+# Optional endpoint inference; keep the existing backend Python environment.
+# Install a matching torch/torchvision build for the deployment platform.
+ultralytics==8.4.195
+Pillow>=10,<13

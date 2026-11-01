@@ -36,19 +36,24 @@ class DiagnosticResult:
 
     session_id: str
     suspected_cause: str
-    cause_probabilities: dict[str, float]
+    cause_probabilities: dict[str, float] | None
     evidence: tuple[EvidenceItem, ...]
     limitations: tuple[str, ...]
     permitted_next_action: str
+    hypothesis_support: dict[str, str] | None = None
 
     def __post_init__(self):
         if not self.session_id or self.suspected_cause not in CAUSES:
             raise ValueError("ML 2 must provide a session and known cause")
-        if set(self.cause_probabilities) != {"wiring", "concept", "apparatus"}:
+        if self.cause_probabilities is not None and set(self.cause_probabilities) != {"wiring", "concept", "apparatus"}:
             raise ValueError("Provide ML 2's three cause probabilities")
         if any(type(p) not in (int, float) or not math.isfinite(p) or not 0 <= p <= 1
-               for p in self.cause_probabilities.values()):
+               for p in (self.cause_probabilities or {}).values()):
             raise ValueError("Cause probabilities must be finite values in [0,1]")
+        if self.cause_probabilities is None and (not isinstance(self.hypothesis_support, dict) or
+                set(self.hypothesis_support) != {"wiring","concept","apparatus"} or
+                any(v not in ("supported","unresolved") for v in self.hypothesis_support.values())):
+            raise ValueError("Uncalibrated diagnosis requires explicit ordinal hypothesis support")
         if not isinstance(self.evidence, tuple) or not all(isinstance(e, EvidenceItem) for e in self.evidence):
             raise ValueError("evidence must be a tuple of EvidenceItem")
         if len({e.evidence_id for e in self.evidence}) != len(self.evidence):
@@ -110,7 +115,9 @@ def explain_diagnostic(result: DiagnosticResult, *, context: dict | None = None,
                 "explanation": "This check involves potentially unsafe electrical work. Stop and ask your instructor.",
                 "next_action": "Ask your instructor for help.",
                 "suspected_cause": result.suspected_cause,
-                "cause_probabilities": dict(result.cause_probabilities),
+                "cause_probabilities": dict(result.cause_probabilities) if result.cause_probabilities is not None else None,
+                "probability_status": "provided_by_ml2" if result.cause_probabilities is not None else "not_calibrated",
+                "hypothesis_support": result.hypothesis_support,
                 "limitations": list(result.limitations),
                 "evidence": [], "context": {"personal": [], "approved_equipment": [],
                                            "memory_status": memory_status}}
@@ -118,12 +125,16 @@ def explain_diagnostic(result: DiagnosticResult, *, context: dict | None = None,
     cause = ("The current evidence does not identify a cause yet." if result.suspected_cause == "undetermined"
              else f"The diagnostic engine currently suspects {'an' if result.suspected_cause == 'apparatus' else 'a'} {result.suspected_cause} issue.")
     fallback = cause + " Next check: " + result.permitted_next_action
+    if result.cause_probabilities is not None:
+        fallback += " ML2 probabilities: " + ", ".join(f"{key} {value:.1%}" for key,value in result.cause_probabilities.items()) + "."
     if result.limitations:
         fallback += " Limitations: " + "; ".join(result.limitations)
     response = {"status": "ok", "session_id": result.session_id,
                 "explanation": fallback, "next_action": result.permitted_next_action,
                 "suspected_cause": result.suspected_cause,
-                "cause_probabilities": dict(result.cause_probabilities),
+                "cause_probabilities": dict(result.cause_probabilities) if result.cause_probabilities is not None else None,
+                "hypothesis_support": result.hypothesis_support,
+                "probability_status": "provided_by_ml2" if result.cause_probabilities is not None else "not_calibrated",
                 "limitations": list(result.limitations),
                 "evidence": [vars(e).copy() for e in result.evidence],
                 "context": {"personal": personal, "approved_equipment": approved,

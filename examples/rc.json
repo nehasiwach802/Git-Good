@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "safety_profile": "instructor_approved_low_voltage",
+  "experiment": {
+    "id": "rc_lowpass",
+    "circuit": {
+      "components": [
+        {
+          "id": "R1",
+          "type": "R",
+          "value": 1000,
+          "pins": {
+            "1": "input",
+            "2": "output"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "C1",
+          "type": "C",
+          "value": 1e-06,
+          "pins": {
+            "1": "output",
+            "2": "0"
+          },
+          "confirmed": true
+        },
+        {
+          "id": "V1",
+          "type": "V",
+          "ac": 1,
+          "pins": {
+            "+": "input",
+            "-": "0"
+          },
+          "confirmed": true
+        }
+      ]
+    },
+    "probes": [
+      {
+        "id": "output",
+        "positive": "output",
+        "negative": "0",
+        "frequency_hz": 159.154943,
+        "relative_tolerance": 0.05,
+        "absolute_tolerance_v": 0.01
+      }
+    ]
+  },
+  "student_circuit": {
+    "components": [
+      {
+        "id": "R1",
+        "type": "R",
+        "value": 1000,
+        "pins": {
+          "1": "input",
+          "2": "output"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "C1",
+        "type": "C",
+        "value": 1e-06,
+        "pins": {
+          "1": "output",
+          "2": "0"
+        },
+        "confirmed": true
+      },
+      {
+        "id": "V1",
+        "type": "V",
+        "ac": 1,
+        "pins": {
+          "+": "input",
+          "-": "0"
+        },
+        "confirmed": true
+      }
+    ]
+  },
+  "measurements": [
+    {
+      "probe_id": "output",
+      "value": 0.70710678,
+      "unit": "V",
+      "convention": "ac_magnitude"
+    }
+  ],
+  "student_expectations": {
+    "output": 1
+  }
+}

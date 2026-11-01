@@ -1,0 +1,35 @@
+"""Explicit deployment configuration. No secrets are logged or loaded on import."""
+from dataclasses import dataclass
+from pathlib import Path
+import os
+
+
+@dataclass(frozen=True)
+class Settings:
+    data_dir: Path = Path('data')
+    catalog_path: Path = Path(__file__).with_name('catalog.json')
+    firebase_project: str = ''
+    vision_enabled: bool = True
+    worker_enabled: bool = True
+    memory_scopes_file: str = ''
+    qwen_enabled: bool = True
+    video_deadline_s: int = 60
+    auto_grid_enabled: bool = False
+
+    def __post_init__(self):
+        if type(self.auto_grid_enabled) is not bool:
+            raise ValueError('AUTO_GRID_ENABLED must be boolean')
+        if type(self.video_deadline_s) is not int or not 1<=self.video_deadline_s<=120:
+            raise ValueError('VIDEO_DEADLINE_SECONDS must be an integer in 1..120')
+
+    @classmethod
+    def from_env(cls):
+        return cls(data_dir=Path(os.getenv('DATA_DIR', 'data')),
+                   catalog_path=Path(os.getenv('EXPERIMENT_CATALOG_PATH', str(Path(__file__).with_name('catalog.json')))),
+                   firebase_project=os.getenv('FIREBASE_PROJECT_ID', ''),
+                   vision_enabled=os.getenv('VISION_ENABLED', 'true').lower() == 'true',
+                   worker_enabled=os.getenv('WORKER_ENABLED', 'true').lower() == 'true',
+                   memory_scopes_file=os.getenv('MEMORY_SCOPES_FILE', ''),
+                   qwen_enabled=os.getenv('QWEN_ENABLED', 'true').lower()=='true',
+                   video_deadline_s=int(os.getenv('VIDEO_DEADLINE_SECONDS','60')),
+                   auto_grid_enabled=os.getenv('AUTO_GRID_ENABLED','false').lower()=='true')
