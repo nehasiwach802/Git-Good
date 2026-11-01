@@ -66,7 +66,13 @@ fun parseWireReview(session: BackendSession, account: String?): WireReviewState?
             return GridProposal("unavailable", reason = "Grid metadata belongs to a different frame. Stale overlays are hidden.")
         if (boardGeometry == null || rawGrid.text("board_fingerprint") != boardGeometry.first)
             return GridProposal("unavailable", reason = "The grid does not match this board profile. Manual hole entry remains available.")
-        if (status != "needs_orientation_review") return GridProposal(status, reason = rawGrid.text("reason")?.take(240) ?: "Automatic alignment is unavailable; use a clearer video or manual entry.")
+        if (status != "needs_orientation_review") {
+            val reason = rawGrid.text("reason")
+            val message = if (reason == "complete_grid_not_found") {
+                "The video processor could not detect the complete ${boardGeometry.second}-row board required by this experiment. Record the whole board from above, with both five-column strips and the first and last rows visible. Keep it still and sharply focused. If your board has a different row count, the experiment’s backend board profile must be updated."
+            } else reason?.take(240) ?: "Automatic alignment is unavailable; use a clearer video or manual entry."
+            return GridProposal(status, reason = message)
+        }
         val rawHoles = rawGrid["holes"] as? JsonObject ?: return GridProposal("unavailable", reason = "Grid coordinates are missing.")
         val points = mutableMapOf<String, FramePoint>()
         rawHoles.forEach { (id, item) ->
