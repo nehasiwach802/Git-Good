@@ -8,6 +8,8 @@ import com.example.gitgood.data.repository.AuthRepository
 import com.example.gitgood.data.repository.GoogleSignInClient
 import com.example.gitgood.ui.screen.auth.login.LoginUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.gitgood.ui.theme.screen.auth.forgotpassword.ForgotPasswordUiState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,6 +21,10 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
     private val _loginUiState = MutableStateFlow(LoginUiState())
     val loginUiState = _loginUiState.asStateFlow()
+    private val _forgotPasswordUiState = MutableStateFlow(ForgotPasswordUiState())
+    val forgotPasswordUiState = _forgotPasswordUiState.asStateFlow()
+    private var passwordResetJob: Job? = null
+    private var passwordResetGeneration = 0
     val currentUser = authRepository.user.stateIn(viewModelScope, SharingStarted.Eagerly, authRepository.currentUser)
     fun onEmailChange(email: String) { _loginUiState.update { it.copy(email = email, errorMessage = null) } }
     fun onPasswordChange(password: String) { _loginUiState.update { it.copy(password = password, errorMessage = null) } }
@@ -48,13 +54,47 @@ class LoginViewModel @Inject constructor(
     fun onGoogleClick(context: Context) = runAuth {
         authRepository.signInWithGoogle(googleSignInClient.signIn(context))
     }
-    fun onForgotPasswordClick() {
-        if (!validEmail()) return
-        val email = _loginUiState.value.email
-        runAuth {
-            authRepository.resetPassword(email)
-            _loginUiState.update { it.copy(message = "If an account exists, a password reset email will be sent.") }
+    fun openForgotPassword() {
+        passwordResetGeneration++
+        passwordResetJob?.cancel()
+        clearMessage()
+        _forgotPasswordUiState.value = ForgotPasswordUiState(email = _loginUiState.value.email.trim())
+    }
+    fun onResetEmailChange(email: String) {
+        if (!_forgotPasswordUiState.value.isLoading) {
+            _forgotPasswordUiState.update { it.copy(email = email, errorMessage = null, message = null) }
         }
+    }
+    fun sendPasswordReset() {
+        val state = _forgotPasswordUiState.value
+        if (state.isLoading || state.message != null) return
+        val email = state.email.trim()
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            _forgotPasswordUiState.update { it.copy(errorMessage = "Enter a valid email address.") }
+            return
+        }
+        _forgotPasswordUiState.update { it.copy(isLoading = true, errorMessage = null) }
+        val generation = passwordResetGeneration
+        passwordResetJob = viewModelScope.launch {
+            try {
+                authRepository.resetPassword(email)
+                if (generation == passwordResetGeneration) {
+                    _forgotPasswordUiState.update { it.copy(message = "If an account exists for this email, a password reset link has been sent. Check your inbox and spam folder.") }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) {
+                if (generation == passwordResetGeneration) {
+                    _forgotPasswordUiState.update { it.copy(errorMessage = "Could not request a reset link. Check your connection and try again.") }
+                }
+            } finally {
+                if (generation == passwordResetGeneration) _forgotPasswordUiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+    fun leaveForgotPassword() {
+        passwordResetGeneration++
+        passwordResetJob?.cancel()
+        _forgotPasswordUiState.value = ForgotPasswordUiState()
     }
     fun signOut(context: Context) = runAuth {
         authRepository.signOut()

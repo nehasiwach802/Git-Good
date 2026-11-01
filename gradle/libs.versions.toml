@@ -17,6 +17,7 @@ hilt = "2.60.1"
 ksp = "2.3.9"
 
 [libraries]
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.3.0" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version = "1.1.1" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version = "1.1.1" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleRuntimeKtx" }

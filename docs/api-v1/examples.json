@@ -1,0 +1,193 @@
+{
+  "create_session": {
+    "experiment_id": "ohms-law",
+    "experiment_version": "1"
+  },
+  "session_response": {
+    "request_id": "00000000-0000-4000-8000-000000000006",
+    "data": {
+      "session_id": "00000000-0000-4000-8000-000000000001",
+      "mode": "stub",
+      "experiment_id": "ohms-law",
+      "experiment_version": "1",
+      "session_version": 8,
+      "status": "awaiting_input",
+      "candidate": {
+        "revision": 3,
+        "image_id": "00000000-0000-4000-8000-000000000002",
+        "components": [
+          {
+            "id": "r1",
+            "type": "resistor",
+            "label": "R1",
+            "value": "1000 ohm",
+            "pins": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "id": "gnd",
+            "type": "ground",
+            "label": "GND",
+            "value": null,
+            "pins": [
+              "0"
+            ]
+          }
+        ],
+        "connections": [
+          {
+            "id": "wire-1",
+            "from": {
+              "component_id": "r1",
+              "pin": "2"
+            },
+            "to": {
+              "component_id": "gnd",
+              "pin": "0"
+            }
+          }
+        ],
+        "confirmed": false
+      },
+      "messages": [
+        {
+          "message_id": "00000000-0000-4000-8000-000000000003",
+          "role": "assistant",
+          "text": "Review the extracted connection between R1 pin 2 and ground before confirming the wiring.",
+          "attachments": [],
+          "created_at": "2026-11-01T10:00:00Z"
+        }
+      ],
+      "pending_actions": [
+        {
+          "action_id": "00000000-0000-4000-8000-000000000004",
+          "type": "review_connection",
+          "label": "Review connection",
+          "candidate_revision": 3,
+          "connection_id": "wire-1",
+          "prompt": "Is R1 pin 2 connected to ground?"
+        },
+        {
+          "action_id": "00000000-0000-4000-8000-000000000005",
+          "type": "confirm_revision",
+          "label": "Confirm wiring",
+          "candidate_revision": 3,
+          "prompt": "Confirm only after reviewing all extracted wiring."
+        }
+      ],
+      "job": null,
+      "assessment": null,
+      "created_at": "2026-11-01T10:00:00Z",
+      "updated_at": "2026-11-01T10:00:00Z"
+    }
+  },
+  "confirm_event": {
+    "event_id": "00000000-0000-4000-8000-000000000007",
+    "expected_session_version": 8,
+    "type": "confirm_candidate",
+    "candidate_revision": 3,
+    "payload": {
+      "action_id": "00000000-0000-4000-8000-000000000005"
+    }
+  },
+  "message_event": {
+    "event_id": "00000000-0000-4000-8000-000000000008",
+    "expected_session_version": 8,
+    "type": "message",
+    "payload": {
+      "text": "Why should R1 pin 2 be connected to ground?"
+    }
+  },
+  "measurement_event": {
+    "event_id": "00000000-0000-4000-8000-000000000009",
+    "expected_session_version": 10,
+    "type": "submit_measurement",
+    "candidate_revision": 3,
+    "payload": {
+      "action_id": "00000000-0000-4000-8000-000000000010",
+      "measurement_id": "voltage-r1",
+      "value": 5.0,
+      "unit": "V"
+    }
+  },
+  "close_event": {
+    "event_id": "00000000-0000-4000-8000-000000000011",
+    "expected_session_version": 12,
+    "type": "close_session",
+    "payload": {
+      "reason": "user_exit"
+    }
+  },
+  "stale_confirmation_error": {
+    "request_id": "00000000-0000-4000-8000-000000000012",
+    "error": {
+      "code": "STALE_CANDIDATE",
+      "message": "Wiring changed. Review the current revision before confirming.",
+      "retryable": false,
+      "field_errors": [],
+      "current_session": {
+        "session_id": "00000000-0000-4000-8000-000000000001",
+        "mode": "stub",
+        "experiment_id": "ohms-law",
+        "experiment_version": "1",
+        "session_version": 9,
+        "status": "awaiting_input",
+        "candidate": {
+          "revision": 4,
+          "image_id": "00000000-0000-4000-8000-000000000002",
+          "components": [
+            {
+              "id": "r1",
+              "type": "resistor",
+              "label": "R1",
+              "value": "1000 ohm",
+              "pins": [
+                "1",
+                "2"
+              ]
+            },
+            {
+              "id": "gnd",
+              "type": "ground",
+              "label": "GND",
+              "value": null,
+              "pins": [
+                "0"
+              ]
+            }
+          ],
+          "connections": [
+            {
+              "id": "wire-1",
+              "from": {
+                "component_id": "r1",
+                "pin": "2"
+              },
+              "to": {
+                "component_id": "gnd",
+                "pin": "0"
+              }
+            }
+          ],
+          "confirmed": false
+        },
+        "messages": [
+          {
+            "message_id": "00000000-0000-4000-8000-000000000003",
+            "role": "assistant",
+            "text": "Review the extracted connection between R1 pin 2 and ground before confirming the wiring.",
+            "attachments": [],
+            "created_at": "2026-11-01T10:00:00Z"
+          }
+        ],
+        "pending_actions": [],
+        "job": null,
+        "assessment": null,
+        "created_at": "2026-11-01T10:00:00Z",
+        "updated_at": "2026-11-01T10:00:00Z"
+      }
+    }
+  }
+}

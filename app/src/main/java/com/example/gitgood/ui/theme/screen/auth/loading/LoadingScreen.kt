@@ -21,6 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gitgood.R
+import com.example.gitgood.ui.theme.OnPrimaryColor
+import com.example.gitgood.ui.theme.SurfaceColor
 import com.example.gitgood.ui.theme.BackgroundColor
 import com.example.gitgood.ui.theme.BorderColor
 import com.example.gitgood.ui.theme.LightGreen
@@ -157,7 +159,7 @@ fun CircuitlyWelcomeScreenLayout(
                         text = "Get started",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = OnPrimaryColor
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -165,7 +167,7 @@ fun CircuitlyWelcomeScreenLayout(
                     Text(
                         text = "→",
                         fontSize = 20.sp,
-                        color = Color.White
+                        color = OnPrimaryColor
                     )
                 }
             }

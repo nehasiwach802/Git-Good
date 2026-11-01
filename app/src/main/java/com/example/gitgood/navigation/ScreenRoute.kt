@@ -10,7 +10,10 @@ sealed interface ScreenRoute : NavKey {
         @Serializable data object Splash : Auth
         @Serializable data object Landing : Auth
         @Serializable data object Login : Auth
+        @Serializable data object ForgotPassword : Auth
         @Serializable data object Register : Auth
     }
+    @Serializable data object Experiments : ScreenRoute
     @Serializable data object Home : ScreenRoute
+    @Serializable data object Conversation : ScreenRoute
 }

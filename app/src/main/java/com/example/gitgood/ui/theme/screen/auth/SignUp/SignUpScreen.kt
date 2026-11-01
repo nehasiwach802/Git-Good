@@ -137,7 +137,7 @@ fun RegisterScreenLayout(
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(22.dp),
-                        color = Color.White,
+                        color = OnPrimaryColor,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -145,7 +145,7 @@ fun RegisterScreenLayout(
                         text = "Create account",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = OnPrimaryColor
                     )
                 }
             }

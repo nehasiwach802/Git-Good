@@ -12,6 +12,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GitGood">
+        <provider
+            android:name=".data.CameraFileProvider"
+            android:authorities="${applicationId}.camera.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/camera_file_paths" />
+        </provider>
         <activity
             android:name=".MainActivity"
             android:exported="true"

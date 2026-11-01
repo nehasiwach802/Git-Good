@@ -48,6 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.example.gitgood.ui.theme.OnPrimaryColor
+import com.example.gitgood.ui.theme.SurfaceColor
 import com.example.gitgood.ui.theme.BackgroundColor
 import com.example.gitgood.ui.theme.BorderColor
 import com.example.gitgood.ui.theme.PrimaryGreen
@@ -219,7 +221,7 @@ fun LoginScreenLayout(
                     if (uiState.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            color = Color.White,
+                            color = OnPrimaryColor,
                             strokeWidth = 2.dp
                         )
                     } else {
@@ -231,13 +233,13 @@ fun LoginScreenLayout(
                                 text = "Log in",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color.White
+                                color = OnPrimaryColor
                             )
 
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = OnPrimaryColor,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -292,7 +294,7 @@ private fun LoginInputField(
             .fillMaxWidth()
             .height(54.dp)
             .background(
-                color = Color.White,
+                color = SurfaceColor,
                 shape = RoundedCornerShape(12.dp)
             )
             .border(

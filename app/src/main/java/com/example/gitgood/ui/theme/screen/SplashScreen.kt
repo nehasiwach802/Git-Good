@@ -14,6 +14,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import com.example.gitgood.ui.theme.*
 import com.example.gitgood.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +31,7 @@ fun CircuitlySplashScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAFBF8)),
+            .background(BackgroundColor),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -51,13 +52,13 @@ fun CircuitlySplashScreen() {
                 fontSize = 60.sp,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = (-2).sp,
-                color = Color(0xFF182B26)
+                color = PrimaryTextColor
             )
 
             Text(
                 text = "A fresh start for student life.",
                 fontSize = 14.sp,
-                color = Color(0xFF75807A)
+                color = SecondaryTextColor
             )
         }
         LinearProgressIndicator(
@@ -65,8 +66,8 @@ fun CircuitlySplashScreen() {
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 80.dp)
                 .size(width = 100.dp, height = 4.dp),
-            color = Color(0xFF182B26),
-            trackColor = Color(0xFFE5EAE6)
+            color = PrimaryTextColor,
+            trackColor = BorderColor
         )
     }
 }

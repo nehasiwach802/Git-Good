@@ -22,14 +22,28 @@ import com.example.gitgood.navigation.HomeDestination
 import com.example.gitgood.navigation.RegisterDestination
 import com.example.gitgood.navigation.ScreenRoute
 import com.example.gitgood.ui.screen.auth.login.LoginScreenLayout
+import com.example.gitgood.ui.theme.screen.auth.forgotpassword.ForgotPasswordScreen
 import com.example.gitgood.ui.theme.GitGoodTheme
 import com.example.gitgood.ui.theme.screen.CircuitlySplashScreen
 import com.example.gitgood.ui.theme.screen.auth.loading.CircuitlyWelcomeScreenLayout
+import com.example.gitgood.viewModel.ConversationViewModel
+import com.example.gitgood.ui.theme.screen.conversation.ConversationScreen
+import com.example.gitgood.ui.theme.screen.conversation.SessionActions
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.gitgood.viewModel.ExperimentViewModel
+import com.example.gitgood.ui.theme.screen.experiment.ExperimentScreen
+import com.example.gitgood.viewModel.HomeViewModel
 import com.example.gitgood.viewModel.LoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val conversationViewModel: ConversationViewModel by viewModels()
+    private val experimentViewModel: ExperimentViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
     private val loginViewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,18 +53,28 @@ class MainActivity : ComponentActivity() {
             GitGoodTheme {
                 val user by loginViewModel.currentUser.collectAsStateWithLifecycle()
                 val loginState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
+                val catalog by experimentViewModel.experiments.collectAsStateWithLifecycle()
+                val selectedId by experimentViewModel.selectedId.collectAsStateWithLifecycle()
+                val catalogError by experimentViewModel.error.collectAsStateWithLifecycle()
+                val selectedExperiment = catalog.find { it.id == selectedId }
                 val context = LocalContext.current
                 val backStack = rememberNavBackStack(ScreenRoute.Auth.Splash)
 
                 LaunchedEffect(user?.uid) {
-                    if (user != null) {
+                    conversationViewModel.resetForAccount(user?.uid)
+                    if (user == null) {
+                        homeViewModel.reset()
+                        experimentViewModel.clear()
+                        if (backStack.lastOrNull() == ScreenRoute.Auth.Splash ||
+                            backStack.any { it == ScreenRoute.Home || it == ScreenRoute.Experiments || it == ScreenRoute.Conversation }) {
+                            backStack.clear()
+                            backStack.add(ScreenRoute.Auth.Landing)
+                        }
+                    } else if (backStack.any { it is ScreenRoute.Auth }) {
                         backStack.clear()
-                        backStack.add(ScreenRoute.Home)
-                    } else if (backStack.lastOrNull() == ScreenRoute.Auth.Splash ||
-                        backStack.any { it == ScreenRoute.Home }) {
-                        backStack.clear()
-                        backStack.add(ScreenRoute.Auth.Landing)
+                        backStack.add(ScreenRoute.Experiments)
                     }
+                    if (user != null) experimentViewModel.refresh()
                 }
 
                 Scaffold { padding ->
@@ -58,7 +82,10 @@ class MainActivity : ComponentActivity() {
                         backStack = backStack,
                         modifier = Modifier.fillMaxSize().padding(padding),
                         onBack = {
-                            if (backStack.size > 1) {
+                            if (backStack.lastOrNull() == ScreenRoute.Conversation) {
+                                conversationViewModel.exit()
+                            } else if (backStack.size > 1) {
+                                if (backStack.lastOrNull() == ScreenRoute.Auth.ForgotPassword) loginViewModel.leaveForgotPassword()
                                 loginViewModel.clearMessage()
                                 backStack.removeAt(backStack.lastIndex)
                             }
@@ -82,7 +109,10 @@ class MainActivity : ComponentActivity() {
                                     onPasswordChange = loginViewModel::onPasswordChange,
                                     onPasswordVisibilityToggle = loginViewModel::togglePasswordVisibility,
                                     onLoginClick = loginViewModel::onLoginClick,
-                                    onForgotPasswordClick = loginViewModel::onForgotPasswordClick,
+                                    onForgotPasswordClick = {
+                                        loginViewModel.openForgotPassword()
+                                        backStack.add(ScreenRoute.Auth.ForgotPassword)
+                                    },
                                     onSignUpClick = {
                                         loginViewModel.clearMessage()
                                         backStack.removeAt(backStack.lastIndex)
@@ -94,6 +124,18 @@ class MainActivity : ComponentActivity() {
                                     onGoogleClick = { loginViewModel.onGoogleClick(context) }
                                 )
                             }
+                            entry<ScreenRoute.Auth.ForgotPassword> {
+                                val resetState by loginViewModel.forgotPasswordUiState.collectAsStateWithLifecycle()
+                                ForgotPasswordScreen(
+                                    state = resetState,
+                                    onEmailChange = loginViewModel::onResetEmailChange,
+                                    onSendResetLink = loginViewModel::sendPasswordReset,
+                                    onBackToLogin = {
+                                        loginViewModel.leaveForgotPassword()
+                                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                                    }
+                                )
+                            }
                             entry<ScreenRoute.Auth.Register> {
                                 RegisterDestination(loginViewModel, onLogin = {
                                     loginViewModel.clearMessage()
@@ -101,7 +143,68 @@ class MainActivity : ComponentActivity() {
                                     backStack.add(ScreenRoute.Auth.Login)
                                 })
                             }
-                            entry<ScreenRoute.Home> { HomeDestination(loginViewModel) }
+                            entry<ScreenRoute.Experiments> {
+                                val loading by experimentViewModel.loading.collectAsStateWithLifecycle()
+                                val error by experimentViewModel.error.collectAsStateWithLifecycle()
+                                val requiresSignIn by experimentViewModel.requiresSignIn.collectAsStateWithLifecycle()
+                                ExperimentScreen(
+                                    experiments = catalog,
+                                    loading = loading, error = error, onRetry = experimentViewModel::refresh,
+                                    onSignInAgain = if (requiresSignIn) ({ loginViewModel.signOut(context); Unit }) else null,
+                                    selectedId = selectedId,
+                                    onSelect = { id ->
+                                        if (id != experimentViewModel.selectedId.value) homeViewModel.reset()
+                                        experimentViewModel.select(id)
+                                    },
+                                    onContinue = {
+                                        if (experimentViewModel.selectedExperiment?.canStart == true && backStack.lastOrNull() != ScreenRoute.Home) {
+                                            backStack.add(ScreenRoute.Home)
+                                        }
+                                    }
+                                )
+                            }
+                            entry<ScreenRoute.Home> {
+                                HomeDestination(loginViewModel, homeViewModel,
+                                    experimentName = selectedExperiment?.name ?: if (catalogError == null) "Loading experiment…" else "Experiment unavailable",
+                                    experimentAvailable = selectedExperiment?.canStart == true,
+                                    catalogError = catalogError,
+                                    onChangeExperiment = {
+                                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                                    },
+                                    onContinue = {
+                                        val experiment = experimentViewModel.selectedExperiment
+                                        val home = homeViewModel.uiState.value
+                                        if (experiment?.canStart == true && home.selectedImageUri != null && home.selectedVideoUri == null) {
+                                            conversationViewModel.start(experiment, home.selectedImageUri, home.description)
+                                            backStack.add(ScreenRoute.Conversation)
+                                        }
+                                    }
+                                )
+                            }
+                            entry<ScreenRoute.Conversation> {
+                                val state by conversationViewModel.uiState.collectAsStateWithLifecycle()
+                                val session by conversationViewModel.session.collectAsStateWithLifecycle()
+                                val contract by conversationViewModel.reviewContract.collectAsStateWithLifecycle()
+                                val lifecycle = LocalLifecycleOwner.current.lifecycle
+                                DisposableEffect(lifecycle) {
+                                    val observer = LifecycleEventObserver { _, event ->
+                                        if (event == Lifecycle.Event.ON_START) conversationViewModel.setForeground(true)
+                                        if (event == Lifecycle.Event.ON_STOP) conversationViewModel.setForeground(false)
+                                    }
+                                    lifecycle.addObserver(observer)
+                                    conversationViewModel.setForeground(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+                                    onDispose { lifecycle.removeObserver(observer); conversationViewModel.setForeground(false) }
+                                }
+                                LaunchedEffect(state.exited) {
+                                    if (state.exited && backStack.lastOrNull() == ScreenRoute.Conversation) {
+                                        backStack.removeAt(backStack.lastIndex)
+                                    }
+                                }
+                                ConversationScreen(state, conversationViewModel::draft,
+                                    conversationViewModel::sendMessage, conversationViewModel::exit,
+                                    onRetry = { conversationViewModel.retry() },
+                                    actions = { session?.let { SessionActions(it, !state.isSending && state.canSend, contract, conversationViewModel::submit) } })
+                            }
                         }
                     )
                 }
