@@ -16,6 +16,9 @@ from labvision.handoff import reasoning_input
 from labvision.upload import extract_upload
 from .api import diagnose_input,validate_input
 from .adapters import adapt_request
+from .grid import normalize_grid, proposal_digest, accepted_labels, touch
+from labvision.geometry import board_fingerprint
+from labvision.autocalibration import label_mapping
 
 MAX_VIDEO_BYTES=50*1024*1024
 MAX_IMAGE_BYTES=5*1024*1024
@@ -93,6 +96,44 @@ class Capture:
     @property
     def image_bytes(self):return self._bytes[self.selected_frame_id]
 
+    @property
+    def grid_proposal(self):
+        frame=next(f for f in self.frames if f['id']==self.selected_frame_id)
+        return normalize_grid(frame.get('grid_proposal'),self.board,self.image)
+
+    def _grid_revision(self,expected_revision,image_sha256):
+        require(type(expected_revision) is int and expected_revision==self.candidate['revision'],'stale_candidate_revision')
+        require(image_sha256==self.image['sha256'] and
+                self.candidate.get('image_sha256')==image_sha256,'grid_image_mismatch')
+
+    def accept_grid(self,expected_revision,*,image_sha256,left_top,right_top,acknowledgement):
+        """Authorized backend operation on trusted Capture; not a client snapshot.
+
+        The caller must authenticate the reviewer, check session version and
+        atomically persist the returned capture with stale outputs cleared.
+        Acceptance approves alignment/labels, never circuit connectivity.
+        """
+        self._grid_revision(expected_revision,image_sha256)
+        require(acknowledgement=='reviewed_grid_alignment_and_printed_labels','explicit_grid_review_required')
+        proposal=self.grid_proposal
+        require(proposal and proposal['status']=='needs_orientation_review','grid_unavailable')
+        label_mapping(self.board,left_top=left_top,right_top=right_top)
+        updated=deepcopy(self)
+        updated.candidate['revision']+=1
+        reset_review(updated.candidate)
+        updated.calibration=None  # Automatic fit is not manual anchor/check verification.
+        updated.media['grid_review']={'image_sha256':image_sha256,
+            'board_fingerprint':board_fingerprint(self.board),'proposal_digest':proposal_digest(proposal),
+            'left_top':left_top,'right_top':right_top,'acknowledgement':acknowledgement,
+            'accepted_revision':updated.candidate['revision']}
+        return updated
+
+    def suggest_hole(self,expected_revision,*,image_sha256,xy):
+        """Preview only: native selected-frame pixels, never endpoint confirmation."""
+        self._grid_revision(expected_revision,image_sha256)
+        return touch(self.grid_proposal,self.board,self.image,xy,
+            self.media.get('grid_review'),self.candidate['revision'])
+
     def snapshot(self):
         """JSON-safe metadata for the existing backend to persist, not for ML3."""
         return deepcopy(dict(board=self.board,candidate=self.candidate,image=self.image,
@@ -149,6 +190,7 @@ class Capture:
         updated.candidate.update(candidate_id=self.candidate['candidate_id'],revision=self.candidate['revision']+1)
         reset_review(updated.candidate)
         updated.calibration=None
+        updated.media.pop('grid_review',None)
         validate(updated.candidate,updated.board)
         return updated
 
@@ -162,6 +204,8 @@ class Capture:
         validate(self.candidate,self.board)
         require(image_receipt(self.image_bytes)==self.image,'frame_receipt_mismatch')
         require(self.candidate.get('image_sha256')==self.image['sha256'],'candidate_image_mismatch')
+        if self.media.get('grid_review') is not None:
+            accepted_labels(self.grid_proposal,self.board,self.image,self.media['grid_review'],self.candidate['revision'])
         request={'schema_version':'2.0','reference':deepcopy(reference),
             'component_map':deepcopy(component_map),'input':reasoning_input(self.candidate,self.board),**deepcopy(context)}
         require(set(context)<= {'safety_profile','measurements','student_expectations','problem_description','equipment_evidence','port_map'},'unknown_request_context')
@@ -220,6 +264,8 @@ def normalize_video(result,board):
             'timestamp_s':frame['timestamp_s'],'timestamp_source':frame.get('timestamp_source'),
             'sharpness':frame['sharpness'],'asset_id':receipt['sha256'],
             'endpoint_detection':detector_metadata(frame.get('endpoint_detection'),receipt)})
+        if frame.get('grid_proposal') is not None:
+            metadata[-1]['grid_proposal']=normalize_grid(frame['grid_proposal'],board,receipt)
     selected=result.get('selected_frame_id');ml1=result.get('ml1')
     require(isinstance(selected,str) and selected in blobs and isinstance(ml1,dict),'invalid_selected_frame')
     receipt=next(f['image'] for f in metadata if f['id']==selected)
@@ -230,7 +276,8 @@ def normalize_video(result,board):
     reset_review(candidate)
     return Capture(deepcopy(board),candidate,selected,metadata,
         {'kind':'video','video':{k:video[k] for k in ('sha256','size_bytes','duration_s','fps','frame_count')},
-         'selection':result.get('selection'),'calibration_required':True},blobs)
+         'selection':result.get('selection'),'calibration_required':True,
+         'extraction_mode':ml1.get('mode','manual'),'extraction_status':ml1.get('status','manual_entry_required')},blobs)
 
 
 def process_image(data,board,*,known_parts=None,try_vision=False):
@@ -269,15 +316,21 @@ def restore_capture(snapshot,read_asset):
         deepcopy(frames),{k:deepcopy(v) for k,v in media.items() if k not in ('frames','selected_frame_id')},blobs,deepcopy(snapshot.get('calibration')))
     validate(capture.candidate,capture.board)
     require(capture.candidate.get('image_sha256')==capture.image['sha256'] and snapshot.get('image')==capture.image,'candidate_image_mismatch')
+    for frame in capture.frames:
+        if frame.get('grid_proposal') is not None:
+            frame['grid_proposal']=normalize_grid(frame['grid_proposal'],capture.board,frame['image'])
+    if capture.media.get('grid_review') is not None:
+        accepted_labels(capture.grid_proposal,capture.board,capture.image,capture.media['grid_review'],capture.candidate['revision'])
     return capture
 
 
-def process_video(path,board,*,known_parts=None,try_vision=False,deadline_s=60):
+def process_video(path,board,*,known_parts=None,try_vision=False,deadline_s=60,auto_grid=False):
     """Run ML1 in a killable worker. No decoder executes in the caller/event loop."""
     path=Path(path).resolve()
     require(path.is_file() and 0<path.stat().st_size<=MAX_VIDEO_BYTES,'invalid_video_file_or_size')
     require(finite(deadline_s) and 0<deadline_s<=300,'invalid_deadline')
     require(type(try_vision) is bool,'invalid_vision_flag')
+    require(type(auto_grid) is bool,'invalid_auto_grid_flag')
     with tempfile.TemporaryDirectory(prefix='ml2-video-') as directory:
         staged=Path(directory)/'input.video';digest=sha256();size=0
         with path.open('rb') as source,staged.open('wb') as target:
@@ -285,7 +338,7 @@ def process_video(path,board,*,known_parts=None,try_vision=False,deadline_s=60):
                 size+=len(block);require(size<=MAX_VIDEO_BYTES,'invalid_video_file_or_size')
                 target.write(block);digest.update(block)
         require(size>0,'invalid_video_file_or_size')
-        request=dict(path=str(staged),board=board,known_parts=known_parts,try_vision=try_vision,output=directory)
+        request=dict(path=str(staged),board=board,known_parts=known_parts,try_vision=try_vision,auto_grid=auto_grid,output=directory)
         try:
             child=subprocess.run([sys.executable,'-m','reasoning.media_worker'],input=json.dumps(request),
                 text=True,capture_output=True,timeout=deadline_s)

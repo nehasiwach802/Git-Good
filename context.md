@@ -235,3 +235,29 @@ ontanu forusercommit;backendvideoingestionstillmustwiretheML2layer.
 
 ## Verification-only checkpoint (2026-11-01)
 User explicitly deferred backend integration and requested verification only. Re-ran148tests: all passed, zero skips; actualManitprobe uses labelled ML2fallback, backendconsumer normal template; syntheticvideo revieweddiagnosis passed andframechange clearedreview. Diffcheck passed. Branch remains tanu at02d4e36; nothing staged, committed, pushed or integrated; noML3modulechanges. ML2 working changes ready for user review/commit, not a hosted end-to-end acceptance claim.
+
+## Tanu synchronized with final automatic-grid ML2 (2026-11-01)
+
+User requested the latest ML2 changes on tanu as well. At task start GitHub
+Desktop had already switched to tanu1059ff8 with a clean tree and preserved all
+backend/README updates in stash@{0} (GitHub_Desktop backend entry). That stash,
+older planning stash and older tanu stash were left intact; no branch switch,
+stash apply/pop/delete, merge, commit or push performed by this task.
+
+Copied shared runtime byte-for-byte from preserved backend work: reasoning/grid,
+media and media_worker; ML1 autocalibration/video_upload from ea67b52; handoff/
+practice/preview files and focused tests. Extraction mode/status metadata now
+also matches backend. Backend-specific config/workflow/HTTP and product README
+remain only in preserved backend work. Eight shared grid tests retained; two
+backend-only tests deliberately remain with backend, not skipped on tanu.
+Guide docs/ML2_AUTO_GRID_INTEGRATION.md marks tanu vs backend responsibilities.
+
+Verification on current tanu:162 tests passed, zero failures/skips; media demo
+evaluated and cleared review after frame switch; actual ML3 branch probes preserve
+diagnostic and never invent probabilities; diff check passed. Shared runtime
+byte equality checked against backend stash. Earlier338 integrated backend tests
+remain prior verification, not run against tanu. No new API/ML3/provider/Android
+changes or real credential/product datapack access.
+Next: review/commit tanu; restore GitHub Desktop backend changes when returning
+to backend, preserving README/context edits carefully. No claim latest updates
+are committed/pushed/deployed. Matching summary saved successfully to gitgood-build.

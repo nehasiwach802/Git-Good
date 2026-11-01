@@ -68,6 +68,24 @@ class VideoUploadTests(unittest.TestCase):
         self.assertEqual(len(result['frames']),3)
         self.assertNotIn('PRIVATE ERROR',str(result['limitations']))
 
+    def test_auto_grid_selects_supported_frame_and_preserves_explicit_choice(self):
+        reports = [{'status':'not_found'}, {'status':'needs_orientation_review'}, {'status':'not_found'}]
+        with patch('labvision.autocalibration.detect_grid',side_effect=reports) as detect:
+            result = self.run_video(auto_grid=True)
+        self.assertEqual(detect.call_count,3)
+        self.assertEqual(result['selected_frame_id'],'F2')
+        self.assertEqual(result['selection'],'sharpest_grid_proposal')
+        self.assertEqual(result['ml1']['grid_proposal'],reports[1])
+        self.assertFalse(result['ml1']['candidate']['board_confirmed'])
+        with patch('labvision.autocalibration.detect_grid',side_effect=reports):
+            result = self.run_video(auto_grid=True,selected_frame_id='F1')
+        self.assertEqual(result['selected_frame_id'],'F1')
+        self.assertEqual(result['selection'],'explicit_frame_id')
+        with patch('labvision.autocalibration.detect_grid',side_effect=CandidateError('unsupported')):
+            result = self.run_video(auto_grid=True)
+        self.assertEqual(result['selection'],'maximum_sampled_sharpness')
+        self.assertEqual(result['ml1']['grid_proposal']['status'],'unavailable')
+
     def test_limits_and_invalid_selection_reject(self):
         for kwargs in ({'max_bytes':1},{'max_duration_s':.1},{'max_pixels':100},
                        {'selected_frame_id':'F99'},{'max_edge':0}):

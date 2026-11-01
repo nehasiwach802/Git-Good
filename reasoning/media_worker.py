@@ -10,7 +10,7 @@ def main():
         request=json.loads(sys.stdin.read(262145))
         from labvision.video_upload import process_video
         result=process_video(request['path'],request['board'],known_parts=request['known_parts'],
-                             try_vision=request['try_vision'])
+                             try_vision=request['try_vision'],auto_grid=request.get('auto_grid',False))
         directory=Path(request['output'])
         for frame in result['frames']:
             (directory/(frame['id']+'.jpg')).write_bytes(frame.pop('jpeg_bytes'))
