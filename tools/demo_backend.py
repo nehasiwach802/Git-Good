@@ -8,6 +8,8 @@ from uuid import uuid4
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from fastapi.testclient import TestClient
 from PIL import Image
+import cv2
+import numpy as np
 from backend.app import create_app
 from backend.config import Settings
 from backend.catalog import load_catalog
@@ -18,7 +20,12 @@ def main():
     root=Path(__file__).resolve().parents[1]
     catalog=load_catalog(root/'backend/catalog.json')
     for item in catalog.values():item['workflow_approved']=True  # Synthetic fixture approval only.
-    image=BytesIO();Image.new('RGB',(16,16),'white').save(image,format='PNG')
+    with TemporaryDirectory() as clip_directory:
+        clip=Path(clip_directory)/'synthetic.mp4'
+        writer=cv2.VideoWriter(str(clip),cv2.VideoWriter_fourcc(*'mp4v'),10,(64,48))
+        if not writer.isOpened():raise RuntimeError('Synthetic MP4 writer unavailable')
+        for i in range(12):writer.write(np.full((48,64,3),i*15,dtype=np.uint8))
+        writer.release();video=clip.read_bytes()
     transcript=[]
     with TemporaryDirectory() as directory:
         settings=Settings(data_dir=Path(directory),worker_enabled=False,vision_enabled=False,qwen_enabled=False)
@@ -28,7 +35,7 @@ def main():
             response=client.post('/api/v1/sessions',headers=headers,json={'experiment_id':'nand-not-example','description':'Synthetic circuit output check'})
             response.raise_for_status();record=response.json();sid=record['session_id'];url='/api/v1/sessions/'+sid
             transcript.append({'step':'session_created','response':record})
-            response=client.post(url+'/image',headers=headers,data={'expected_session_version':record['session_version']},files={'image':('synthetic.png',image.getvalue(),'image/png')})
+            response=client.post(url+'/image',headers=headers,data={'expected_session_version':record['session_version']},files={'image':('synthetic.mp4',video,'video/mp4')})
             response.raise_for_status()
             transcript.append({'step':'upload_accepted','response':response.json()})
             def poll(step):

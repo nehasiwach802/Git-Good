@@ -70,7 +70,7 @@ class Workflow:
                 self.store.enqueue(db,record,'extract')
             else:
                 record['ml1']={'status':'awaiting_image'}
-                message(record,'assistant','Session created. Upload a circuit image to begin review.')
+                message(record,'assistant','Session created. Upload a circuit video to begin review.')
             self.actions(record)
             db.execute('INSERT INTO sessions VALUES(?,?,?,?,?,?)', (sid,principal.actor_id,request_key,digest,encode(record),data or b''))
             return record
@@ -97,9 +97,32 @@ class Workflow:
             db.execute('INSERT INTO uploads VALUES(?,?,?,?)',(sid,request_key,digest,encode(response)))
             return response
 
+    def attach_video(self,sid,principal,staged,request_key,expected_version):
+        digest=hashlib.sha256(encode(['video',staged.receipt['sha256'],expected_version]).encode()).hexdigest()
+        with self.store.transaction() as db:
+            record=self.store.get(db,sid,principal.actor_id)
+            if not record or record['lab_id']!=principal.lab_id:error(404,'session_not_found','Session not found')
+            if principal.role!='student':error(403,'student_required','Student role required')
+            previous=db.execute('SELECT * FROM uploads WHERE session_id=? AND request_key=?',(sid,request_key)).fetchone()
+            if previous:
+                if previous['digest']!=digest:error(409,'idempotency_conflict','Upload key reused with different content or version')
+                return json.loads(previous['response']),False
+            if record['version']!=expected_version:error(409,'stale_session','Refresh session before uploading')
+            if record['state']!='awaiting_image':error(409,'media_already_attached','A video is already attached or the session is closed')
+            record.update(image=None,state='extracting',version=record['version']+1,
+                ml1={'status':'queued','media':{'kind':'video','video':staged.receipt}})
+            db.execute('INSERT INTO session_media VALUES(?,?,?)',(sid,staged.asset_id,encode(staged.receipt)))
+            self.store.enqueue(db,record,'extract_video')
+            self.actions(record)
+            message(record,'assistant','Video received. Selecting a frame for circuit review; no connections are confirmed yet.')
+            self.store.save(db,record)
+            response=public(record)
+            db.execute('INSERT INTO uploads VALUES(?,?,?,?)',(sid,request_key,digest,encode(response)))
+            return response,True
+
     def actions(self, record):
         if record['state']=='awaiting_image':
-            record['actions']=[{'type':'upload_image'}]
+            record['actions']=[{'type':'upload_image','accepted_content_types':['video/mp4']}]
         elif record['state']=='awaiting_review':
             record['actions']=[{'type':'review_candidate','candidate_revision':record['candidate']['revision'],
                                'pending':pending(record['candidate'],record['board']),
@@ -205,7 +228,8 @@ class Workflow:
                     if record['state']!='failed':raise ValueError('Only failed processing can be retried')
                     if record.get('ml3',{}).get('outcome_status')=='needs_reconciliation':raise ValueError('Memory write requires operator reconciliation, not retry')
                     record.update(state='extracting',error=None,candidate=None,diagnostic=None,explanation=None)
-                    self.store.enqueue(db,record,'extract')
+                    source=db.execute('SELECT 1 FROM session_media WHERE session_id=?',(sid,)).fetchone()
+                    self.store.enqueue(db,record,'extract_video' if source else 'extract')
             except (ValueError,KeyError,TypeError) as exc:
                 error(422,'invalid_event',str(exc))
             record['version']+=1
@@ -248,7 +272,26 @@ class Workflow:
             data=bytes(row['image']) if row else None
         try:
             if not record or record['job_id']!=job['id']:return True
-            if job['kind']=='extract':
+            if job['kind']=='extract_video':
+                from .video import video_path
+                with self.store.connect() as db:
+                    media=db.execute('SELECT * FROM session_media WHERE session_id=?',(record['session_id'],)).fetchone()
+                if not media:raise ValueError('Video source is missing')
+                capture=self.integrations.extract_video(video_path(self.store.directory,media['asset_id']),record['experiment'])
+                record=capture.apply_to_record(record)
+                record['component_map']=deepcopy(record['experiment'].get('component_map',{}))
+                record['port_map']=deepcopy(record['experiment'].get('port_map',{}))
+                selected=next(f for f in capture.frames if f['id']==capture.selected_frame_id)
+                detection=deepcopy(selected['endpoint_detection'])
+                if detection.get('status')=='unreviewed_region_proposals':
+                    detection['videos']=[{'video_id':'selected-frame','frames':[{
+                        'sha256':capture.image['sha256'],'image_size':[capture.image['width'],capture.image['height']],
+                        'proposals':detection.pop('proposals',[])}]}]
+                record['ml1']={'mode':capture.media['extraction_mode'],'status':capture.media['extraction_status'],
+                    'media':capture.snapshot()['media'],'endpoint_detection':detection,
+                    'message':'Review the selected video frame, parts and connections before diagnosis.'}
+                message(record,'assistant',record['ml1']['message'])
+            elif job['kind']=='extract':
                 extracted=self.integrations.extract(data,record['experiment'])
                 record.update(candidate=extracted['candidate'],board=extracted['board'],state='awaiting_review',
                               ml1={k:v for k,v in extracted.items() if k not in ('candidate','board','netlist')},error=None)
@@ -273,13 +316,23 @@ class Workflow:
                 record['state']='completed'
                 message(record,'assistant','Session saved. Memory outcome: '+status['status'])
             record.update(job_id=None,error=None)
-        except Exception:
-            record.update(state='failed',job_id=None,error={'code':'processing_failed','message':'Processing failed. Current observations are preserved; retry explicitly or contact the instructor.'})
+        except Exception as exc:
+            from reasoning.media import MediaError
+            code=str(exc) if isinstance(exc,MediaError) and str(exc) in (
+                'video_processing_timeout','video_dependencies_unavailable','invalid_video_or_limits',
+                'video_processing_failed','video_source_hash_mismatch') else 'processing_failed'
+            record.update(state='failed',job_id=None,error={'code':code,'message':'Processing failed. Current observations are preserved; retry explicitly or contact the instructor.'})
             message(record,'assistant',record['error']['message'])
         finally:
             with self.store.transaction() as db:
                 current=self.store.get(db,job['session_id'])
                 if record and current and current['job_id']==job['id']:
+                    if job['kind']=='extract_video' and record['state']=='awaiting_review':
+                        db.execute('DELETE FROM media_frames WHERE session_id=?',(record['session_id'],))
+                        for frame in capture.frames:
+                            db.execute('INSERT INTO media_frames VALUES(?,?,?,?)',(
+                                record['session_id'],frame['id'],capture._bytes[frame['id']],encode(frame)))
+                        db.execute('UPDATE sessions SET image=? WHERE id=?',(capture.image_bytes,record['session_id']))
                     record['version']=current['version']+1
                     self.actions(record);self.store.save(db,record)
                 db.execute("UPDATE jobs SET state='done' WHERE id=?",(job['id'],))

@@ -11,7 +11,7 @@ ownership, then runs Python as `appuser`. No database files are deleted.
 
 1. Commit all backend changes and push `backend/android-connection-test`.
 2. For the existing Render service, set Dockerfile path `Dockerfile.backend`,
-   instance count 1, health path `/health`, shutdown delay 60 seconds, and attach
+   instance count 1, health path `/health`, shutdown delay 180 seconds, and attach
    a disk at `/app/data`. Alternatively apply `render.yaml` as a Blueprint after
    reviewing its settings. It targets service name `git-good-1`; change the name
    if it should create a separate service. The blueprint declares a paid starter
@@ -119,3 +119,19 @@ For Render select the backend branch, Docker runtime, Dockerfile path `Dockerfil
 After deployment check `/health` reports `mode=integrated`, `/ready` returns 200, and `/docs` shows `/api/v1/sessions`. Then create an authenticated JSON session from Android, upload a synthetic image separately, poll, review/correct, submit readings, close_session, and verify ownership with another test account. Test live vision accuracy and memory behavior with approved test accounts separately. This coding session does not access product datapacks or claim live provider acceptance.
 
 Do not label software test success as real-photo/model accuracy. Production acceptance additionally needs the approved experiments, auth claims/credentials, configured disk, provider test accounts, retention policy and a real-device Android test. The existing public URL serves whatever commit its hosting configuration deploys; local edits are not live until committed/pushed and redeployed.
+
+## Video runtime
+
+Public input is MP4 only on the existing `/image` route and `image` file field.
+Pinned OpenCV headless and NumPy are installed by requirements-backend.txt.
+`VIDEO_DEADLINE_SECONDS=60` bounds the killable ML1 subprocess (range 1..120).
+Use one instance/worker and persistent DATA_DIR: original private MP4s live in
+video-sources and private frame bytes in SQLite, surviving retry/restart.
+Deletion removes these local assets; define retention for production data.
+
+Endpoint detection is optional: build Docker with INSTALL_ENDPOINT_DETECTOR=true
+and supply trusted LABVISION_ENDPOINT_WEIGHTS on persistent storage. This adds
+Torch/Ultralytics and needs more memory; base deployment supports manual review.
+VISION_ENABLED requires GEMINI_API_KEY and GEMINI_MODEL separately; disabled vision
+never invents circuit connections. Qwen and Firebase retain their existing settings.
+Actual provider accuracy and phone connectivity require deployed checks.

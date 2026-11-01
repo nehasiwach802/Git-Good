@@ -1,3 +1,6 @@
+> Historical smoke example: combined image-upload routes now return 410. Use
+> [the current video handoff](ANDROID_VIDEO_HANDOFF.md) instead.
+
 # Android upload connection test
 
 Historical connectivity endpoint only. The integrated application now uses

@@ -6,3 +6,5 @@ Pillow==12.2.0
 httpx==0.28.1
 firebase-admin==7.7.0
 mcp==1.30.0
+numpy==2.4.6
+opencv-python-headless==5.0.0.93

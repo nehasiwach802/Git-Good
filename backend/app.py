@@ -18,9 +18,10 @@ from .integrations import Integrations
 from .models import SessionEvent, SessionResponse
 from .store import Store
 from .workflow import Workflow, public
-from .smoke import MAX_IMAGE_BYTES, MAX_PIXELS, upload as smoke_upload
+from .smoke import MAX_IMAGE_BYTES, MAX_PIXELS
 from .limits import BodyLimit
 from .contract import CreateSession, AndroidEvent, SessionSnapshot, internal_event, snapshot
+from .video import stage_video,video_path
 
 
 def validate_image(data, content_type):
@@ -54,7 +55,7 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
         try:yield
         finally:
             workflow.stop.set()
-            if worker:await run_in_threadpool(worker.join,35)
+            if worker:await run_in_threadpool(worker.join,settings.video_deadline_s+25)
 
     app=FastAPI(title='Git-Good circuit mentor API',version='1.1.0',lifespan=lifespan)
     app.add_middleware(BodyLimit)
@@ -80,7 +81,10 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
         with app.state.workflow.store.connect() as db:db.execute('SELECT 1').fetchone()
         return JSONResponse(report,status_code=200 if report['status']=='ready' else 503)
 
-    app.add_api_route('/api/sessions',smoke_upload,methods=['POST'],deprecated=True)
+    @app.post('/api/sessions',deprecated=True,status_code=410)
+    @app.post('/api/legacy/v1/sessions',deprecated=True,status_code=410)
+    def retired_image_upload():
+        raise HTTPException(410,'Image uploads are retired. Create a JSON session and upload MP4 using the agreed API1.1 route.')
 
     @app.get('/api/v1/experiments')
     def experiments(user:Auth):
@@ -102,36 +106,27 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
         from reasoning.spice import find_ngspice
         return {'reasoning':supported(),'ngspice_available':bool(find_ngspice()),'probabilities_calibrated':False}
 
-    @app.post('/api/legacy/v1/sessions',response_model=SessionResponse,status_code=202,deprecated=True)
-    async def create_legacy(user:Auth, experiment_id:Annotated[str,Form(min_length=1,max_length=100)],
-                     description:Annotated[str,Form(min_length=1,max_length=2000)],
-                     image:Annotated[UploadFile,File()],
-                     idempotency_key:Annotated[UUID,Header()],
-                     experiment_version:Annotated[str | None,Form(max_length=100)]=None):
-        try:
-            if not description.strip():raise HTTPException(422,'Description cannot be blank')
-            data=await image.read(MAX_IMAGE_BYTES+1)
-            receipt=await run_in_threadpool(validate_image,data,image.content_type)
-            record=await run_in_threadpool(app.state.workflow.create,user,experiment_id,experiment_version,description.strip(),data,receipt,str(idempotency_key))
-            return public(record)
-        finally:await image.close()
-
     @app.post('/api/v1/sessions',response_model=SessionSnapshot,status_code=201)
     def create(body:CreateSession,user:Auth,idempotency_key:Annotated[UUID,Header()]):
         record=app.state.workflow.create(user,body.experiment_id,body.experiment_version,body.description,None,None,str(idempotency_key))
         return snapshot(public(record))
 
-    @app.post('/api/v1/sessions/{session_id}/image',response_model=SessionSnapshot,status_code=202)
-    async def upload_image(session_id:UUID,user:Auth,image:Annotated[UploadFile,File()],
+    @app.post('/api/v1/sessions/{session_id}/image',response_model=SessionSnapshot,status_code=202,
+              description='MP4 video input only (50 MiB). The route and field image are retained for Android contract compatibility.',
+              openapi_extra={'requestBody':{'content':{'multipart/form-data':{'encoding':{'image':{'contentType':'video/mp4'}}}}}})
+    async def upload_image(session_id:UUID,user:Auth,image:Annotated[UploadFile,File(description='MP4 video only; no JPEG/PNG input')],
                            expected_session_version:Annotated[int,Form(ge=1)],
                            idempotency_key:Annotated[UUID,Header()]):
+        staged=None;accepted=False
         try:
             app.state.workflow.get(str(session_id),user)
-            data=await image.read(MAX_IMAGE_BYTES+1)
-            receipt=await run_in_threadpool(validate_image,data,image.content_type)
-            result=await run_in_threadpool(app.state.workflow.attach_image,str(session_id),user,data,receipt,str(idempotency_key),expected_session_version)
+            if image.content_type!='video/mp4':raise HTTPException(415,'Upload an MP4 video using the image file field')
+            staged=await run_in_threadpool(stage_video,image.file,settings.data_dir)
+            result,accepted=await run_in_threadpool(app.state.workflow.attach_video,str(session_id),user,staged,str(idempotency_key),expected_session_version)
             return snapshot(result)
-        finally:await image.close()
+        finally:
+            await image.close()
+            if staged is not None and not accepted:await run_in_threadpool(staged.discard)
 
     @app.get('/api/v1/sessions/{session_id}',response_model=SessionSnapshot)
     def get(session_id:UUID,user:Auth):return snapshot(public(app.state.workflow.get(str(session_id),user)))
@@ -163,7 +158,9 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
             record=workflow.store.get(db,str(session_id),user.actor_id)
             if not record or record['lab_id']!=user.lab_id:raise HTTPException(404,'Session not found')
             if record['state'] in ('extracting','diagnosing','completing'):raise HTTPException(409,'Wait for processing before deleting')
-            for table in ('events','jobs','uploads'):db.execute('DELETE FROM '+table+' WHERE session_id=?',(str(session_id),))
+            media=db.execute('SELECT asset_id FROM session_media WHERE session_id=?',(str(session_id),)).fetchone()
+            if media:video_path(settings.data_dir,media['asset_id']).unlink(missing_ok=True)
+            for table in ('events','jobs','uploads','session_media','media_frames'):db.execute('DELETE FROM '+table+' WHERE session_id=?',(str(session_id),))
             db.execute('DELETE FROM sessions WHERE id=?',(str(session_id),))
         return Response(status_code=204)
 

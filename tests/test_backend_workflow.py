@@ -6,11 +6,12 @@ import json
 import unittest
 from fastapi.testclient import TestClient
 from PIL import Image
-from backend.app import create_app
+from backend.app import create_app,validate_image
 from backend.config import Settings
 from backend.catalog import load_catalog
 from backend.integrations import Integrations
 from knowledge_lifecycle import Principal
+from backend.workflow import public
 
 
 def png():
@@ -29,10 +30,12 @@ class WorkflowTests(unittest.TestCase):
         self.sid=None
     def tearDown(self):
         self.client.__exit__(None,None,None);self.temp.cleanup()
-    def upload(self):
-        response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Synthetic integration check'},files={'image':('test.png',png(),'image/png')})
-        self.assertEqual(response.status_code,202,response.text)
-        self.sid=response.json()['session_id'];return response.json()
+    def seed_frame(self,experiment_id='nand-not-example',description='Synthetic integration check'):
+        # Private decoded-frame fixture, not a public image upload endpoint.
+        record=self.app.state.workflow.create(Principal('test-student','test-lab','student'),experiment_id,None,description,
+            png(),validate_image(png(),'image/png'),self.headers['Idempotency-Key'])
+        self.sid=record['session_id'];return public(record)
+    def upload(self):return self.seed_frame()
     def get(self):return self.client.get('/api/legacy/v1/sessions/'+self.sid,headers=self.headers).json()
     def send(self,kind,**values):
         current=self.get()
@@ -83,7 +86,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.client.post(url,headers=self.headers,json=payload).status_code,409)
     def test_rejected_images_and_no_forged_diagnosis(self):
         response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'test'},files={'image':('bad.png',b'bad','image/png')})
-        self.assertEqual(response.status_code,415)
+        self.assertEqual(response.status_code,410)
         self.upload();self.app.state.workflow.run_one()
         self.assertEqual(self.send('diagnose',diagnostic={'status':'evaluated'}).status_code,422)
     def test_durable_queued_jobs_and_explicit_retry_after_crash(self):
@@ -115,9 +118,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.client.get(url,headers=self.headers).status_code,404)
 
     def test_rc_source_settings_and_real_solver(self):
-        response=self.client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'rc-lowpass-example','description':'Synthetic RC'},files={'image':('test.png',png(),'image/png')})
-        self.assertEqual(response.status_code,202,response.text)
-        self.sid=response.json()['session_id'];self.app.state.workflow.run_one()
+        self.seed_frame('rc-lowpass-example','Synthetic RC');self.app.state.workflow.run_one()
         fixture=json.loads(Path('examples/vision-rc.json').read_text())
         self.assertEqual(self.send('replace_candidate',candidate_revision=1,candidate=fixture['candidate']).status_code,200)
         self.assertEqual(self.send('set_correspondence',component_map=fixture['component_id_map']).status_code,200)
@@ -151,9 +152,9 @@ class WorkflowTests(unittest.TestCase):
         import time
         app=create_app(replace(self.settings,worker_enabled=True),catalog=self.catalog,verify=lambda token:Principal(token,'test-lab','student'))
         with TestClient(app) as client:
-            response=client.post('/api/legacy/v1/sessions',headers=self.headers,data={'experiment_id':'nand-not-example','description':'Worker test'},files={'image':('test.png',png(),'image/png')})
-            self.assertEqual(response.status_code,202,response.text)
-            url='/api/legacy/v1/sessions/'+response.json()['session_id']
+            record=app.state.workflow.create(Principal('test-student','test-lab','student'),'nand-not-example',None,'Worker test',
+                png(),validate_image(png(),'image/png'),self.headers['Idempotency-Key'])
+            url='/api/legacy/v1/sessions/'+record['session_id']
             deadline=time.monotonic()+5
             while time.monotonic()<deadline:
                 record=client.get(url,headers=self.headers).json()

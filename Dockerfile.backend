@@ -3,6 +3,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends ngspice gosu && rm -rf /var/lib/apt/lists/*
 COPY requirements-backend.txt .
 RUN pip install --no-cache-dir -r requirements-backend.txt
+ARG INSTALL_ENDPOINT_DETECTOR=false
+COPY requirements-detector.txt .
+RUN if [ "$INSTALL_ENDPOINT_DETECTOR" = "true" ]; then pip install --no-cache-dir -r requirements-detector.txt; fi
 COPY backend/ backend/
 COPY reasoning/ reasoning/
 COPY labvision/ labvision/
@@ -15,4 +18,4 @@ ENV DATA_DIR=/app/data
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('PORT','8000')+'/health',timeout=4)"
 ENTRYPOINT ["/app/backend/docker-entrypoint.sh"]
-CMD ["sh", "-c", "exec uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --limit-concurrency 20 --timeout-graceful-shutdown 40 --no-access-log"]
+CMD ["sh", "-c", "exec uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --limit-concurrency 20 --timeout-graceful-shutdown 150 --no-access-log"]

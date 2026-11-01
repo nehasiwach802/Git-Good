@@ -10,7 +10,7 @@ services:
     autoDeployTrigger: "off"
     numInstances: 1
     healthCheckPath: /health
-    maxShutdownDelaySeconds: 60
+    maxShutdownDelaySeconds: 180
     disk:
       name: gitgood-data
       mountPath: /app/data

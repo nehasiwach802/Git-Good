@@ -68,6 +68,32 @@ class HandoffTests(unittest.TestCase):
         self.assertIsNone(result['netlist'])
         self.assertTrue(all(p['hole'] is None for p in result['candidate']['components'][0]['pins'].values()))
 
+    def test_new_parts_preserve_terminals_without_inventing_models(self):
+        self.candidate['components'] = [
+            {'id': 'U2', 'part': 'opamp', 'identity_confirmed': False,
+             'pins': {pin: endpoint(hole) for pin, hole in zip(
+                 ['+', '-', 'out', 'vcc', 'vee'], ['A20','A21','A22','A23','A24'])}},
+            {'id': 'D2', 'part': 'diode', 'identity_confirmed': False,
+             'pins': {'anode': endpoint('C20'), 'cathode': endpoint('C21')}}]
+        with self.assertRaises(CandidateError):
+            reasoning_input(self.candidate, self.board)
+        spec = reasoning_input(confirm(self.candidate, self.board, 1), self.board)
+        self.assertEqual(spec['adapter'], 'internal_v1')
+        parts = spec['payload']['components']
+        self.assertEqual([p['model'] for p in parts], ['OPAMP', 'DIODE'])
+        self.assertEqual(set(parts[0]['pins']), {'+', '-', 'out', 'vcc', 'vee'})
+        self.assertEqual(parts[0]['properties'], {})
+        self.assertFalse(parts[0]['properties_confirmed'])
+        self.assertEqual(set(parts[1]['pins']), {'anode', 'cathode'})
+        self.assertEqual(spec['payload']['source']['physical_schema_version'], '0.1')
+
+    def test_new_parts_manual_fallback_has_unique_ids(self):
+        result = extract_upload(self.image, self.board,
+            known_parts=['opamp', '7400', 'diode', 'led'], try_vision=False)
+        parts = result['candidate']['components']
+        self.assertEqual([p['id'] for p in parts], ['U1', 'U2', 'D1', 'D2'])
+        self.assertTrue(all(p['hole'] is None for c in parts for p in c['pins'].values()))
+
     def test_provider_timeout_returns_truthful_fallback_without_private_details(self):
         provider = Mock(side_effect=CandidateError('SECRET_PROVIDER_DETAIL'))
         result = extract_upload(self.image, self.board, known_parts=['7400'], extractor=provider)

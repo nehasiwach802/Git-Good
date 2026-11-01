@@ -10,7 +10,25 @@ class BodyLimit:
             return await self.app(scope,receive,send)
         import re
         upload=scope['path'] in ('/api/sessions','/api/legacy/v1/sessions') or re.fullmatch(r'/api/v1/sessions/[0-9a-fA-F-]{36}/image',scope['path'])
-        limit=6*1024*1024 if upload else 512*1024
+        legacy=scope['path'] in ('/api/sessions','/api/legacy/v1/sessions')
+        limit=(6 if legacy else 51)*1024*1024 if upload else 512*1024
+        if upload:
+            headers=dict(scope.get('headers',[]))
+            try:length=int(headers.get(b'content-length',b'0'))
+            except ValueError:
+                return await JSONResponse({'error':'invalid_content_length'},status_code=400)(scope,receive,send)
+            if length>limit:
+                return await JSONResponse({'error':'request_too_large'},status_code=413)(scope,receive,send)
+            size=0
+            async def limited_receive():
+                nonlocal size
+                part=await receive()
+                size+=len(part.get('body',b''))
+                if size>limit:
+                    from fastapi import HTTPException
+                    raise HTTPException(413,'Request exceeds upload limit')
+                return part
+            return await self.app(scope,limited_receive,send)
         chunks=[];size=0
         while True:
             part=await receive()

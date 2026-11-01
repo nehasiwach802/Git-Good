@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import importlib.util
 from .catalog import load_catalog
 from .config import Settings
 from reasoning.spice import find_ngspice
@@ -24,6 +25,11 @@ def check(settings, *, production=False, authenticated=False, catalog=None):
             credential_error=exc.code
     checks['ngspice']=bool(find_ngspice())
     checks['worker']=settings.worker_enabled
+    checks['video_decoder']=importlib.util.find_spec('cv2') is not None and importlib.util.find_spec('numpy') is not None
+    endpoint_weights=os.getenv('LABVISION_ENDPOINT_WEIGHTS','').strip()
+    if endpoint_weights:
+        checks['endpoint_detector']=Path(endpoint_weights).is_file() and all(
+            importlib.util.find_spec(name) is not None for name in ('ultralytics','torch','torchvision'))
     try:
         settings.data_dir.mkdir(parents=True,exist_ok=True)
         with tempfile.TemporaryFile(dir=settings.data_dir) as probe:probe.write(b'ready');probe.flush()

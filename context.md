@@ -295,3 +295,45 @@ check passed. Real credential file not read, real OAuth/IAM not tested, no keys
 revoked or Render secrets/deployment changed. Operator must replace exposed keys
 if applicable, supply matching project credentials, redeploy, and run live
 permission diagnostic on host. Vision remains a separate Gemini configuration.
+
+## MP4-only backend integration (2026-11-01)
+
+Working branch backend/android-connection-test; uncommitted integration imports
+ML1 Abhiram393732a and ML2 tanu1059ff8 callable media/review/bridge modules.
+ML3 root implementation retained unchanged. User/Android contract owner explicitly
+confirmed existing POST /api/v1/sessions/{id}/image and multipart image field
+now contain MP4 only. JPEG/PNG uploads return415; old combined image POSTs410.
+JSON creation, expected_session_version, nested events and close_session unchanged.
+Historical awaiting_image/upload_image labels remain for Android compatibility.
+
+Video staging streams to private persistent storage, validates MIME/signature/size,
+enforces 50MiB file /51MiB envelope, queues durable extraction with idempotent
+receipts. ML1 runs in bounded killable process; source retained for explicit retry.
+Up to6 internal JPEG frames stored privately; selected frame exposed through GET
+/image for review only. Media metadata stays in ML1/ML2/backend, never ML3 schema.
+Student confirmation and measured source settings remain required; no invented
+probabilities. Strict original ML3 can use explicit safe explanation fallback
+when valid probability scores are unavailable.
+
+Docs: BACKEND_API.md, BACKEND_DEPLOYMENT.md, ANDROID_VIDEO_HANDOFF.md; generated
+OpenAPI updated and Retrofit reference provided (not built into Android app).
+Runtime adds OpenCV/NumPy; optional endpoint detector build/weights separate.
+Verification:322 tests passed, no failures/skips; synthetic MP4 backend demo
+completed create/extract/review/diagnose/measure/close with actual local interfaces.
+pip check and git diff --check passed. Providers/auth mocked in tests; no live
+credentials read, Docker build, APK test, push or deployment performed.
+Next: review/commit/push branch, redeploy configured service, verify real Firebase
+auth/providers/approved experiments and Android MP4 flow. No automatic quality
+guarantee for model extraction; manual review remains essential.
+Matching build summary saved to gitgood-build; synchronization succeeded.
+
+## Pre-push verification (2026-11-01)
+
+ML2/backend rechecked current backend branch:322 tests pass with no skips;
+synthetic MP4 transcript reaches closed after extraction/review/diagnosis/readings.
+Actual local uvicorn HTTP boot: /health200, /openapi.json200 (API1.1.0), /ready503.
+Local readiness lacks Firebase project/credentials and enabled vision settings;
+zero approved real experiments. Decoder/ngspice/worker/storage/catalog checks pass.
+No real auth/provider/phone or remote deployed service verification performed.
+Android route/field/event contract preserved, with agreed MP4-only MIME input;
+obsolete combined image POSTs return410. No commit/push/deployment performed.

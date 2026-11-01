@@ -13,6 +13,11 @@ class Settings:
     worker_enabled: bool = True
     memory_scopes_file: str = ''
     qwen_enabled: bool = True
+    video_deadline_s: int = 60
+
+    def __post_init__(self):
+        if type(self.video_deadline_s) is not int or not 1<=self.video_deadline_s<=120:
+            raise ValueError('VIDEO_DEADLINE_SECONDS must be an integer in 1..120')
 
     @classmethod
     def from_env(cls):
@@ -22,4 +27,5 @@ class Settings:
                    vision_enabled=os.getenv('VISION_ENABLED', 'true').lower() == 'true',
                    worker_enabled=os.getenv('WORKER_ENABLED', 'true').lower() == 'true',
                    memory_scopes_file=os.getenv('MEMORY_SCOPES_FILE', ''),
-                   qwen_enabled=os.getenv('QWEN_ENABLED', 'true').lower()=='true')
+                   qwen_enabled=os.getenv('QWEN_ENABLED', 'true').lower()=='true',
+                   video_deadline_s=int(os.getenv('VIDEO_DEADLINE_SECONDS','60')))

@@ -16,6 +16,8 @@ from labvision.upload import extract_upload
 from labvision.handoff import reasoning_input
 from reasoning.api import diagnose_input, validate_input
 from reasoning.observations import validate_reference
+from reasoning.media import process_video,restore_capture
+from reasoning.ml3_bridge import explain as explain_ml2_result
 
 
 class UnavailableMemory:
@@ -59,6 +61,20 @@ class Integrations:
         return extract_upload(data, experiment['board'], known_parts=experiment['reported_parts'],
                               try_vision=self.settings.vision_enabled, timeout=20)
 
+    def extract_video(self,path,experiment):
+        return process_video(path,experiment['board'],known_parts=experiment['reported_parts'],
+            try_vision=self.settings.vision_enabled,deadline_s=self.settings.video_deadline_s)
+
+    def capture(self,record):
+        from .store import Store
+        store=Store(self.settings.data_dir)
+        with store.connect() as db:
+            rows=db.execute('SELECT image,metadata FROM media_frames WHERE session_id=?',(record['session_id'],)).fetchall()
+        assets={json.loads(row['metadata'])['asset_id']:bytes(row['image']) for row in rows}
+        def read_asset(digest):return assets[digest]
+        return restore_capture({'board':record['board'],'candidate':record['candidate'],
+            'image':record['image'],'media':record['ml1']['media'],'calibration':record.get('calibration')},read_asset)
+
     def reasoning_request(self, record):
         experiment = record['experiment']
         request = {'schema_version':'2.0', 'reference':experiment['reference'],
@@ -67,6 +83,12 @@ class Integrations:
             'problem_description':record['description'], 'measurements':record['measurements'],
             'student_expectations':record['student_expectations'],
             'safety_profile':'instructor_approved_low_voltage' if experiment.get('workflow_approved') else 'unapproved'}
+        if record.get('ml1',{}).get('media',{}).get('kind')=='video':
+            capture=self.capture(record)
+            request=capture.request(experiment['reference'],record['component_map'],
+                model_settings=experiment.get('model_settings'),port_map=record['port_map'],
+                problem_description=record['description'],measurements=record['measurements'],
+                student_expectations=record['student_expectations'],safety_profile=request['safety_profile'])
         # External sources are reported by the student, never copied from the
         # desired reference. Confirmed port connectivity supplies their terminals.
         if experiment.get('source_ports'):
@@ -107,8 +129,10 @@ class Integrations:
     def explain(self, record):
         principal = Principal(record['owner'], record['lab_id'], 'student')
         with self.service() as service:
-            return service.explain_result(principal, diagnostic_result(record), query=record['description'],
-                equipment_id=record['equipment_id'], channel=record['channel'], simulated=record['simulated'], now=datetime.now(timezone.utc))
+            return explain_ml2_result(record['diagnostic'],record['session_id'],
+                diagnostic_type=DiagnosticResult,evidence_type=EvidenceItem,
+                explain_callback=lambda result:service.explain_result(principal,result,query=record['description'],
+                    equipment_id=record['equipment_id'],channel=record['channel'],simulated=record['simulated'],now=datetime.now(timezone.utc)))
 
     def outcome(self, record):
         with self.service() as service:

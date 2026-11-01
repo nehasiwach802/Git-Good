@@ -1,4 +1,4 @@
-﻿from io import BytesIO
+from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
@@ -6,6 +6,7 @@ import json
 import unittest
 from fastapi.testclient import TestClient
 from PIL import Image
+from backend_video_fixture import mp4_bytes
 from backend.app import create_app
 from backend.catalog import load_catalog
 from backend.config import Settings
@@ -21,7 +22,7 @@ class AndroidContractTests(unittest.TestCase):
         self.app=create_app(settings,catalog=catalog,verify=lambda token:Principal(token,'test-lab','student'))
         self.client=TestClient(self.app);self.client.__enter__()
         self.headers={'Authorization':'Bearer synthetic-student','Idempotency-Key':str(uuid4())}
-        stream=BytesIO();Image.new('RGB',(8,8),'white').save(stream,format='PNG');self.image=stream.getvalue()
+        self.video=mp4_bytes()
     def tearDown(self):
         self.client.__exit__(None,None,None);self.directory.cleanup()
     def create(self):
@@ -30,7 +31,7 @@ class AndroidContractTests(unittest.TestCase):
         record=response.json();self.url='/api/v1/sessions/'+record['session_id'];return record
     def get(self):return self.client.get(self.url,headers=self.headers).json()
     def upload(self,version=1,headers=None):
-        return self.client.post(self.url+'/image',headers=headers or self.headers,data={'expected_session_version':version},files={'image':('synthetic.png',self.image,'image/png')})
+        return self.client.post(self.url+'/image',headers=headers or self.headers,data={'expected_session_version':version},files={'image':('synthetic.mp4',self.video,'video/mp4')})
     def event(self,kind,payload):
         return self.client.post(self.url+'/events',headers=self.headers,json={'event_id':str(uuid4()),'expected_session_version':self.get()['session_version'],'type':kind,'payload':payload})
     def test_two_step_review_diagnosis_measurements_and_close(self):
@@ -105,10 +106,8 @@ class AndroidContractTests(unittest.TestCase):
     def test_separate_upload_accepts_more_than_json_body_limit(self):
         import os
         self.create()
-        stream=BytesIO()
-        Image.frombytes('RGB',(512,512),os.urandom(512*512*3)).save(stream,format='PNG')
-        self.image=stream.getvalue()
-        self.assertGreater(len(self.image),512*1024)
+        self.video=mp4_bytes(large=True)
+        self.assertGreater(len(self.video),512*1024)
         response=self.upload()
         self.assertEqual(response.status_code,202,response.text)
 

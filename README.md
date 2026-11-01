@@ -1,3 +1,7 @@
+> Current backend input: **MP4 videos only**, using existing multipart field
+> `image` on `/api/v1/sessions/{session_id}/image`. JPEG/PNG uploads are rejected.
+> Internal extracted frames support review. See [Android handoff](docs/ANDROID_VIDEO_HANDOFF.md).
+
 # Git-Good — AI Lab Mentor reasoning core
 
 Integrated backend: see [Android API contract](docs/BACKEND_API.md) and

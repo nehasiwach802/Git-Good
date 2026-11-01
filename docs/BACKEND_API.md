@@ -1,6 +1,6 @@
 ﻿# Android / backend API contract 1.1
 
-Owner: ML2/backend; JSON creation, separate image upload, nested event payloads,
+Owner: ML2/backend; JSON creation, separate MP4 upload, nested event payloads,
 `expected_session_version` and `close_session` are confirmed by the user on
 2026-11-01. This supersedes the earlier combined multipart/flat-event interface.
 
@@ -9,7 +9,7 @@ Owner: ML2/backend; JSON creation, separate image upload, nested event payloads,
 Send `Authorization: Bearer <Firebase ID token>` for every session operation.
 The backend verifies identity and checks session ownership/lab. Android never
 supplies trusted UID, role, datapack, reference circuit or diagnosis fields.
-Use a UUID `Idempotency-Key` header for creation and image upload; reuse the same
+Use a UUID `Idempotency-Key` header for creation and video upload; reuse the same
 key and identical content for network retries. Keys are scoped per operation.
 
 | Method/path | Content | Result |
@@ -20,7 +20,7 @@ key and identical content for network retries. Keys are scoped per operation.
 | POST `/api/v1/sessions/{session_id}/image` | Multipart below | 202 snapshot, `extracting` |
 | GET `/api/v1/sessions/{session_id}` | None | Current snapshot |
 | POST `/api/v1/sessions/{session_id}/events` | Nested JSON event | Updated snapshot; may queue processing |
-| GET `/api/v1/sessions/{session_id}/image` | None | Owner-only original image, 404 before upload |
+| GET `/api/v1/sessions/{session_id}/image` | None | Owner-only selected review frame, 404 before extraction |
 | DELETE `/api/v1/sessions/{session_id}` | None | 204 local data deletion; separate from closing |
 
 `/health`, `/ready`, `/docs`, and `/openapi.json` are public. `/ready` checks offline
@@ -48,16 +48,27 @@ and no background job. It does not run models.
 
 POST `/api/v1/sessions/{session_id}/image` as `multipart/form-data`:
 
-- `image`: JPEG/PNG file, <=5 MiB and <=20 megapixels.
+- `image`: MP4 file with Content-Type `video/mp4`, <=50 MiB. JPEG/PNG inputs are rejected (415).
+- Video metadata duration <=60 seconds, decoded input frame <=8.5 megapixels.
+- Multipart envelope <=51 MiB; JSON requests <=512 KiB.
 - `expected_session_version`: latest integer snapshot version.
 - Header `Idempotency-Key`: UUID for this upload operation.
 
-Let the HTTP library set the multipart boundary. The validated image and extraction
-job are persisted atomically; upload increments the version. One initial image is
+Let the HTTP library set the multipart boundary. The private video source and extraction
+job are persisted atomically; upload increments the version. One initial video is
 accepted per session. Conflicting or stale uploads return 409. A retried upload
 with the identical key/body returns its original response even after extraction
 has finished, so GET again afterward. Corrections after upload use review events;
-start a new session for a new photograph.
+start a new session for a new recording.
+
+The route and file-field retain the historical name `image` for Android compatibility.
+Likewise `awaiting_image` and `upload_image` are wire labels for video upload.
+ML1 samples up to six frames and selects one for review. Internal JPEGs are decoded
+video frames, never accepted user image uploads. GET `/image` returns that selected
+review frame. `ml1.media` contains video receipt and frame metadata, without raw
+video bytes or private paths. Candidate hashes bind to the selected frame.
+No frame-selection event or new video route is introduced. Student confirmation,
+ML2 diagnosis and ML3 explanation retain the existing contract.
 
 Poll GET every 1-2 seconds while state is `extracting`, `diagnosing` or `completing`;
 back off on errors. Stop polling when awaiting input or closed. Render messages
@@ -163,16 +174,13 @@ Qwen adds optional wording; ML2 owns diagnosis and next actions. Probabilities
 are preserved when supplied, otherwise `cause_probabilities: null` with
 `probability_status: "not_calibrated"` and ordinal hypothesis support.
 
-Older combined multipart creation and flat events are preserved only under
-`/api/legacy/v1/sessions` (deprecated). Their historical snapshot version is
-`version`; internal terminal state can be `completed`. Old payload definitions
-are archived in [BACKEND_API_V1_LEGACY.md](BACKEND_API_V1_LEGACY.md).
-POST `/api/sessions` is still the diagnosis-free smoke endpoint. Android should
-use neither legacy interface for the real conversation flow.
+Old combined image-upload POSTs `/api/sessions` and `/api/legacy/v1/sessions`
+are retired with 410. Historical record GET/event routes remain for compatibility.
+Old payload definitions are archived in [BACKEND_API_V1_LEGACY.md](BACKEND_API_V1_LEGACY.md).
 
-Local session deletion removes image/session/events/jobs/upload receipts. It does
-not erase separate ML3 outcome records or Meko memories; use personal-context
-controls before deleting a session and define retention for real student data.
+Deletion removes private video source, stored frames, session/events/jobs/upload
+receipts. Separate ML3 outcomes and Meko memories need their own retention controls.
+See [Android video handoff](ANDROID_VIDEO_HANDOFF.md).
 
 Run `python tools/run_checks.py` and `python tools/demo_backend.py`. The demo saves
 `outputs/backend/synthetic-transcript.json` using actual ML1/ML2/ML3 interfaces,

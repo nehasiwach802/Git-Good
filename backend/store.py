@@ -36,6 +36,11 @@ class Store:
             CREATE TABLE IF NOT EXISTS uploads (
                 session_id TEXT NOT NULL,request_key TEXT NOT NULL,digest TEXT NOT NULL,
                 response TEXT NOT NULL,PRIMARY KEY(session_id,request_key));
+            CREATE TABLE IF NOT EXISTS session_media (
+                session_id TEXT PRIMARY KEY,asset_id TEXT NOT NULL,receipt TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS media_frames (
+                session_id TEXT NOT NULL,frame_id TEXT NOT NULL,image BLOB NOT NULL,
+                metadata TEXT NOT NULL,PRIMARY KEY(session_id,frame_id));
             ''')
 
     @contextmanager
