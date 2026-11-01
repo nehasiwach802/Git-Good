@@ -17,16 +17,16 @@ class ConversationViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val json = Json { encodeDefaults = true }
     private val api = FakeApi()
-    private val images = FakeImages()
+    private val videos = FakeVideos()
     private var uid: String? = "student"
     private val tokens = object : IdTokenProvider {
         override val userId get() = uid
         override suspend fun token(forceRefresh: Boolean) = "unused"
     }
     @Before fun setup() { Dispatchers.setMain(dispatcher) }
-    @After fun cleanup() { Dispatchers.resetMain() }
+    @After fun cleanup() { videos.source.delete(); Dispatchers.resetMain() }
 
-    private fun viewModel(saved: SavedStateHandle) = ConversationViewModel(api, saved, tokens, images)
+    private fun viewModel(saved: SavedStateHandle) = ConversationViewModel(api, saved, tokens, videos)
     private fun saved(current: BackendSession? = null, pending: BackendEvent? = null) = SavedStateHandle().apply {
         set("owner", "student")
         current?.let { set("snapshot", json.encodeToString(it)) }
@@ -38,7 +38,7 @@ class ConversationViewModelTest {
         set("uploadKey", "original-upload-key")
     }
 
-    @Test fun retryWithoutPreparedImageNeverCreatesSession() = runTest(dispatcher) {
+    @Test fun retryWithoutPreparedVideoNeverCreatesSession() = runTest(dispatcher) {
         val state = pendingCreate()
         val vm = viewModel(state)
         vm.retry(); runCurrent()
@@ -47,16 +47,16 @@ class ConversationViewModelTest {
         vm.exit()
         assertTrue(vm.uiState.value.exited)
     }
-    @Test fun retryWithUnreadableImageNeverCreatesSession() = runTest(dispatcher) {
-        val state = pendingCreate().apply { set("imagePath", "missing"); set("imageMime", "image/png") }
-        images.readFailure = true
+    @Test fun retryWithUnreadableVideoNeverCreatesSession() = runTest(dispatcher) {
+        val state = pendingCreate().apply { set("videoPath", "missing") }
+        videos.readFailure = true
         val vm = viewModel(state)
         vm.retry(); runCurrent()
         assertEquals(0, api.creates)
         vm.exit()
         assertTrue(vm.uiState.value.exited)
     }
-    @Test fun uncertainCreateKeepsKeyAndCanBeExitedLocallyEvenIfImageWasLost() = runTest(dispatcher) {
+    @Test fun uncertainCreateKeepsKeyAndCanBeExitedLocallyEvenIfVideoWasLost() = runTest(dispatcher) {
         val state = pendingCreate().apply { set("creationStarted", true) }
         val vm = viewModel(state)
         vm.retry(); runCurrent()
@@ -148,13 +148,58 @@ class ConversationViewModelTest {
         assertEquals(4, vm.session.value?.candidate_revision)
     }
 
-    private class FakeImages : SessionImageStore {
+    @Test fun preparedVideoCreatesSessionThenUploadsWithOriginalKeyAndVersion() = runTest(dispatcher) {
+        val state = pendingCreate().apply { set("videoPath", "prepared-video") }
+        val vm = viewModel(state)
+        vm.retry(); runCurrent()
+        assertEquals(1, api.creates)
+        assertEquals("original-upload-key", api.uploads.single().third)
+        assertEquals(7, api.uploads.single().second)
+        assertNull(state.get<String>("createRequest"))
+    }
+    @Test fun failedUploadRetryKeepsTheSameKeyAndDoesNotCreateAnotherSession() = runTest(dispatcher) {
+        val state = pendingCreate().apply { set("videoPath", "prepared-video") }
+        val vm = viewModel(state)
+        api.uploadFailure = BackendException(503, "Try again")
+        vm.retry(); runCurrent()
+        api.uploadFailure = null
+        vm.retry(); runCurrent()
+        assertEquals(1, api.creates)
+        assertEquals(2, api.uploads.size)
+        assertEquals(api.uploads[0], api.uploads[1])
+    }
+
+    @Test fun processingVideoPollsUntilReviewAndLoadsAuthenticatedFrameOnce() = runTest(dispatcher) {
+        val state = saved(snapshot(state = "extracting"))
+        val vm = viewModel(state)
+        val hash = "a".repeat(64)
+        api.latest = snapshot(version = 8).copy(
+            image = buildJsonObject { put("sha256", hash) },
+            ml1 = buildJsonObject { put("media", buildJsonObject {
+                put("selected_frame_id", "F2")
+                put("frames", buildJsonArray { add(buildJsonObject { put("id", "F2"); put("timestamp_s", 2.5) }) })
+            }) }
+        )
+        vm.setForeground(true); runCurrent()
+        assertEquals(1, api.frameCalls)
+        assertEquals(hash, state.get<String>("frameHash"))
+        assertEquals("Review frame F2 at 2.5s", vm.uiState.value.frameCaption)
+        vm.retry(); runCurrent()
+        assertEquals(1, api.frameCalls)
+        vm.exit()
+    }
+
+    private class FakeVideos : SessionVideoStore {
         var readFailure = false
-        override suspend fun prepare(uri: Uri, fileName: String) = error("Not used")
-        override suspend fun read(path: String): ByteArray {
-            if (readFailure) throw java.io.IOException("Image unavailable")
-            return byteArrayOf(1)
+        val source = java.io.File.createTempFile("circuitly-video-test", ".mp4").apply {
+            writeBytes(byteArrayOf(0, 0, 0, 24) + "ftypisom00000000".toByteArray())
         }
+        override suspend fun prepare(uri: Uri, fileName: String): PreparedSessionVideo = error("Not used")
+        override suspend fun file(path: String): java.io.File {
+            if (readFailure) throw java.io.IOException("Video unavailable")
+            return source
+        }
+        override suspend fun saveFrame(name: String, bytes: ByteArray) = "frame-preview"
         override fun preview(path: String): Uri? = null
         override fun remove(path: String) {}
     }
@@ -164,6 +209,7 @@ class ConversationViewModelTest {
         var latest = snapshot()
         var eventFailure: Exception? = null
         var eventGate: CompletableDeferred<BackendSession>? = null
+        var frameCalls = 0
         val events = mutableListOf<BackendEvent>()
         override suspend fun experiments() = emptyList<BackendExperiment>()
         override suspend fun create(request: CreateSession, key: String): BackendSession {
@@ -178,7 +224,14 @@ class ConversationViewModelTest {
             return latest.copy(session_version = event.expected_session_version + 1,
                 state = if (event.type == "close_session") "closed" else latest.state)
         }
-        override suspend fun upload(id: String, version: Int, bytes: ByteArray, mime: String, key: String) = latest
+        var uploadFailure: Exception? = null
+        val uploads = mutableListOf<Triple<String, Int, String>>()
+        override suspend fun uploadVideo(id: String, version: Int, file: java.io.File, key: String): BackendSession {
+            uploads.add(Triple(id, version, key))
+            uploadFailure?.let { throw it }
+            return latest
+        }
+        override suspend fun getFrame(id: String): ByteArray { frameCalls++; return "frame".toByteArray() }
     }
     companion object {
         private fun snapshot(version: Int = 7, revision: Int = 3, state: String = "awaiting_review") = BackendSession(

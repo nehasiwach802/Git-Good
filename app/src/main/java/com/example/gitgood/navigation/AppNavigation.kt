@@ -1,6 +1,11 @@
 package com.example.gitgood.navigation
 
 import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
+import com.example.gitgood.data.backend.VideoUploadLimits
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.IOException
@@ -57,33 +62,35 @@ fun HomeDestination(
     homeViewModel: HomeViewModel,
     experimentName: String? = null,
     onChangeExperiment: () -> Unit = {},
+    catalogError: String? = null,
     onContinue: () -> Unit = {},
     experimentAvailable: Boolean = true,
-    catalogError: String? = null
+    darkTheme: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     val state by viewModel.loginUiState.collectAsStateWithLifecycle()
     val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    // Save the destination across activity recreation while the camera is open.
-    var pendingPhotoPath by rememberSaveable { mutableStateOf<String?>(null) }
+    // Retain the output location while the external camera recreates the activity.
+    var pendingVideoPath by rememberSaveable { mutableStateOf<String?>(null) }
     var cameraError by rememberSaveable { mutableStateOf<String?>(null) }
-    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        val photo = pendingPhotoPath?.let(::File)
-        pendingPhotoPath = null
-        if (success && photo != null && photo.length() > 0L) {
-            homeViewModel.selectImage(
-                FileProvider.getUriForFile(context, "${context.packageName}.camera.files", photo)
+    val camera = rememberLauncherForActivityResult(object : ActivityResultContracts.CaptureVideo() {
+        override fun createIntent(context: Context, input: Uri): Intent = super.createIntent(context, input).apply {
+            putExtra(MediaStore.EXTRA_DURATION_LIMIT, 60)
+            putExtra(MediaStore.EXTRA_SIZE_LIMIT, VideoUploadLimits.MAX_BYTES)
+        }
+    }) { success ->
+        val video = pendingVideoPath?.let(::File)
+        pendingVideoPath = null
+        if (success && video != null && video.length() > 0L) {
+            homeViewModel.selectVideo(
+                FileProvider.getUriForFile(context, "${context.packageName}.camera.files", video),
+                recordedPath = video.absolutePath
             )
             cameraError = null
         } else {
-            photo?.delete()
-            if (success) cameraError = "The camera could not save the photo. Please try again."
-        }
-    }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            homeViewModel.selectImage(uri)
-            cameraError = null
+            video?.delete()
+            if (success) cameraError = "The camera could not save the video. Please try again."
         }
     }
     val videoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -93,11 +100,14 @@ fun HomeDestination(
         }
     }
     HomeScreen(
+        onContinueClick = onContinue,
+        experimentAvailable = experimentAvailable,
         onSignOut = { viewModel.signOut(context) },
         isSigningOut = state.isLoading,
+        darkTheme = darkTheme,
+        onDarkThemeChange = onDarkThemeChange,
         experimentName = experimentName,
         onChangeExperiment = onChangeExperiment,
-        selectedImageUri = homeState.selectedImageUri,
         selectedVideoUri = homeState.selectedVideoUri,
         onRemoveVideoClick = homeViewModel::removeVideo,
         onUploadVideoClick = {
@@ -107,39 +117,32 @@ fun HomeDestination(
                 cameraError = "Could not open the video picker. Please try again."
             }
         },
-        description = homeState.description,
-        onDescriptionChange = homeViewModel::onDescriptionChange,
-        onRemoveImageClick = homeViewModel::removeImage,
-        onUploadClick = {
-            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        },
-        onTakePhotoClick = {
-            if (pendingPhotoPath == null) {
+        onRecordVideoClick = {
+            if (pendingVideoPath == null) {
                 cameraError = null
                 try {
-                    val directory = File(context.cacheDir, "camera")
-                    if (!directory.exists() && !directory.mkdirs()) {
-                        throw IOException("Could not create photo directory")
+                    val directory = File(context.cacheDir, "videos")
+                    if (!directory.isDirectory && !directory.mkdirs()) {
+                        throw IOException("Could not create video directory")
                     }
-                    val photo = File.createTempFile("capture_", ".jpg", directory)
-                    pendingPhotoPath = photo.absolutePath
-                    val uri = FileProvider.getUriForFile(
-                        context, "${context.packageName}.camera.files", photo
-                    )
+                    val video = File.createTempFile("recording_", ".mp4", directory)
+                    pendingVideoPath = video.absolutePath
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.camera.files", video)
                     camera.launch(uri)
                 } catch (_: ActivityNotFoundException) {
-                    pendingPhotoPath?.let { File(it).delete() }
-                    pendingPhotoPath = null
-                    cameraError = "No camera app is available on this device."
+                    pendingVideoPath?.let { File(it).delete() }
+                    pendingVideoPath = null
+                    cameraError = "No video camera app is available on this device."
                 } catch (_: Exception) {
-                    pendingPhotoPath?.let { File(it).delete() }
-                    pendingPhotoPath = null
-                    cameraError = "Could not open the camera. Please try again."
+                    pendingVideoPath?.let { File(it).delete() }
+                    pendingVideoPath = null
+                    cameraError = "Could not open the video camera. Please try again."
                 }
             }
         },
-        onContinueClick = onContinue,
-        canContinue = experimentAvailable,
+        isRecording = pendingVideoPath != null,
+        description = homeState.description,
+        onDescriptionChange = homeViewModel::onDescriptionChange,
         errorMessage = cameraError ?: catalogError ?: state.errorMessage
     )
 }

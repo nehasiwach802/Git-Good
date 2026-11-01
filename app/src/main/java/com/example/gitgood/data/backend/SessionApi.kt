@@ -6,5 +6,6 @@ interface SessionApi {
     suspend fun create(request: CreateSession, key: String): BackendSession
     suspend fun get(id: String): BackendSession
     suspend fun event(id: String, event: BackendEvent): BackendSession
-    suspend fun upload(id: String, version: Int, bytes: ByteArray, mime: String, key: String): BackendSession
+    suspend fun uploadVideo(id: String, version: Int, file: java.io.File, key: String): BackendSession
+    suspend fun getFrame(id: String): ByteArray
 }

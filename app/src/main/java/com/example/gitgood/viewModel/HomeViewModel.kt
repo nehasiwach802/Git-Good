@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.example.gitgood.ui.theme.screen.home.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,26 +14,28 @@ import kotlinx.coroutines.flow.update
 class HomeViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
+    // Only camera files created by this app are owned here. Gallery videos are never deleted.
+    private var recordedVideoPath: String? = null
 
-    fun reset() { _uiState.value = HomeUiState() }
-
+    fun reset() {
+        releaseRecording()
+        _uiState.value = HomeUiState()
+    }
     fun onDescriptionChange(description: String) {
         _uiState.update { it.copy(description = description) }
     }
-
-    fun selectImage(uri: Uri) {
-        _uiState.update { it.copy(selectedImageUri = uri, selectedVideoUri = null) }
+    fun selectVideo(uri: Uri, recordedPath: String? = null) {
+        if (recordedVideoPath != recordedPath) releaseRecording()
+        recordedVideoPath = recordedPath
+        _uiState.update { it.copy(selectedVideoUri = uri) }
     }
-
-    fun selectVideo(uri: Uri) {
-        _uiState.update { it.copy(selectedVideoUri = uri, selectedImageUri = null) }
-    }
-
     fun removeVideo() {
+        releaseRecording()
         _uiState.update { it.copy(selectedVideoUri = null) }
     }
-
-    fun removeImage() {
-        _uiState.update { it.copy(selectedImageUri = null) }
+    private fun releaseRecording() {
+        recordedVideoPath?.let { File(it).delete() }
+        recordedVideoPath = null
     }
+    override fun onCleared() { releaseRecording() }
 }

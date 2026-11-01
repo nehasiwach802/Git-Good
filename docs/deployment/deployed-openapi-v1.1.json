@@ -37,36 +37,33 @@
         }
       }
     },
-    "/api/sessions": {
+    "/api/legacy/v1/sessions": {
       "post": {
-        "summary": "Upload",
-        "operationId": "upload_api_sessions_post",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_upload_api_sessions_post"
-              }
-            }
-          },
-          "required": true
-        },
+        "summary": "Retired Image Upload",
+        "operationId": "retired_image_upload_api_legacy_v1_sessions_post",
         "responses": {
-          "200": {
+          "410": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/sessions": {
+      "post": {
+        "summary": "Retired Image Upload",
+        "operationId": "retired_image_upload_api_sessions_post",
+        "responses": {
+          "410": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": {}
               }
             }
           }
@@ -162,73 +159,6 @@
         }
       }
     },
-    "/api/legacy/v1/sessions": {
-      "post": {
-        "summary": "Create Legacy",
-        "operationId": "create_legacy_api_legacy_v1_sessions_post",
-        "deprecated": true,
-        "parameters": [
-          {
-            "name": "idempotency-key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Idempotency-Key"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_create_legacy_api_legacy_v1_sessions_post"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/sessions": {
       "post": {
         "summary": "Create",
@@ -298,6 +228,7 @@
     "/api/v1/sessions/{session_id}/image": {
       "post": {
         "summary": "Upload Image",
+        "description": "MP4 video input only (50 MiB). The route and field image are retained for Android contract compatibility.",
         "operationId": "upload_image_api_v1_sessions__session_id__image_post",
         "parameters": [
           {
@@ -343,6 +274,11 @@
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/Body_upload_image_api_v1_sessions__session_id__image_post"
+              },
+              "encoding": {
+                "image": {
+                  "contentType": "video/mp4"
+                }
               }
             }
           }
@@ -916,82 +852,13 @@
   },
   "components": {
     "schemas": {
-      "Body_create_legacy_api_legacy_v1_sessions_post": {
-        "properties": {
-          "experiment_id": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
-            "title": "Experiment Id"
-          },
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 1,
-            "title": "Description"
-          },
-          "image": {
-            "type": "string",
-            "contentMediaType": "application/octet-stream",
-            "title": "Image"
-          },
-          "experiment_version": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 100
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Experiment Version"
-          }
-        },
-        "type": "object",
-        "required": [
-          "experiment_id",
-          "description",
-          "image"
-        ],
-        "title": "Body_create_legacy_api_legacy_v1_sessions_post"
-      },
-      "Body_upload_api_sessions_post": {
-        "properties": {
-          "experiment_id": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "title": "Experiment Id"
-          },
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 1,
-            "title": "Description"
-          },
-          "image": {
-            "type": "string",
-            "contentMediaType": "application/octet-stream",
-            "title": "Image",
-            "description": "A JPEG or PNG image, up to 5 MiB"
-          }
-        },
-        "type": "object",
-        "required": [
-          "experiment_id",
-          "description",
-          "image"
-        ],
-        "title": "Body_upload_api_sessions_post"
-      },
       "Body_upload_image_api_v1_sessions__session_id__image_post": {
         "properties": {
           "image": {
             "type": "string",
             "contentMediaType": "application/octet-stream",
-            "title": "Image"
+            "title": "Image",
+            "description": "MP4 video only; no JPEG/PNG input"
           },
           "expected_session_version": {
             "type": "integer",

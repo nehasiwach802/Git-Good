@@ -13,18 +13,22 @@ class LiveSessionRepositoryTest {
     private lateinit var server: HttpServer
     private lateinit var client: BackendHttpClient
     private lateinit var repository: LiveSessionRepository
+    private val files = mutableListOf<java.io.File>()
+    private fun video(bytes: ByteArray = byteArrayOf(0, 0, 0, 24) + "ftypisom00000000".toByteArray()): java.io.File =
+        java.io.File.createTempFile("circuitly-http-test", ".mp4").also { it.writeBytes(bytes); files.add(it) }
     private var uid: String? = "student"
     private val refreshes = mutableListOf<Boolean>()
     private val calls = mutableListOf<Call>()
     private var handler: (Call) -> Pair<Int, String> = { 200 to snapshot }
-    private data class Call(val path: String, val method: String, val auth: String?, val key: String?, val contentType: String?, val body: String)
+    private data class Call(val path: String, val method: String, val auth: String?, val key: String?, val contentType: String?, val body: String, val contentLength: Long)
 
     @Before fun setup() {
         server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
             val call = Call(exchange.requestURI.path, exchange.requestMethod,
                 exchange.requestHeaders.getFirst("Authorization"), exchange.requestHeaders.getFirst("Idempotency-Key"),
-                exchange.requestHeaders.getFirst("Content-Type"), exchange.requestBody.bufferedReader().readText())
+                exchange.requestHeaders.getFirst("Content-Type"), exchange.requestBody.bufferedReader().readText(),
+                exchange.requestHeaders.getFirst("Content-Length")?.toLongOrNull() ?: -1)
             calls.add(call)
             val (status, text) = handler(call)
             val body = text.toByteArray()
@@ -41,7 +45,7 @@ class LiveSessionRepositoryTest {
         }, "http://127.0.0.1:${server.address.port}")
         repository = LiveSessionRepository(client)
     }
-    @After fun cleanup() { server.stop(0) }
+    @After fun cleanup() { server.stop(0); files.forEach { it.delete() } }
 
     @Test fun catalogUsesAuthenticatedServerIdsAndVersions() = runBlocking {
         handler = { 200 to """{"experiments":[{"experiment_id":"synthetic-rc","version":"2","name":"RC demo","simulated":true,"workflow_approved":false,"review_contract":{}}]}""" }
@@ -60,14 +64,17 @@ class LiveSessionRepositoryTest {
         assertEquals("My circuit", body["description"]?.jsonPrimitive?.content)
         assertFalse(body.containsKey("data"))
     }
-    @Test fun uploadUsesSingularImageRouteAndExactMultipartFields() = runBlocking {
-        repository.upload(id, 7, byteArrayOf(1, 2, 3), "image/png", "upload-key")
+    @Test fun videoUploadUsesLegacyImageFieldButMp4ContentAndExactVersion() = runBlocking {
+        repository.uploadVideo(id, 7, video(), "upload-key")
         val call = calls.single()
         assertEquals("/api/v1/sessions/$id/image", call.path)
         assertTrue(call.contentType!!.startsWith("multipart/form-data; boundary="))
         assertTrue(call.body.contains("name=\"expected_session_version\"\r\n\r\n7"))
-        assertTrue(call.body.contains("name=\"image\"; filename=\"circuit.png\""))
+        assertTrue(call.body.contains("name=\"image\"; filename=\"circuit.mp4\""))
         assertEquals("upload-key", call.key)
+        assertTrue(call.body.contains("Content-Type: video/mp4"))
+        assertTrue(call.body.contains("ftypisom"))
+        assertEquals(call.body.toByteArray().size.toLong(), call.contentLength)
     }
     @Test fun confirmationRevisionIsNestedInPayload() = runBlocking {
         repository.event(id, BackendEvent(id, 7, "confirm_candidate", buildJsonObject {
@@ -94,7 +101,7 @@ class LiveSessionRepositoryTest {
         } catch (e: BackendException) { assertEquals(409, e.status); assertEquals("Review the new revision", e.message) }
         assertEquals(1, calls.size)
     }
-    @Test fun exitClosesWithoutDeletingOrClaimingResolution() = runBlocking {
+    @Test fun explicitCloseEventUsesItsOwnEndpointWithoutDeletingOrClaimingResolution() = runBlocking {
         repository.event(id, BackendEvent(id, 7, "close_session", buildJsonObject { put("resolved", false) }))
         val call = calls.single()
         assertEquals("POST", call.method)
@@ -120,9 +127,31 @@ class LiveSessionRepositoryTest {
         try { repository.get(id); fail("Expected account isolation") }
         catch (e: BackendException) { assertEquals(401, e.status) }
     }
-    @Test fun unsupportedImageDoesNotUpload() = runBlocking {
-        try { repository.upload(id, 7, byteArrayOf(1), "image/webp", "key"); fail("Expected rejection") }
+    @Test fun imageInputIsRejectedBeforeVideoRequest() = runBlocking {
+        try { repository.uploadVideo(id, 7, video("not an mp4 image".toByteArray()), "key"); fail("Expected rejection") }
         catch (_: IllegalArgumentException) { }
+        assertTrue(calls.isEmpty())
+    }
+    @Test fun streamedVideoRetryRefreshesTokenAndRetainsEntireMultipartRequest() = runBlocking {
+        handler = { if (it.auth == "Bearer initial-token") 401 to "{}" else 202 to snapshot }
+        repository.uploadVideo(id, 7, video(), "same-upload-key")
+        assertEquals(listOf(false, true), refreshes)
+        assertEquals(2, calls.size)
+        assertEquals(calls[0].body, calls[1].body)
+        assertEquals(calls[0].key, calls[1].key)
+    }
+    @Test fun selectedFrameUsesAuthenticatedBinaryGet() = runBlocking {
+        handler = { 200 to "frame-bytes" }
+        assertArrayEquals("frame-bytes".toByteArray(), repository.getFrame(id))
+        assertEquals("GET", calls.single().method)
+        assertEquals("/api/v1/sessions/$id/image", calls.single().path)
+        assertEquals("Bearer initial-token", calls.single().auth)
+    }
+    @Test fun oversizedVideoIsRejectedBeforeNetworkTransfer() = runBlocking {
+        val file = video()
+        java.io.RandomAccessFile(file, "rw").use { it.setLength(VideoUploadLimits.MAX_BYTES + 1) }
+        try { repository.uploadVideo(id, 7, file, "key"); fail("Expected video limit") }
+        catch (_: IllegalArgumentException) {}
         assertTrue(calls.isEmpty())
     }
     companion object {

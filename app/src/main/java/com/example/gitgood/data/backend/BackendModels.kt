@@ -40,7 +40,9 @@ data class BackendSession(
     val actions: List<JsonObject> = emptyList(),
     val simulated: Boolean = false,
     val job_id: String? = null,
-    val error: JsonObject? = null
+    val error: JsonObject? = null,
+    val image: JsonObject? = null,
+    val ml1: JsonObject = JsonObject(emptyMap())
 ) {
     val busy get() = state in setOf("extracting", "diagnosing", "completing")
     val closed get() = state in setOf("closed", "completed")

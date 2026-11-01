@@ -32,7 +32,8 @@ fun ConversationScreen(
     onExitConversation: () -> Unit,
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
-    actions: @Composable () -> Unit = {}
+    actions: @Composable () -> Unit = {},
+    actionsKey: String? = null
 ) {
     // Remember scrolling when Compose redraws the screen.
     val listState = rememberLazyListState()
@@ -40,8 +41,8 @@ fun ConversationScreen(
     val canSend = state.draft.isNotBlank() && draftLength <= MAX_CHAT_MESSAGE_LENGTH && !state.isSending && state.canSend
 
     // Move to the newest message when a message or loading row is added.
-    LaunchedEffect(state.messages.size, state.isSending) {
-        val rows = state.messages.size + if (state.isSending) 1 else 0
+    LaunchedEffect(state.messages.size, state.isSending, state.isProcessing, actionsKey) {
+        val rows = state.messages.size + (if (actionsKey != null) 1 else 0) + (if (state.isSending || state.isProcessing) 1 else 0)
         if (rows > 0) listState.animateScrollToItem(rows - 1)
     }
 
@@ -71,7 +72,6 @@ fun ConversationScreen(
 
         state.notice?.let { Text(it, fontSize = 12.sp, color = PrimaryGreen) }
         if (state.status.isNotBlank()) Text(state.status, fontSize = 12.sp, color = SecondaryTextColor)
-        actions()
 
         // Only the message area uses remaining space and scrolls.
         LazyColumn(
@@ -80,21 +80,24 @@ fun ConversationScreen(
             contentPadding = PaddingValues(vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (state.messages.isEmpty() && !state.isSending && state.canSend) {
+            if (state.messages.isEmpty() && !state.isSending && !state.isProcessing && actionsKey == null && state.canSend) {
                 item(key = "empty") {
-                    Text("Your circuit image and description will appear here when you start a conversation.",
+                    Text("Your circuit video and description will appear here when you start a conversation.",
                         color = SecondaryTextColor, fontSize = 14.sp)
                 }
             }
             items(state.messages, key = { "message-${it.id}" }) { message ->
                 ConversationMessageBubble(message)
             }
-            if (state.isSending) {
+            if (actionsKey != null) {
+                item(key = "session-actions") { actions() }
+            }
+            if (state.isSending || state.isProcessing) {
                 item(key = "loading") {
                     Row(verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         CircularProgressIndicator(Modifier.size(18.dp), color = PrimaryGreen, strokeWidth = 2.dp)
-                        Text(if (state.isDemo) "Preparing demo reply…" else "Waiting for a response…",
+                        Text(if (state.isDemo) "Preparing demo reply…" else state.status.ifBlank { "Waiting for a response…" },
                             color = SecondaryTextColor, fontSize = 13.sp)
                     }
                 }

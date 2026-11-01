@@ -38,7 +38,7 @@ internal fun VideoPreview(uri: Uri, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (failed) {
             Box(Modifier.fillMaxWidth().height(200.dp).padding(20.dp), contentAlignment = Alignment.Center) {
-                Text("This video could not be played. Try a different video or choose a photo.", color = SecondaryTextColor)
+                Text("This video could not be played. Try a different video or record a new one.", color = SecondaryTextColor)
             }
         } else {
             Box(Modifier.fillMaxWidth().height(240.dp), contentAlignment = Alignment.Center) {

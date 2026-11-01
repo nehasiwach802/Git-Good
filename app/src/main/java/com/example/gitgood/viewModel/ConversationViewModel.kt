@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gitgood.data.backend.*
 import com.example.gitgood.data.model.Experiment
+import com.example.gitgood.data.model.wirereview.*
 import com.example.gitgood.ui.theme.screen.conversation.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -20,7 +21,7 @@ class ConversationViewModel @Inject constructor(
     private val repository: SessionApi,
     private val saved: SavedStateHandle,
     private val account: IdTokenProvider,
-    private val images: SessionImageStore
+    private val videos: SessionVideoStore
 ) : ViewModel() {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     val uiState = MutableStateFlow(ConversationUiState(experimentName = saved["name"] ?: "Circuit review", isDemo = false))
@@ -28,10 +29,12 @@ class ConversationViewModel @Inject constructor(
     val session = MutableStateFlow(saved.get<String>("snapshot")?.let { runCatching { json.decodeFromString<BackendSession>(it) }.getOrNull() })
     private var operation: Job? = null
     private var poller: Job? = null
+    private var frameJob: Job? = null
+    private var requestedFrameHash: String? = null
     private var foreground = false
     private var owner: String? = saved["owner"]
     private var generation = 0
-    private var activeImage: Uri? = saved.get<String>("imagePath")?.let(images::preview)
+    private var activeFrame: Uri? = saved.get<String>("framePath")?.let(videos::preview)
 
     init {
         session.value?.let(::applySnapshot)
@@ -44,17 +47,22 @@ class ConversationViewModel @Inject constructor(
     fun resetForAccount(uid: String?) {
         if (owner == uid) return
         generation++
-        operation?.cancel(); poller?.cancel()
+        operation?.cancel(); poller?.cancel(); frameJob?.cancel()
         session.value = null
-        saved.get<String>("imagePath")?.let(images::remove)
+        saved.get<String>("videoPath")?.let(videos::remove)
+        saved.get<String>("framePath")?.let(videos::remove)
         saved.keys().toList().forEach { saved.remove<Any>(it) }
-        activeImage = null; owner = uid; saved["owner"] = uid
+        activeFrame = null; owner = uid; saved["owner"] = uid
         reviewContract.value = JsonObject(emptyMap())
         uiState.value = ConversationUiState("Circuit review", isDemo = false)
     }
 
-    fun start(experiment: Experiment, uri: Uri, description: String) {
+    fun startVideo(experiment: Experiment, uri: Uri, description: String) {
         resetForAccount(account.userId)
+        if (description.isBlank() || description.codePointCount(0, description.length) > 2000) {
+            uiState.value = uiState.value.copy(errorMessage = "Add a description of up to 2,000 characters.")
+            return
+        }
         if (!experiment.canStart) {
             uiState.value = uiState.value.copy(errorMessage = "This experiment’s backend workflow is not available yet.")
             return
@@ -64,9 +72,10 @@ class ConversationViewModel @Inject constructor(
             uiState.value = uiState.value.copy(errorMessage = "An existing conversation is still open. Exit it before starting another.")
             return
         }
-        saved.get<String>("imagePath")?.let(images::remove)
-        saved.remove<String>("imagePath"); saved.remove<String>("imageMime")
-        activeImage = null
+        saved.get<String>("videoPath")?.let(videos::remove)
+        saved.get<String>("framePath")?.let(videos::remove)
+        saved.remove<String>("videoPath"); saved.remove<String>("framePath"); saved.remove<String>("frameHash")
+        activeFrame = null
         session.value = null; saved.remove<String>("snapshot")
         saved["contract"] = experiment.reviewContract.toString()
         reviewContract.value = experiment.reviewContract
@@ -77,26 +86,26 @@ class ConversationViewModel @Inject constructor(
         saved.remove<Boolean>("creationStarted")
         saved.remove<Int>("uploadVersion"); saved.remove<String>("pendingEvent")
         uiState.value = ConversationUiState(experiment.name, isDemo = false)
-        val imageFileName = "${saved.get<String>("createKey")}.image"
+        val videoFileName = "${saved.get<String>("createKey")}.mp4"
         runOperation {
-            // Validate and retain the image before sending any create request.
-            val image = try { images.prepare(uri, imageFileName) }
+            uiState.value = uiState.value.copy(status = "Preparing video…")
+            // Validate and retain an immutable private copy before creating a session.
+            val video = try { videos.prepare(uri, videoFileName) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (failure: Exception) {
                 saved.remove<String>("createRequest")
                 throw failure
             }
-            saved["imagePath"] = image.path; saved["imageMime"] = image.mime
-            activeImage = images.preview(image.path)
+            saved["videoPath"] = video.path
             initializeSession()
         }
     }
 
     private suspend fun initializeSession() {
         var current = session.value
-        // Before the first request, a valid cached image is mandatory. An uncertain
-        // create can still be reconciled with its original key if that image was lost.
-        val preparedBytes = if (current == null && saved.get<Boolean>("creationStarted") != true) readPreparedImage() else null
+        // Before the first request, a valid cached video is mandatory. An uncertain
+        // create can still be reconciled with its original key if that video was lost.
+        val preparedFile = if (current == null && saved.get<Boolean>("creationStarted") != true) readPreparedVideo() else null
         if (current == null) {
             val request = saved.get<String>("createRequest") ?: error("Return home and start a conversation.")
             saved["creationStarted"] = true
@@ -104,23 +113,29 @@ class ConversationViewModel @Inject constructor(
             applySnapshot(current)
         }
         if (current.state == "awaiting_image") {
-            val bytes = preparedBytes ?: readPreparedImage()
+            val file = preparedFile ?: readPreparedVideo()
             val version = saved.get<Int>("uploadVersion") ?: current.session_version.also { saved["uploadVersion"] = it }
-            applySnapshot(repository.upload(current.session_id, version, bytes, saved.get<String>("imageMime")!!, saved.get<String>("uploadKey")!!))
+            uiState.value = uiState.value.copy(status = "Uploading video…")
+            applySnapshot(repository.uploadVideo(current.session_id, version, file, saved.get<String>("uploadKey")!!))
         }
         saved.remove<String>("createRequest")
     }
 
-    private suspend fun readPreparedImage(): ByteArray {
+    private suspend fun readPreparedVideo(): java.io.File {
         try {
-            val path = saved.get<String>("imagePath") ?: error("Return home and select the image again.")
-            check(saved.get<String>("imageMime") != null) { "Return home and select the image again." }
-            return images.read(path)
+            val path = saved.get<String>("videoPath") ?: error("Return home and select the video again.")
+            return videos.file(path)
         } catch (cancelled: CancellationException) { throw cancelled
         } catch (failure: Exception) {
             if (saved.get<Boolean>("creationStarted") != true) saved.remove<String>("createRequest")
             throw failure
         }
+    }
+
+    fun reviewWire(identity: ReviewIdentity, action: WireReviewAction) {
+        val current = uiState.value.wireReview ?: return
+        if (current.identity != identity || identity.account != account.userId || uiState.value.isSending || !uiState.value.canSend) return
+        uiState.value = uiState.value.copy(wireReview = reduceWireReview(current, action))
     }
 
     fun draft(value: String) { saved["draft"] = value; uiState.value = uiState.value.copy(draft = value) }
@@ -141,11 +156,12 @@ class ConversationViewModel @Inject constructor(
         foreground = false
         operation?.cancel()
         poller?.cancel()
+        frameJob?.cancel()
         operation = null
         poller = null
         session.value = null
-        // Keep the private image path only for cleanup on the next start/account reset.
-        saved.keys().filterNot { it in setOf("owner", "imagePath", "imageMime") }
+        // Keep the private video/frame paths only for cleanup on the next start/account reset.
+        saved.keys().filterNot { it in setOf("owner", "videoPath", "framePath") }
             .forEach { saved.remove<Any>(it) }
         reviewContract.value = JsonObject(emptyMap())
         uiState.value = ConversationUiState(
@@ -212,6 +228,8 @@ class ConversationViewModel @Inject constructor(
     }
     private fun applySnapshot(value: BackendSession) {
         if (session.value?.let { it.session_id == value.session_id && it.session_version > value.session_version } == true) return
+        val imageHash = (value.image?.get("sha256") as? JsonPrimitive)?.contentOrNull
+        if (imageHash != saved.get<String>("frameHash")) activeFrame = null
         session.value = value; saved["snapshot"] = json.encodeToString(value)
         if (value.closed) {
             saved.remove<String>("createRequest")
@@ -219,16 +237,67 @@ class ConversationViewModel @Inject constructor(
             saved.remove<Boolean>("creationStarted")
             saved.remove<Int>("uploadVersion")
         }
-        val firstUser = value.messages.firstOrNull { it.role == "user" }?.id
-        uiState.value = uiState.value.copy(
-            messages = value.messages.map {
-                ConversationMessageUi(it.id, when (it.role) { "user" -> MessageSender.USER; "assistant" -> MessageSender.ASSISTANT; else -> MessageSender.SYSTEM }, it.text,
-                    if (it.id == firstUser) activeImage else null)
-            }, isDemo = false, notice = if (value.simulated) "Synthetic experiment · Test results do not validate a real circuit." else null,
-            status = value.state.replace('_', ' '), canSend = !value.busy && !value.closed,
-            exited = value.closed,
-            errorMessage = value.error?.let { (it["message"] as? JsonPrimitive)?.content }
+        val parsedReview = parseWireReview(value, owner)
+        val previousReview = uiState.value.wireReview
+        val nextReview = if (parsedReview?.identity == previousReview?.identity) previousReview else parsedReview?.copy(
+            notice = if (previousReview?.dirty == true) "Frame, board or revision changed. Local wire edits were cleared for a fresh review." else null
         )
+        val firstUser = value.messages.firstOrNull { it.role == "user" }?.id
+        val media = value.ml1["media"] as? JsonObject
+        val selectedFrame = (media?.get("selected_frame_id") as? JsonPrimitive)?.contentOrNull
+        val frameInfo = (media?.get("frames") as? JsonArray)?.mapNotNull { it as? JsonObject }
+            ?.firstOrNull { (it["id"] as? JsonPrimitive)?.contentOrNull == selectedFrame }
+        val timestamp = (frameInfo?.get("timestamp_s") as? JsonPrimitive)?.doubleOrNull
+        val caption = if (selectedFrame != null) "Review frame $selectedFrame" + (timestamp?.let { " at ${it}s" } ?: "") else "Frame selected from your video"
+        val messages = value.messages.map {
+            ConversationMessageUi(it.id, when (it.role) { "user" -> MessageSender.USER; "assistant" -> MessageSender.ASSISTANT; else -> MessageSender.SYSTEM }, it.text,
+                if (it.id == firstUser) activeFrame else null,
+                if (it.id == firstUser && activeFrame != null) caption else null)
+        }
+        val initial = if (firstUser == null) listOf(ConversationMessageUi("video-${value.session_id}", MessageSender.USER,
+            value.description + "\nVideo attached", activeFrame, if (activeFrame != null) caption else null)) else emptyList()
+        uiState.value = uiState.value.copy(
+            messages = initial + messages,
+            isProcessing = value.busy, reviewFrameUri = activeFrame, frameCaption = caption, wireReview = nextReview,
+            isDemo = false, notice = if (value.simulated) "Synthetic experiment · Test results do not validate a real circuit." else null,
+            status = when (value.state) {
+                "awaiting_image" -> "Ready to upload video"
+                "extracting" -> "Processing video…"
+                "awaiting_review" -> "Review the selected video frame"
+                "diagnosing" -> "Checking circuit…"
+                else -> value.state.replace('_', ' ')
+            }, canSend = !value.busy && !value.closed,
+            exited = value.closed,
+            errorMessage = value.error?.let { (it["message"] as? JsonPrimitive)?.contentOrNull
+                ?: (it["code"] as? JsonPrimitive)?.contentOrNull ?: "Video processing failed. Retry extraction or choose another video." }
+        )
+        loadReviewFrame(value)
+    }
+    private fun loadReviewFrame(value: BackendSession) {
+        val hash = (value.image?.get("sha256") as? JsonPrimitive)?.contentOrNull ?: return
+        if (!hash.matches(Regex("[0-9a-f]{64}")) || !foreground || value.busy || saved.get<String>("frameHash") == hash) return
+        if (frameJob?.isActive == true && requestedFrameHash == hash) return
+        frameJob?.cancel()
+        requestedFrameHash = hash
+        val epoch = generation
+        frameJob = viewModelScope.launch {
+            try {
+                val bytes = repository.getFrame(value.session_id)
+                val path = videos.saveFrame("${value.session_id}-$hash", bytes)
+                if (epoch != generation || session.value?.session_id != value.session_id ||
+                    (session.value?.image?.get("sha256") as? JsonPrimitive)?.contentOrNull != hash) {
+                    videos.remove(path)
+                    return@launch
+                }
+                saved.get<String>("framePath")?.takeIf { it != path }?.let(videos::remove)
+                saved["framePath"] = path; saved["frameHash"] = hash
+                activeFrame = videos.preview(path)
+                session.value?.let(::applySnapshot)
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) {
+                if (epoch == generation) uiState.value = uiState.value.copy(errorMessage = "Could not load the selected review frame. Retry to refresh it.")
+            }
+        }
     }
     private fun startPolling() {
         poller?.cancel()

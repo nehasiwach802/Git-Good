@@ -73,7 +73,7 @@ fun ExperimentScreen(
             )
 
             Text(
-                text = "Select what you're working on. Next, add your circuit image and a description.",
+                text = "Select what you're working on. Next, upload or record a circuit video and add a description.",
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
                 color = SecondaryTextColor

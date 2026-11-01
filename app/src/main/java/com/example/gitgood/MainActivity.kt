@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import com.example.gitgood.viewModel.SettingsViewModel
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,12 +49,21 @@ class MainActivity : ComponentActivity() {
     private val experimentViewModel: ExperimentViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
     private val loginViewModel: LoginViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            GitGoodTheme {
+            val savedDarkTheme by settingsViewModel.darkTheme.collectAsStateWithLifecycle()
+            val darkTheme = savedDarkTheme ?: isSystemInDarkTheme()
+            SideEffect {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(0xE6FFFFFF.toInt(), 0x801B1B1B.toInt()) { darkTheme }
+                )
+            }
+            GitGoodTheme(darkTheme = darkTheme) {
                 val user by loginViewModel.currentUser.collectAsStateWithLifecycle()
                 val loginState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
                 val catalog by experimentViewModel.experiments.collectAsStateWithLifecycle()
@@ -166,19 +179,22 @@ class MainActivity : ComponentActivity() {
                             entry<ScreenRoute.Home> {
                                 HomeDestination(loginViewModel, homeViewModel,
                                     experimentName = selectedExperiment?.name ?: if (catalogError == null) "Loading experiment…" else "Experiment unavailable",
-                                    experimentAvailable = selectedExperiment?.canStart == true,
                                     catalogError = catalogError,
-                                    onChangeExperiment = {
-                                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                                    },
+                                    experimentAvailable = selectedExperiment?.canStart == true,
+                                    darkTheme = darkTheme,
+                                    onDarkThemeChange = settingsViewModel::setDarkTheme,
                                     onContinue = {
                                         val experiment = experimentViewModel.selectedExperiment
                                         val home = homeViewModel.uiState.value
-                                        if (experiment?.canStart == true && home.selectedImageUri != null && home.selectedVideoUri == null) {
-                                            conversationViewModel.start(experiment, home.selectedImageUri, home.description)
+                                        if (backStack.lastOrNull() == ScreenRoute.Home && experiment?.canStart == true && home.selectedVideoUri != null &&
+                                            home.description.isNotBlank() && home.description.codePointCount(0, home.description.length) <= 2000) {
+                                            conversationViewModel.startVideo(experiment, home.selectedVideoUri, home.description)
                                             backStack.add(ScreenRoute.Conversation)
                                         }
-                                    }
+                                    },
+                                    onChangeExperiment = {
+                                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                                    },
                                 )
                             }
                             entry<ScreenRoute.Conversation> {
@@ -203,7 +219,11 @@ class MainActivity : ComponentActivity() {
                                 ConversationScreen(state, conversationViewModel::draft,
                                     conversationViewModel::sendMessage, conversationViewModel::exit,
                                     onRetry = { conversationViewModel.retry() },
-                                    actions = { session?.let { SessionActions(it, !state.isSending && state.canSend, contract, conversationViewModel::submit) } })
+                                    actions = { session?.let { SessionActions(it, !state.isSending && state.canSend, contract, conversationViewModel::submit, state.reviewFrameUri, state.frameCaption,
+                                        state.wireReview, conversationViewModel::reviewWire, { conversationViewModel.retry() }, conversationViewModel::exit) } },
+                                    actionsKey = session?.takeIf { it.actions.isNotEmpty() }?.let {
+                                        "${it.session_id}:${it.candidate_revision}:${it.actions.hashCode()}"
+                                    })
                             }
                         }
                     )

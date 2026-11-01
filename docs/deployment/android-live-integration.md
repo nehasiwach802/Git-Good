@@ -1,31 +1,63 @@
-# Android integration with the deployed backend
+# Android video integration — git-good-3
 
-The Android flow now uses **https://git-good-2.onrender.com**, API **1.1.0**. Its deployed schema, captured on November 1, 2026, is saved in `deployed-openapi-v1.1.json` alongside this document. This is the contract used by the live Android integration. The earlier proposed contract in `docs/api-v1` and its FakeSessionRepository remain separate demo work; their wire shapes are not sent to this backend.
+The active Android backend is **https://git-good-3.onrender.com**. Its public OpenAPI schema still identifies API **1.1.0**, but the upload contract has changed to MP4-only. The checked schema is saved as `deployed-openapi-v1.1.json` in this directory. This guide supersedes the earlier photo-only and preview-only Home instructions.
 
-## Try it on a device
+## What the app now does
 
-1. Build/install the debug application and sign in with Firebase email/password or Google.
-2. Choose one of the five product experiments. Android resolves availability from the live catalog. NAND and RC may use explicitly labeled synthetic demo workflows with their exact server IDs; missing or unapproved workflows remain visible and cannot start a session.
-3. Choose or take a JPEG/PNG photo, at most 5 MiB and 20 megapixels. Enter a required description, up to 2,000 Unicode characters.
-4. Continue. The app creates a session, uploads the image, opens the conversation, and polls while processing is active.
-5. Read server messages and use **Review required actions** for structured input. Sending conversational text does not confirm connections or submit measurements.
-6. Exit conversation returns directly home, including during processing or a failed request. It cancels local work and clears the active conversation state without sending close/delete events. Home retains its selected image and description. Already submitted backend operations may continue; exiting does not close the server session.
+1. Sign in using Firebase email/password or Google. Login also links to the dedicated Forgot Password screen.
+2. Select an experiment. All five product choices remain visible; exact published workflows determine availability. Known NAND/RC synthetic workflows are explicitly labeled demos. Missing or unapproved real workflows cannot start sessions.
+3. On Home, select **Upload video** or **Record video**. The camera result and library videos have local playback/removal; no photo input is offered.
+4. Enter a required description and press **Continue**.
+5. The app copies and validates the video privately before creating a session, creates the session with a stable idempotency key, then streams the video upload with its own stable key.
+6. Conversation polls the session while extraction/diagnosis jobs run. It shows server messages, processing/error states and explicit retry controls.
+7. When the server returns the selected review frame, Android downloads it through the authenticated session endpoint. It is displayed with its frame ID/timestamp in the conversation and inline review form. Confirmation is disabled while a required frame has not loaded.
+8. Structured actions submit corrections, explicit revision confirmations, component values, correspondence, source settings, measurements or observations. Chat prose is not parsed into authoritative actions.
+9. **Exit conversation returns directly Home**, including during upload/processing. It cancels local work and forgets the active conversation; it does not send close/delete events or wait for the backend. Home retains its selected video/description. Already submitted server work may continue.
+10. Home → **Settings → Sign out** clears Firebase/Google auth and account-specific local state.
 
-The backend readiness check currently reports `approved_real_experiments: 0` and `live_providers_verified: false`. Backend availability and Firebase configuration do not demonstrate that the vision/model pipeline can diagnose a real circuit. The app does not fabricate a correctness result when extraction or review cannot progress. In particular, an empty manual candidate needs extraction/provider support or additional manual circuit capture UI; connection corrections can only edit existing candidate endpoints.
+## Actual deployed upload contract
 
-## Requests and authentication
+Despite its legacy name, this endpoint now accepts an MP4 video:
 
-All requests below use the signed-in user's Firebase **ID token** in `Authorization: Bearer …`. No Firebase Admin private key or service-account JSON belongs in Android. A 401 triggers one token refresh, retaining the same request body and idempotency key. Account changes discard responses from the previous account. Network failures do not automatically replay writes.
+```http
+POST /api/v1/sessions/{session_id}/image
+Authorization: Bearer <Firebase ID token>
+Idempotency-Key: <UUID>
+Content-Type: multipart/form-data; boundary=...
+```
 
-| Operation | Android request |
+Multipart fields:
+
+| Field | Value |
 |---|---|
-| Catalog | `GET /api/v1/experiments` |
-| Create | `POST /api/v1/sessions`, JSON `{experiment_id, experiment_version, description}`, `Idempotency-Key` header |
-| Upload | `POST /api/v1/sessions/{id}/image`, multipart fields `image` and `expected_session_version`, `Idempotency-Key` header |
-| Restore/poll | `GET /api/v1/sessions/{id}` |
-| Event | `POST /api/v1/sessions/{id}/events` |
+| `image` | The MP4 file, filename `circuit.mp4`, part MIME `video/mp4` |
+| `expected_session_version` | The last known session version |
 
-Session responses are bare snapshots. They use `session_version`, not the previous demo envelope or its field names. An event has this shape:
+There is no `/video` route in this deployment. The field name `image` does not mean Android is uploading a photo. Do not rename the route or field in the client without a matching server change.
+
+The deployed description explicitly says **MP4 video only; no JPEG/PNG input**. Upload returns a bare session snapshot (202), not a data envelope. The server retains `awaiting_image` and `upload_image` as legacy state/action names; Android labels them as video upload in the UI.
+
+Limits enforced using the inspected backend validators:
+
+- MP4 file, nonempty and with an ISO media `ftyp` header.
+- At most **50 MiB**.
+- At most **60 seconds**.
+- At most **8.5 megapixels per input frame**; 1080p is recommended.
+
+Android validates the size/container and decoded duration/dimensions before first session creation. The server remains authoritative for codec/decode/processing acceptance. The camera intent requests the size/duration limits, but a camera app may ignore them; post-recording validation still applies. Unsupported library videos are rejected before upload rather than silently renamed or converted.
+
+## Other endpoints
+
+| Operation | Request |
+|---|---|
+| Health / readiness | Public `GET /health`, `GET /ready` |
+| Catalog | Authenticated `GET /api/v1/experiments` |
+| Session creation | `POST /api/v1/sessions`, JSON `{experiment_id, experiment_version, description}`, idempotency UUID |
+| Session snapshot/poll | `GET /api/v1/sessions/{id}` |
+| Selected extracted frame | `GET /api/v1/sessions/{id}/image`, authenticated binary JPEG/PNG response |
+| Structured event/message | `POST /api/v1/sessions/{id}/events` |
+
+Each event has `event_id`, `expected_session_version`, `type`, and nested `payload`. Candidate revision belongs inside payload. Existing v1.1 event types and explicit confirmation acknowledgement remain unchanged.
 
 ```json
 {
@@ -39,66 +71,69 @@ Session responses are bare snapshots. They use `session_version`, not the previo
 }
 ```
 
-The app retains create/upload keys and an exact pending event in SavedStateHandle for retries and normal activity/process recreation. A 409 refreshes the snapshot and discards a stale event; confirmation always requires another explicit review. A force-stop, cleared app data, or a fresh launch without restored Android saved state is not a durable offline outbox or a server session browser.
+## Transport, retries and local media
 
-## Files and responsibilities
+`BackendHttpClient` sends the current Firebase ID token, refreshes it once on a 401, and rejects responses if the account changes. JSON requests and binary frame downloads share the same auth boundary. Tokens and service-account keys are not logged or embedded in Android.
 
-Paths below are relative to the repository root.
+MP4 multipart bodies are written directly from the private file with a fixed Content-Length and bounded copy buffer. A 50 MiB video is not assembled into one in-memory ByteArray. The exact multipart body can be reopened/replayed after token refresh. Network failures do not automatically replay mutations.
+
+The app retains create/upload IDs, the expected upload version and the exact pending event in SavedStateHandle for explicit retries and normal Android recreation. Retrying a failed upload does not create another session. A 409 refreshes the current session and discards stale events; a confirmation requires another explicit review. Uncertain creates can be reconciled with their original key even if the local video was subsequently lost. This is not a durable offline outbox or historical session browser after force-stop/data clearing.
+
+Library videos are copied into app-private `noBackupFilesDir/session-videos` for validation/retry. Camera originals are app-owned cache files. Replacing/removing/resetting an app-owned recording deletes that cache file; user library files are never deleted. Private session video/frame copies are cleaned on the next start/account reset. Exit preserves only cleanup paths, not pending backend actions.
+
+The selected frame is downloaded only after the backend supplies its image receipt. Its content/hash identity is tracked to avoid stale preview replacement. Only validated bounded JPEG/PNG bytes are stored for the local review preview. The client does not upload extracted frames or fuse wiring across video views; those operations belong to the backend.
+
+## Main files
+
+Paths are relative to the repository root.
 
 | File under `app/src/main/java/com/example/gitgood/` | Responsibility |
 |---|---|
-| `data/backend/BackendModels.kt` | Deployed catalog, bare snapshot, create request, nested event and error models. Unknown response fields are tolerated. |
-| `data/backend/BackendHttpClient.kt` | HTTPS requests, authorization, one token refresh, account checks, timeouts, bounded responses, HTTP errors. Tokens are never logged. |
-| `data/backend/SessionApi.kt` | Session operations isolated from transport for workflow regression testing. |
-| `data/backend/SessionImageStore.kt` | Validates and stores private image copies separately from session requests. |
-| `data/backend/LiveSessionRepository.kt` | Live endpoints, serialization, multipart upload and size/type checks. |
-| `di/BackendModule.kt` | Hilt client with Firebase ID token provider. |
-| `viewModel/ExperimentViewModel.kt` | Authenticated catalog loading, retries, exact experiment ID/version selection, loading/error state. |
-| `data/model/Experiment.kt` | Defines the five product choices, stable selection IDs, availability and explicit synthetic demo bindings; retains exact backend IDs and review contracts. |
-| `viewModel/ConversationViewModel.kt` | Image validation/private copy, create/upload sequence, snapshot state, message/event retries, foreground polling and immediate local exit. |
-| `MainActivity.kt` | Authenticated navigation, Continue wiring, conversation lifecycle and exit-to-home navigation. |
-| `navigation/ScreenRoute.kt` | Serializable conversation destination. |
-| `navigation/AppNavigation.kt` | Connects Home's Continue callback while retaining the camera/picker flow. |
-| `ui/theme/screen/experiment/ExperimentScreen.kt` | Live catalog loading/error/retry and provenance labels. |
-| `ui/theme/screen/home/HomeScreen.kt` | Required description and visible upload limits. |
-| `ui/theme/screen/conversation/ConversationUiState.kt` | Server status, provenance notice, input availability and exit state. |
-| `ui/theme/screen/conversation/ConversationScreen.kt` | Chat callbacks, live state and structured action entry point. |
-| `ui/theme/screen/conversation/SessionActions.kt` | Actions driven by `snapshot.actions`: retry extraction, review, endpoint correction, explicit revision confirmation and check observations. |
-| `ui/theme/screen/conversation/EvidenceForms.kt` | Existing resistor/capacitor values, component/port correspondence, source settings, analog AC probe readings and 7400 logic observations using catalog metadata. |
-| `di/SessionModule.kt` | Documents that the old binding is demo-only; live screens inject LiveSessionRepository. |
+| `data/backend/BackendModels.kt` | Bare v1.1 snapshots, video/frame metadata, messages and nested event models |
+| `data/backend/BackendHttpClient.kt` | New base URL, JSON/binary requests, streaming body support, authorization/token refresh, account isolation and bounded responses |
+| `data/backend/SessionApi.kt` | Video/session/event/frame interface |
+| `data/backend/LiveSessionRepository.kt` | Exact legacy-named MP4 multipart endpoint and authenticated frame download |
+| `data/backend/SessionVideoStore.kt` | Private streamed copy, MP4/size/duration/dimension validation, immutable retry file, frame cache |
+| `di/BackendModule.kt` | Hilt binding for live transport, tokens, SessionApi and video store |
+| `viewModel/ConversationViewModel.kt` | Validate → create → upload → poll → review flow, frame loading, stable retries, direct local Exit |
+| `viewModel/HomeViewModel.kt` | Selected video/description and app-owned recording cleanup |
+| `navigation/AppNavigation.kt` | Video-only picker, bounded camera capture intent, Continue wiring |
+| `MainActivity.kt` | Selected experiment/video → conversation navigation and lifecycle |
+| `ui/theme/screen/home/HomeScreen.kt` | Video actions, limits, description, Settings and enabled Continue |
+| `ui/theme/screen/conversation/ConversationUiState.kt` | Processing and selected review-frame state |
+| `ui/theme/screen/conversation/ConversationScreen.kt` | Processing feedback, chat, retry and immediate Exit |
+| `ui/theme/screen/conversation/ConversationMessageBubble.kt` | Selected frame and timestamp caption |
+| `ui/theme/screen/conversation/SessionActions.kt` | Inline assistant review/input card and server pending-action feedback |
 
-Unknown actions are shown as requiring additional app support. Analog AC and 7400 measurement forms follow the backend's current validation rules; future experiment analysis engines may need additional forms. The app does not infer controls from assistant prose, invent mappings, automatically confirm a candidate, or claim instructor authorization on the user's behalf.
+The former `SessionImageStore.kt` was removed. The older `FakeSessionRepository`/`data/model/session` demo contract remains separate and is not the transport used by live screens.
 
-Images are copied to app-private `noBackupFilesDir` before upload, so picker access is not needed for an interrupted retry. They are not embedded in saved state or placed in public storage. The current private copy is removed on account reset or when starting the next conversation. The preview uses this local copy; downloading images for arbitrary historical sessions is not implemented.
+## Verified and unverified behavior
 
-## Validation
+Public checks on git-good-3 returned health `ok`, API version `1.1`, and readiness including `video_decoder: true`. They also reported:
 
-Run:
+- `firebase_credential_error: null`
+- `firebase_permissions_verified: false`
+- `approved_real_experiments: 0`
+- `live_providers_verified: false`
+
+These observations do not prove real circuit accuracy, full user-account permissions, or live model/provider quality. The inspected backend message handler still returns an existing explanation or a fixed review instruction rather than generating a new answer to each conversational question. The video pipeline may return manual/unresolved/calibration requirements; the client shows returned review requirements and does not fabricate missing calibration/analysis events that are absent from the deployed contract.
+
+Validation command:
 
 ```sh
 ./gradlew :app:assembleDebug :app:testDebugUnitTest --console=plain
 ```
 
-`LiveSessionRepositoryTest` uses a local HTTP server to exercise bearer authorization, catalog parsing, bare snapshots, required description, multipart path/fields, nested confirmation revision, token refresh with unchanged mutation identity, conflict handling, close-vs-delete semantics, no automatic retry after server failure, signed-out rejection, account isolation and unsupported image rejection. Existing demo repository tests remain separate.
+Contract/workflow tests use a local HTTP server and fake SessionApi/video storage. They cover MP4 MIME and legacy multipart field names, fixed body length, rejected images/oversized videos, duration/pixel validation, replay after auth refresh, stable upload keys, no duplicate creates, nested event revisions, conflicts, account isolation, selected frame metadata/download, foreground polling and immediate Exit without server events. Existing catalog/demo/theme tests are retained.
 
-Public readiness and the deployed schema were checked directly. A signed-in device's full Firebase → image → model → diagnosis flow has not been executed in this environment; it must be verified with the user's existing account and the configured backend providers. No backend environment variables, credentials, deployment, or server data were changed for this task.
+A physical-device signed-in MP4 → real deployed processing → reviewed diagnosis run has not been performed in this environment. Camera playback, real Firebase reset email delivery, backend processing outcomes and model accuracy must be checked on the target device. No backend data, environment variables, credentials or deployment were changed by this Android integration.
 
-## Retry and restoration fixes
+## Inline chat inputs
 
-Invalid or missing images are rejected before a first create request. An uncertain create retains its original key and can be reconciled and explicitly closed even if the cached image is subsequently lost. Confirmed closure clears unfinished setup state, allowing a new conversation. Account resets clear the previous review metadata. Home remains on its restored destination while the catalog loads, updates the experiment name when loading finishes, shows catalog errors, and disables Continue until a valid selection is available.
+The Review required actions button and modal dialog were removed at the user’s request. Current server actions render as an assistant form inside the chat’s LazyColumn after the latest messages, using the same scroll area. Corrections, component values, label matching, source settings, measurements, observations and explicit revision confirmation are entered/submitted in this card. Optional circuit details expand inline; they do not gate the input fields. There is no separate popup or Done step.
 
-`ConversationViewModelTest` exercises missing images, uncertain-create reconciliation, close cleanup, stable message retries, stale confirmations, busy exits, account reset, and monotonic snapshot revisions.
+Action identity and candidate revision keep unfinished fields stable across message-only session updates. New revisions/checks reset the corresponding forms. Inputs are disabled during submission; confirmation still requires a loaded review frame when provided and an explicit acknowledgement. Typed event payloads, version checks, normal chat messages and immediate Exit behavior are unchanged.
 
-## Theme and five-experiment menu
+## Home settings and saved theme
 
-All screens now use a shared teal/slate Material scheme. Dark mode uses navy backgrounds, slate message/input surfaces, light text and mint accents. Light mode uses cool slate backgrounds. Device wallpaper colors are disabled by default so they cannot change control colors independently of screen backgrounds. Auth, home, experiment cards, chat bubbles, dialogs and input fields use the same scheme. ThemeContrastTest checks text, accent and button color pairs in both modes at a minimum 4.5:1 contrast ratio.
-
-The menu always contains the five requested experiments. resolveExperiments matches published exact product IDs/names, prefers an approved real workflow, and explicitly supports the existing nand-not-example and rc-lowpass-example records as labeled demos. It never substitutes those demos for Ohm’s Law, the op-amp, or the rectifier. Pending choices can be inspected but Continue is disabled. ConversationViewModel also rejects attempts to start an unavailable workflow. No backend catalog, model capability, approval or deployment was changed by this UI update.
-
-Exit behavior was revised at the user’s request: navigation is immediate, independent of server status. Earlier references to waiting for a close event describe the previous implementation. Regression coverage includes exit during a running request, exit during processing, and leaving an unsent pending event without submitting it.
-
-## Video selection (Android)
-
-Home now offers Upload video beside Upload image and Take photo. It uses the Android system picker restricted to videos, with local VideoView playback controls, removal, inline playback errors, pause when backgrounded, and resource cleanup on removal/navigation. Only one photo or video is selected at a time; switching media keeps the description. No broad storage permissions or new playback dependencies were added.
-
-The current deployed API has no video-upload endpoint. Video selection therefore does not create a session, upload bytes, extract frames, or invoke ML. Home explains that video analysis is unavailable and disables Continue for video attachments. Photo analysis continues through its existing endpoint. Video recording and server video processing are separate future work.
+The Home top-right action is now Settings. It opens a bottom sheet with exactly two options: a Dark mode switch (on = dark, off = light) and Sign out. ThemePreferences saves the explicit choice privately on the device; MainActivity applies it throughout the app through SettingsViewModel. Before the first explicit choice, the system theme is used. Sign-out retains this non-account preference. The effective app theme also controls system-bar icon appearance.

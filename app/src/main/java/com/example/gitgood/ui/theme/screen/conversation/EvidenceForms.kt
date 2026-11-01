@@ -1,6 +1,8 @@
 package com.example.gitgood.ui.theme.screen.conversation
 
 import androidx.compose.material3.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.*
 import com.example.gitgood.data.backend.BackendSession
 import kotlinx.serialization.json.*
@@ -14,7 +16,7 @@ internal fun CandidateValues(session: BackendSession, enabled: Boolean, submit: 
     val candidate = session.candidate ?: return
     candidate.rows("components").filter { it.text("part") in setOf("resistor", "capacitor") }.forEach { component ->
         var value by remember(session.candidate_revision, component.text("id")) { mutableStateOf(component.text("value_si").takeUnless { it == "null" }.orEmpty()) }
-        OutlinedTextField(value, { value = it }, label = { Text("${component.text("id")} · ${if (component.text("part") == "resistor") "ohms" else "farads"}") })
+        OutlinedTextField(value, { value = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("${component.text("id")} · ${if (component.text("part") == "resistor") "ohms" else "farads"}") })
         TextButton(onClick = {
             val components = candidate.rows("components").map {
                 if (it.text("id") == component.text("id")) JsonObject(it + ("value_si" to JsonPrimitive(value.finite()!!))) else it
@@ -40,13 +42,13 @@ internal fun CorrespondenceAndSources(session: BackendSession, contract: JsonObj
         Text("Match observed components to experiment labels: ${referenceIds.joinToString()}. Enter ‘extra’ only for an additional component.")
         components.forEach { component ->
             val id = component.text("id")
-            OutlinedTextField(componentMap[id].orEmpty(), { componentMap[id] = it }, label = { Text("$id matches") })
+            OutlinedTextField(componentMap[id].orEmpty(), { componentMap[id] = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("$id matches") })
         }
         if (referencePorts.isNotEmpty()) {
             Text("Experiment ports: ${referencePorts.joinToString()}")
             ports.forEach { port ->
                 val id = port.text("id")
-                OutlinedTextField(portMap[id].orEmpty(), { portMap[id] = it }, label = { Text("Port $id matches") })
+                OutlinedTextField(portMap[id].orEmpty(), { portMap[id] = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("Port $id matches") })
             }
         }
         Button(onClick = {
@@ -62,8 +64,8 @@ internal fun CorrespondenceAndSources(session: BackendSession, contract: JsonObj
         val ac = remember(session.session_id) { mutableStateMapOf<String, String>() }
         Text("Record the configured source settings. Follow your instructor’s setup instructions.")
         sources.forEach { id ->
-            OutlinedTextField(dc[id].orEmpty(), { dc[id] = it }, label = { Text("$id DC (V)") })
-            OutlinedTextField(ac[id].orEmpty(), { ac[id] = it }, label = { Text("$id AC amplitude (V)") })
+            OutlinedTextField(dc[id].orEmpty(), { dc[id] = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("$id DC (V)") })
+            OutlinedTextField(ac[id].orEmpty(), { ac[id] = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("$id AC amplitude (V)") })
         }
         Button(onClick = {
             submit("source_settings", buildJsonObject {
@@ -81,13 +83,13 @@ internal fun EvidenceForms(session: BackendSession, contract: JsonObject, enable
     when (analysis.text("engine")) {
         "analog_ac" -> {
             val probes = analysis.rows("probes")
-            val readings = remember(session.session_version) { mutableStateMapOf<String, String>() }
+            val readings = remember(session.candidate_revision) { mutableStateMapOf<String, String>() }
             if (probes.isEmpty()) return
             Text("Enter measured AC magnitudes in volts for the specified probes and frequencies. Only take measurements approved by your instructor.")
             probes.forEach { probe ->
                 val id = probe.text("id")
                 Text("$id: ${probe.text("positive_port")} to ${probe.text("negative_port")}, ${probe.text("frequency_hz")} Hz")
-                OutlinedTextField(readings[id].orEmpty(), { readings[id] = it }, label = { Text("$id magnitude (V)") })
+                OutlinedTextField(readings[id].orEmpty(), { readings[id] = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("$id magnitude (V)") })
             }
             val populated = readings.filterValues { it.isNotBlank() }
             Button(onClick = {
@@ -98,10 +100,10 @@ internal fun EvidenceForms(session: BackendSession, contract: JsonObject, enable
             }, enabled = enabled && populated.isNotEmpty() && populated.values.all { it.finite()?.let { n -> n >= 0 } == true }) { Text("Submit measurements") }
         }
         "7400_as_not" -> {
-            var input by remember(session.session_version) { mutableStateOf("") }
-            var output by remember(session.session_version) { mutableStateOf("") }
-            OutlinedTextField(input, { input = it }, label = { Text("Observed input (0 or 1)") })
-            OutlinedTextField(output, { output = it }, label = { Text("Observed output (0 or 1)") })
+            var input by remember(session.candidate_revision) { mutableStateOf("") }
+            var output by remember(session.candidate_revision) { mutableStateOf("") }
+            OutlinedTextField(input, { input = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("Observed input (0 or 1)") })
+            OutlinedTextField(output, { output = it }, modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("Observed output (0 or 1)") })
             Button(onClick = {
                 submit("measurements", buildJsonObject { put("candidate_revision", revision); put("measurements", buildJsonArray { add(buildJsonObject { put("input", input.toInt()); put("output", output.toInt()) }) }) })
             }, enabled = enabled && input in listOf("0", "1") && output in listOf("0", "1")) { Text("Submit observed logic levels") }

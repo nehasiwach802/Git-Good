@@ -54,8 +54,9 @@ class ExperimentViewModelTest {
             return listOf(BackendExperiment("rc-low-pass-filter", "1", "RC", workflow_approved = true))
         }
         override suspend fun create(request: CreateSession, key: String): BackendSession = error("Unused")
+        override suspend fun getFrame(id: String): ByteArray = error("Unused")
         override suspend fun get(id: String): BackendSession = error("Unused")
         override suspend fun event(id: String, event: BackendEvent): BackendSession = error("Unused")
-        override suspend fun upload(id: String, version: Int, bytes: ByteArray, mime: String, key: String): BackendSession = error("Unused")
+        override suspend fun uploadVideo(id: String, version: Int, file: java.io.File, key: String): BackendSession = error("Unused")
     }
 }

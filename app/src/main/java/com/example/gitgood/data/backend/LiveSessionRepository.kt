@@ -1,7 +1,9 @@
 package com.example.gitgood.data.backend
 
 import kotlinx.serialization.encodeToString
-import java.io.ByteArrayOutputStream
+import java.io.File
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,19 +22,38 @@ class LiveSessionRepository @Inject constructor(private val http: BackendHttpCli
     override suspend fun event(id: String, event: BackendEvent): BackendSession = decode(http.request(
         "POST", "/api/v1/sessions/${safeId(id)}/events", http.json.encodeToString(event).toByteArray()))
 
-    override suspend fun upload(id: String, version: Int, bytes: ByteArray, mime: String, key: String): BackendSession {
-        require(bytes.isNotEmpty() && bytes.size <= 5 * 1024 * 1024) { "Choose an image smaller than 5 MiB." }
-        require(mime in setOf("image/jpeg", "image/png")) { "Choose a JPEG or PNG image." }
+    override suspend fun getFrame(id: String): ByteArray =
+        http.requestBytes("GET", "/api/v1/sessions/${safeId(id)}/image")
+
+    override suspend fun uploadVideo(id: String, version: Int, file: File, key: String): BackendSession {
+        VideoUploadLimits.validateFile(file)
         val boundary = "Circuitly${UUID.randomUUID()}"
-        val body = ByteArrayOutputStream().apply {
-            fun text(value: String) { write(value.toByteArray(Charsets.UTF_8)) }
-            text("--$boundary\r\nContent-Disposition: form-data; name=\"expected_session_version\"\r\n\r\n$version\r\n")
-            val extension = if (mime == "image/png") "png" else "jpg"
-            text("--$boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"circuit.$extension\"\r\nContent-Type: $mime\r\n\r\n")
-            write(bytes)
-            text("\r\n--$boundary--\r\n")
-        }.toByteArray()
-        return decode(http.request("POST", "/api/v1/sessions/${safeId(id)}/image", body, "multipart/form-data; boundary=$boundary", key))
+        // The deployed MP4 endpoint deliberately retains its legacy route/field name.
+        val prefix = ("--$boundary\r\nContent-Disposition: form-data; name=\"expected_session_version\"\r\n\r\n$version\r\n" +
+            "--$boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"circuit.mp4\"\r\nContent-Type: video/mp4\r\n\r\n").toByteArray()
+        val suffix = "\r\n--$boundary--\r\n".toByteArray()
+        val context = currentCoroutineContext()
+        val size = file.length()
+        val body = StreamingRequestBody(prefix.size.toLong() + size + suffix.size) { output ->
+            check(file.length() == size) { "The video changed. Select it again." }
+            output.write(prefix)
+            file.inputStream().use { input ->
+                val buffer = ByteArray(64 * 1024)
+                var total = 0L
+                while (true) {
+                    context.ensureActive()
+                    val count = input.read(buffer)
+                    if (count < 0) break
+                    total += count
+                    check(total <= size) { "The video changed. Select it again." }
+                    output.write(buffer, 0, count)
+                }
+                check(total == size) { "The video changed. Select it again." }
+            }
+            output.write(suffix)
+        }
+        return decode(http.request("POST", "/api/v1/sessions/${safeId(id)}/image",
+            contentType = "multipart/form-data; boundary=$boundary", idempotencyKey = key, streamBody = body))
     }
 
     private fun decode(value: String): BackendSession = http.json.decodeFromString(value)

@@ -49,6 +49,7 @@ internal fun ConversationMessageBubble(message: ConversationMessageUi) {
                         )
                     }
                 }
+                message.attachmentCaption?.let { Text(it, fontSize = 12.sp, color = SecondaryTextColor) }
                 if (message.text.isNotBlank()) {
                     Text(message.text, fontSize = 14.sp, lineHeight = 21.sp, color = PrimaryTextColor)
                 }

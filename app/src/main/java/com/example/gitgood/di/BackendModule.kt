@@ -27,5 +27,5 @@ object BackendModule {
     fun sessions(repository: LiveSessionRepository): SessionApi = repository
 
     @Provides @Singleton
-    fun images(store: AndroidSessionImageStore): SessionImageStore = store
+    fun videos(store: AndroidSessionVideoStore): SessionVideoStore = store
 }
