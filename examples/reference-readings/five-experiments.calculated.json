@@ -1,0 +1,160 @@
+{
+  "status": "calculated_examples_not_measurements",
+  "workflow_approved": false,
+  "purpose": "Reference research fixtures; not backend payloads or universal acceptance limits",
+  "reference_document": "docs/FIVE_EXPERIMENT_READINGS.md",
+  "experiments": [
+    {
+      "name": "NOT Gate Using IC 7400 NAND Gates",
+      "model": "ideal tied-input NAND logic; electrical limits require SN7400 datasheet conditions",
+      "parameters": {
+        "part": "SN7400",
+        "supply_V": 5
+      },
+      "rows": [
+        {
+          "input_logic": 0,
+          "expected_output_logic": 1
+        },
+        {
+          "input_logic": 1,
+          "expected_output_logic": 0
+        }
+      ]
+    },
+    {
+      "name": "Verification of Ohm's Law",
+      "model": "constant resistance DC",
+      "parameters": {
+        "resistance_ohm": 1000
+      },
+      "rows": [
+        {
+          "voltage_V": 1,
+          "expected_current_A": 0.001,
+          "expected_power_W": 0.001
+        },
+        {
+          "voltage_V": 2,
+          "expected_current_A": 0.002,
+          "expected_power_W": 0.004
+        },
+        {
+          "voltage_V": 3,
+          "expected_current_A": 0.003,
+          "expected_power_W": 0.009
+        },
+        {
+          "voltage_V": 4,
+          "expected_current_A": 0.004,
+          "expected_power_W": 0.016
+        },
+        {
+          "voltage_V": 5,
+          "expected_current_A": 0.005,
+          "expected_power_W": 0.025
+        }
+      ]
+    },
+    {
+      "name": "RC Low-Pass Filter",
+      "model": "unloaded series R, shunt C, sine",
+      "parameters": {
+        "resistance_ohm": 1000,
+        "capacitance_F": 1e-07,
+        "input_Vpp": 1,
+        "cutoff_Hz": 1591.5494309189537
+      },
+      "rows": [
+        {
+          "frequency_Hz": 159.15494309189538,
+          "expected_output_Vpp": 0.9950371902099893,
+          "expected_phase_deg": -5.710593137499643,
+          "expected_gain_dB": -0.043213737826425784
+        },
+        {
+          "frequency_Hz": 795.7747154594769,
+          "expected_output_Vpp": 0.8944271909999159,
+          "expected_phase_deg": -26.56505117707799,
+          "expected_gain_dB": -0.9691001300805642
+        },
+        {
+          "frequency_Hz": 1591.5494309189537,
+          "expected_output_Vpp": 0.7071067811865475,
+          "expected_phase_deg": -45.0,
+          "expected_gain_dB": -3.010299956639812
+        },
+        {
+          "frequency_Hz": 3183.0988618379074,
+          "expected_output_Vpp": 0.4472135954999579,
+          "expected_phase_deg": -63.43494882292201,
+          "expected_gain_dB": -6.989700043360188
+        },
+        {
+          "frequency_Hz": 15915.494309189537,
+          "expected_output_Vpp": 0.09950371902099892,
+          "expected_phase_deg": -84.28940686250037,
+          "expected_gain_dB": -20.043213737826427
+        }
+      ]
+    },
+    {
+      "name": "Inverting Op-Amp Amplifier",
+      "model": "ideal linear negative feedback, grounded non-inverting input; supplies must permit output",
+      "parameters": {
+        "Rin_ohm": 10000,
+        "Rf_ohm": 47000,
+        "Vref_V": 0
+      },
+      "rows": [
+        {
+          "input_DC_V": -0.2,
+          "expected_output_DC_V": 0.9400000000000001
+        },
+        {
+          "input_DC_V": -0.1,
+          "expected_output_DC_V": 0.47000000000000003
+        },
+        {
+          "input_DC_V": 0,
+          "expected_output_DC_V": -0.0
+        },
+        {
+          "input_DC_V": 0.1,
+          "expected_output_DC_V": -0.47000000000000003
+        },
+        {
+          "input_DC_V": 0.2,
+          "expected_output_DC_V": -0.9400000000000001
+        }
+      ]
+    },
+    {
+      "name": "Half-Wave Rectifier",
+      "model": "positive half-wave, resistive load, no capacitor",
+      "parameters": {
+        "input_Vpp": 10,
+        "input_offset_V": 0,
+        "load_ohm": 1000
+      },
+      "rows": [
+        {
+          "diode_model": "ideal",
+          "expected_peak_V": 5.0,
+          "expected_mean_V": 1.5915494309189535,
+          "expected_total_rms_V": 2.5,
+          "expected_ac_only_rms_V": 1.9279446073322635,
+          "expected_mean_current_A": 0.0015915494309189536
+        },
+        {
+          "diode_model": "constant_drop_approximation",
+          "assumed_forward_drop_V": 0.7,
+          "expected_peak_V": 4.3,
+          "expected_mean_V": 1.2571722418634093,
+          "expected_total_rms_V": 2.06386650425174,
+          "expected_mean_current_A": 0.0012571722418634093
+        }
+      ]
+    }
+  ]
+}

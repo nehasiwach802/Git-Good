@@ -1,0 +1,783 @@
+{
+  "target": "wire_end_region",
+  "human_reviewed": false,
+  "frames": [
+    {
+      "video_id": "video-01",
+      "image": "outputs\\video-pilot-v2\\video-01\\frame-0000000.jpg",
+      "image_sha256": "3fb326d9939dcfd2bec55895fb7b7c256e845d9408dfbe45b778e0c180754fde",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          186,
+          563
+        ],
+        [
+          187,
+          717
+        ],
+        [
+          202,
+          576
+        ],
+        [
+          349,
+          605
+        ],
+        [
+          284,
+          580
+        ],
+        [
+          286,
+          700
+        ],
+        [
+          190,
+          682
+        ],
+        [
+          320,
+          672
+        ],
+        [
+          341,
+          565
+        ],
+        [
+          355,
+          760
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-02",
+      "image": "outputs\\video-pilot-v2\\video-02\\frame-0000000.jpg",
+      "image_sha256": "9f56bbf4f9b5ecc4702f340f9d1814f8720c85c0f27b1ddcd12c9fd1dfd92e19",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          340,
+          240
+        ],
+        [
+          464,
+          365
+        ],
+        [
+          437,
+          253
+        ],
+        [
+          535,
+          357
+        ],
+        [
+          557,
+          282
+        ],
+        [
+          717,
+          350
+        ],
+        [
+          651,
+          278
+        ],
+        [
+          786,
+          363
+        ],
+        [
+          720,
+          286
+        ],
+        [
+          814,
+          363
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-03",
+      "image": "outputs\\video-pilot-v2\\video-03\\frame-0000047.jpg",
+      "image_sha256": "2dfff9132df795e5b455188e75ad046830efc49cbd89562c1d046011e99775e9",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          225,
+          190
+        ],
+        [
+          363,
+          191
+        ],
+        [
+          224,
+          375
+        ],
+        [
+          365,
+          380
+        ],
+        [
+          220,
+          500
+        ],
+        [
+          367,
+          499
+        ],
+        [
+          223,
+          636
+        ],
+        [
+          372,
+          638
+        ],
+        [
+          224,
+          778
+        ],
+        [
+          376,
+          779
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-04",
+      "image": "outputs\\video-pilot-v2\\video-04\\frame-0000015.jpg",
+      "image_sha256": "1063f8ea520bce51924d272717d419ac45e81738808a00633600d49d586b74d6",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          328,
+          447
+        ],
+        [
+          350,
+          472
+        ],
+        [
+          247,
+          472
+        ],
+        [
+          217,
+          495
+        ],
+        [
+          223,
+          569
+        ],
+        [
+          265,
+          569
+        ],
+        [
+          321,
+          586
+        ],
+        [
+          337,
+          538
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-05",
+      "image": "outputs\\video-pilot-v2\\video-05\\frame-0000000.jpg",
+      "image_sha256": "5e9d5daae07beb8f1ead6f4f6e8f07d571dbb903689168a7ba3334af69489889",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          374,
+          325
+        ],
+        [
+          539,
+          328
+        ],
+        [
+          367,
+          345
+        ],
+        [
+          538,
+          344
+        ],
+        [
+          370,
+          352
+        ],
+        [
+          539,
+          358
+        ],
+        [
+          405,
+          375
+        ],
+        [
+          494,
+          374
+        ],
+        [
+          372,
+          390
+        ],
+        [
+          354,
+          414
+        ],
+        [
+          541,
+          391
+        ],
+        [
+          438,
+          425
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-06",
+      "image": "outputs\\video-pilot-v2\\video-06\\frame-0000000.jpg",
+      "image_sha256": "800102680dfc046bc35d57f2ab537386428b9a1ed67384bc898a9ef3cddc7b25",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          122,
+          272
+        ],
+        [
+          334,
+          251
+        ],
+        [
+          350,
+          252
+        ],
+        [
+          516,
+          255
+        ],
+        [
+          531,
+          255
+        ],
+        [
+          697,
+          243
+        ],
+        [
+          711,
+          248
+        ],
+        [
+          843,
+          242
+        ],
+        [
+          857,
+          242
+        ],
+        [
+          936,
+          242
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-07",
+      "image": "outputs\\video-pilot-v2\\video-07\\frame-0000030.jpg",
+      "image_sha256": "a7bbcaed750abc7de5852ba9ebc9daf888b1795b2a7fec2c89431466ca24071a",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown",
+      "exclude_reason": "Overlapping ends cannot be localized sufficiently from this representative view."
+    },
+    {
+      "video_id": "video-08",
+      "image": "outputs\\video-pilot-v2\\video-08\\frame-0000000.jpg",
+      "image_sha256": "8820421f6eb704918144e1e2ee6894b42caa105f69856ecde86ddc7895e152aa",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          383,
+          237
+        ],
+        [
+          596,
+          152
+        ],
+        [
+          280,
+          222
+        ],
+        [
+          304,
+          347
+        ],
+        [
+          287,
+          351
+        ],
+        [
+          408,
+          408
+        ],
+        [
+          714,
+          155
+        ],
+        [
+          733,
+          258
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-09",
+      "image": "outputs\\video-pilot-v2\\video-09\\frame-0000012.jpg",
+      "image_sha256": "65efb2fd6eec3a2a7a48786ef59ecb8eb12deacc0316da39377f26c04e3f6c2d",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          226,
+          530
+        ],
+        [
+          375,
+          526
+        ],
+        [
+          285,
+          498
+        ],
+        [
+          298,
+          593
+        ],
+        [
+          245,
+          594
+        ],
+        [
+          377,
+          582
+        ],
+        [
+          268,
+          601
+        ],
+        [
+          391,
+          596
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-10",
+      "image": "outputs\\video-pilot-v2\\video-10\\frame-0000000.jpg",
+      "image_sha256": "cf2a27cd694e0ab85e6c2c6113f82e161a3c04c07469e1eb7dd5dfe5bab91f6c",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          149,
+          192
+        ],
+        [
+          155,
+          324
+        ],
+        [
+          357,
+          317
+        ],
+        [
+          406,
+          212
+        ],
+        [
+          494,
+          240
+        ],
+        [
+          587,
+          229
+        ],
+        [
+          585,
+          209
+        ],
+        [
+          587,
+          294
+        ],
+        [
+          850,
+          315
+        ],
+        [
+          898,
+          232
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-11",
+      "image": "outputs\\video-pilot-v2\\video-11\\frame-0000012.jpg",
+      "image_sha256": "40f096f0597f9416d2ec2b36f6251b18a2b9399f19cc0cb6fd82b393ad6f6182",
+      "image_size": [
+        1024,
+        576
+      ],
+      "xy": [
+        [
+          377,
+          217
+        ],
+        [
+          497,
+          182
+        ],
+        [
+          495,
+          198
+        ],
+        [
+          654,
+          162
+        ],
+        [
+          367,
+          236
+        ],
+        [
+          597,
+          300
+        ],
+        [
+          654,
+          182
+        ],
+        [
+          607,
+          321
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-12",
+      "image": "outputs\\video-pilot-v2\\video-12\\frame-0000018.jpg",
+      "image_sha256": "29cd53a71da1b13b111950c239e0259add9fb5cc94a073f534b1a3bc4ed0e074",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          169,
+          480
+        ],
+        [
+          194,
+          418
+        ],
+        [
+          189,
+          406
+        ],
+        [
+          344,
+          455
+        ],
+        [
+          195,
+          415
+        ],
+        [
+          236,
+          518
+        ],
+        [
+          241,
+          491
+        ],
+        [
+          350,
+          470
+        ],
+        [
+          254,
+          516
+        ],
+        [
+          346,
+          489
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-13",
+      "image": "outputs\\video-pilot-v2\\video-13\\frame-0000010.jpg",
+      "image_sha256": "5edf6bf50d3474b0f8369d5550b8d8590d920d9cdc9b0359d5e1398c74d073d3",
+      "image_size": [
+        576,
+        1024
+      ],
+      "xy": [
+        [
+          235,
+          247
+        ],
+        [
+          364,
+          214
+        ],
+        [
+          207,
+          347
+        ],
+        [
+          301,
+          572
+        ],
+        [
+          149,
+          498
+        ],
+        [
+          249,
+          473
+        ],
+        [
+          149,
+          529
+        ],
+        [
+          309,
+          588
+        ],
+        [
+          263,
+          477
+        ],
+        [
+          295,
+          586
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-14",
+      "image": "outputs\\video-pilot-v2\\video-14\\frame-0000000.jpg",
+      "image_sha256": "ccd357a8fd5c554e08381494ea1a64d6e52637a29f2a1fc88ef7b30bc3568254",
+      "image_size": [
+        832,
+        464
+      ],
+      "xy": [
+        [
+          220,
+          191
+        ],
+        [
+          345,
+          206
+        ],
+        [
+          233,
+          199
+        ],
+        [
+          483,
+          321
+        ],
+        [
+          487,
+          315
+        ],
+        [
+          590,
+          225
+        ],
+        [
+          602,
+          232
+        ],
+        [
+          625,
+          337
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-15",
+      "image": "outputs\\video-pilot-v2\\video-15\\frame-0000000.jpg",
+      "image_sha256": "33cb36e01f89dfa8fc9633d4b0982aa50d0374b71915571be99b9b9938b5d141",
+      "image_size": [
+        464,
+        832
+      ],
+      "xy": [
+        [
+          182,
+          430
+        ],
+        [
+          239,
+          374
+        ],
+        [
+          241,
+          385
+        ],
+        [
+          254,
+          374
+        ],
+        [
+          263,
+          477
+        ],
+        [
+          193,
+          534
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    },
+    {
+      "video_id": "video-16",
+      "image": "outputs\\video-pilot-v2\\video-16\\frame-0000000.jpg",
+      "image_sha256": "b867949275f73ff8a535a04f9ba9c6a51b39f552270fd3fb96ccac00bc22caa8",
+      "image_size": [
+        464,
+        832
+      ],
+      "xy": [
+        [
+          149,
+          241
+        ],
+        [
+          149,
+          463
+        ],
+        [
+          199,
+          279
+        ],
+        [
+          199,
+          387
+        ],
+        [
+          282,
+          262
+        ],
+        [
+          417,
+          266
+        ],
+        [
+          148,
+          477
+        ],
+        [
+          264,
+          562
+        ],
+        [
+          279,
+          574
+        ],
+        [
+          420,
+          555
+        ]
+      ],
+      "source": "assistant_visual_proposal",
+      "reviewed": false,
+      "completeness": "unknown"
+    }
+  ],
+  "note": "Assistant visual proposals around wire-end regions, including loose ends. Not reviewed real ground truth, exact contacts, or hole labels. No identity/pairing inferred."
+}
