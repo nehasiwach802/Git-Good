@@ -1,0 +1,52 @@
+[
+  {
+    "path": "app/src/main/java/com/example/gitgood/data/model/UploadReceipt.kt",
+    "lines": 25,
+    "sha256": "0e1f2df941840856f338a6118ab45df06a750260e535e7bf6a1faa0850203478"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/data/repository/UploadRepository.kt",
+    "lines": 87,
+    "sha256": "be121c08f5adfe2d4ab9344c7722204f41fffe3c16379da47283c2d305419573"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/viewModel/ConversationViewModel.kt",
+    "lines": 63,
+    "sha256": "d8e1c005a771bde986caf41b3467610ef2bcc4e92700424b2b768da9e3fc932c"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/ui/theme/screen/conversation/ConversationScreen.kt",
+    "lines": 66,
+    "sha256": "1134448874f4105f1ea0957815e729d6f5db118a4a69f2e75383b1dadff243c2"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/MainActivity.kt",
+    "lines": 175,
+    "sha256": "c58a3c32415602ac63b690cddcc630475ceb178218d73311eb653a697da5c024"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/navigation/ScreenRoute.kt",
+    "lines": 18,
+    "sha256": "fceb95f7b2b678922487cfb46a9639b9a7a2ee8a97ed976ede1504e9c7d44ef5"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/navigation/AppNavigation.kt",
+    "lines": 122,
+    "sha256": "701cf1d68d66127ec7114f8ba5bda0dc132d5549d36be9d0e9b290bf11303eaf"
+  },
+  {
+    "path": "app/src/main/java/com/example/gitgood/ui/theme/screen/home/HomeScreen.kt",
+    "lines": 204,
+    "sha256": "8c180d77de82f1642046547a515be224f4f28db7f7dc33ef5819458aa3e91bef"
+  },
+  {
+    "path": "app/src/test/java/com/example/gitgood/data/model/UploadRulesTest.kt",
+    "lines": 15,
+    "sha256": "99362f223718852c6c5953c425397aa42b2a2e6f2e6c181868f4464858bc0717"
+  },
+  {
+    "path": "docs/dummy-api-integration.md",
+    "lines": 52,
+    "sha256": "dc734911fc1c8b8731e63e9641890f8f9b1347d958a2b38653831202d2bc8714"
+  }
+]

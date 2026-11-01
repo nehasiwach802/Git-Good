@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "944009355402",
+    "project_id": "circuitly-b1f4c",
+    "storage_bucket": "circuitly-b1f4c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944009355402:android:2717f1db0a572b55334d73",
+        "android_client_info": {
+          "package_name": "com.example.gitgood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "944009355402-90n01n9qq71nuau8r7ovt0ob8gdnomb7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gitgood",
+            "certificate_hash": "a6b5892cac09b59a5ede9abbcf389d74924ae4a7"
+          }
+        },
+        {
+          "client_id": "944009355402-48gt66pl40ud546sg5fgg9qn7auaegfu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs6Gp8SONdQyarO-1kXPTp_6TGpQ0W7Ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "944009355402-48gt66pl40ud546sg5fgg9qn7auaegfu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
