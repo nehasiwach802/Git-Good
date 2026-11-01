@@ -434,3 +434,8 @@ When *different* students running *different* experiments show the same anomaly 
 
 ### Wire-hole exercise (2026-11-01)
 User reports app/backend integrated and requests a simple wire-only experiment identifying connected holes. Added draft examples/wire-hole-practice.experiment.json and docs/WIRE_HOLE_PRACTICE.md: three unpowered jumpers E5-F5, E12-F12, E20-F20; changed endpoint F12 to F13 for second capture. Reference is isolated from vision. Existing detector proposes regions; exact holes require frame calibration and explicit pairing/review. Six reference holes validated against board-30. No deployed catalog/backend/app changes; ML2/Android own registering/displaying this optional exercise. Draft only, not approved catalog or observed labels.
+
+## Android wire-review handoff (2026-11-01)
+
+- Added docs/ANDROID_WIRE_REVIEW_HANDOFF.md for Android: existing file integration points, selected-frame overlay, label approval, manual pairing, coordinate inversion, version guards, fallback states and acceptance checks.
+- Latest shared ML2 record says AUTO_GRID_ENABLED and internal grid acceptance/suggestion are implemented, while public API1.1 acceptance events remain pending. Document distinguishes available data from required unpublished transport. No Android/backend code modified.
