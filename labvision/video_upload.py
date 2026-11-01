@@ -15,7 +15,8 @@ from .upload import extract_upload
 def process_video(video_path, board, *, known_parts=None, try_vision=False,
                   timeout=20, detector=None, extractor=None, frame_count=6,
                   samples=48, selected_frame_id=None, max_bytes=50*1024*1024,
-                  max_duration_s=60, max_pixels=8_500_000, max_edge=1600):
+                  max_duration_s=60, max_pixels=8_500_000, max_edge=1600,
+                  auto_grid=False):
     """Return selected-image ML1 output and owned JPEG bytes for alternate views.
 
     Synchronous: invoke in the backend's worker, never on an async event loop.
@@ -31,6 +32,7 @@ def process_video(video_path, board, *, known_parts=None, try_vision=False,
     require(type(max_duration_s) in (int,float) and math.isfinite(max_duration_s)
             and max_duration_s > 0, 'Invalid video duration limit')
     require(type(try_vision) is bool, 'try_vision must be boolean')
+    require(type(auto_grid) is bool, 'auto_grid must be boolean')
     require(type(timeout) in (int,float) and 0 < timeout <= 30, 'Invalid vision timeout')
     known_parts = list(known_parts or [])
     require(all(part in PART_PINS for part in known_parts), 'Unsupported reported part')
@@ -77,8 +79,17 @@ def process_video(video_path, board, *, known_parts=None, try_vision=False,
                 'sharpness':sample['sharpness'],
                 'decoded_size':[sample['width'],sample['height']],
                 'endpoint_detection':detection})
+        if auto_grid:
+            from .autocalibration import detect_grid
+            for frame in frames:
+                try:
+                    frame['grid_proposal'] = detect_grid(frame['jpeg_bytes'],board)
+                except (CandidateError,ImportError,RuntimeError,OSError,ValueError):
+                    frame['grid_proposal'] = {'status':'unavailable',
+                        'reason':'Automatic grid requires a supported complete central-grid profile and decodable frame'}
         if selected_frame_id is None:
-            selected = max(frames, key=lambda frame: frame['sharpness'])
+            aligned = [f for f in frames if f.get('grid_proposal',{}).get('status') == 'needs_orientation_review']
+            selected = max(aligned or frames, key=lambda frame: frame['sharpness'])
         else:
             matching = [f for f in frames if f['id']==selected_frame_id]
             require(len(matching)==1, 'Selected frame ID is not among extracted frames')
@@ -87,12 +98,15 @@ def process_video(video_path, board, *, known_parts=None, try_vision=False,
         result = extract_upload(selected['jpeg_bytes'], board, known_parts=known_parts,
             try_vision=try_vision, timeout=timeout, extractor=extractor,
             detector=lambda *args: selected['endpoint_detection'])
+        if auto_grid:
+            result['grid_proposal'] = selected['grid_proposal']
     return {'schema_version':'ml1-video-1', 'status':'needs_circuit_review',
             'selected_frame_id':selected['id'], 'ml1':result, 'frames':frames,
             'video':{'sha256':record['source_sha256'], 'size_bytes':path.stat().st_size,
                      'duration_s':record['duration_s'], 'fps':record['fps'],
                      'frame_count':record['frame_count']},
-            'selection': 'explicit_frame_id' if selected_frame_id else 'maximum_sampled_sharpness',
+            'selection': ('explicit_frame_id' if selected_frame_id else
+                          'sharpest_grid_proposal' if auto_grid and aligned else 'maximum_sampled_sharpness'),
             'limitations':['Sharpness is not a board-visibility or correctness guarantee.',
                           'Coordinates refer to returned JPEGs, not original video pixels.',
                           'No calibration transfer, wire pairing or multi-view fusion.',

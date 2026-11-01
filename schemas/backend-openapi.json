@@ -748,6 +748,21 @@
                   },
                   {
                     "$ref": "#/components/schemas/RetryEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AcceptGridEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RejectGridEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TapEndpointEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AddWireEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RemoveWireEvent"
                   }
                 ],
                 "discriminator": {
@@ -762,7 +777,12 @@
                     "message": "#/components/schemas/MessageEvent",
                     "check_result": "#/components/schemas/CheckResultEvent",
                     "close_session": "#/components/schemas/CloseSessionEvent",
-                    "retry_extraction": "#/components/schemas/RetryEvent"
+                    "retry_extraction": "#/components/schemas/RetryEvent",
+                    "accept_grid": "#/components/schemas/AcceptGridEvent",
+                    "reject_grid": "#/components/schemas/RejectGridEvent",
+                    "tap_endpoint": "#/components/schemas/TapEndpointEvent",
+                    "add_wire": "#/components/schemas/AddWireEvent",
+                    "remove_wire": "#/components/schemas/RemoveWireEvent"
                   }
                 },
                 "title": "Event"
@@ -777,6 +797,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SessionSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/grid/suggest": {
+      "post": {
+        "summary": "Suggest Grid Hole",
+        "operationId": "suggest_grid_hole_api_v1_sessions__session_id__grid_suggest_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GridSuggestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GridSuggestionResponse"
                 }
               }
             }
@@ -852,6 +938,184 @@
   },
   "components": {
     "schemas": {
+      "AcceptGridEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "accept_grid",
+            "title": "Type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/AcceptGridPayload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_session_version",
+          "type",
+          "payload"
+        ],
+        "title": "AcceptGridEvent"
+      },
+      "AcceptGridPayload": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          },
+          "left_top": {
+            "type": "string",
+            "pattern": "^[AEFJ][1-9][0-9]?$",
+            "title": "Left Top"
+          },
+          "right_top": {
+            "type": "string",
+            "pattern": "^[AEFJ][1-9][0-9]?$",
+            "title": "Right Top"
+          },
+          "acknowledgement": {
+            "type": "string",
+            "const": "reviewed_grid_alignment_and_printed_labels",
+            "title": "Acknowledgement"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint",
+          "left_top",
+          "right_top",
+          "acknowledgement"
+        ],
+        "title": "AcceptGridPayload"
+      },
+      "AddWireEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "add_wire",
+            "title": "Type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/AddWirePayload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_session_version",
+          "type",
+          "payload"
+        ],
+        "title": "AddWireEvent"
+      },
+      "AddWirePayload": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          },
+          "wire_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+            "title": "Wire Id"
+          },
+          "a_xy": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "A Xy"
+          },
+          "b_xy": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "B Xy"
+          },
+          "acknowledgement": {
+            "type": "string",
+            "const": "reviewed_same_physical_wire",
+            "title": "Acknowledgement"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint",
+          "wire_id",
+          "a_xy",
+          "b_xy",
+          "acknowledgement"
+        ],
+        "title": "AddWirePayload"
+      },
       "Body_upload_image_api_v1_sessions__session_id__image_post": {
         "properties": {
           "image": {
@@ -1422,6 +1686,99 @@
         ],
         "title": "CreateSession"
       },
+      "GridSuggestionRequest": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "xy": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Xy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint",
+          "expected_session_version",
+          "xy"
+        ],
+        "title": "GridSuggestionRequest"
+      },
+      "GridSuggestionResponse": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          },
+          "session_version": {
+            "type": "integer",
+            "title": "Session Version"
+          },
+          "suggestion": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Suggestion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint",
+          "session_version",
+          "suggestion"
+        ],
+        "title": "GridSuggestionResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1640,6 +1997,122 @@
           "text"
         ],
         "title": "MessagePayload"
+      },
+      "RejectGridEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "reject_grid",
+            "title": "Type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/RejectGridPayload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_session_version",
+          "type",
+          "payload"
+        ],
+        "title": "RejectGridEvent"
+      },
+      "RejectGridPayload": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint"
+        ],
+        "title": "RejectGridPayload"
+      },
+      "RemoveWireEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "remove_wire",
+            "title": "Type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/RemoveWirePayload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_session_version",
+          "type",
+          "payload"
+        ],
+        "title": "RemoveWireEvent"
+      },
+      "RemoveWirePayload": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "wire_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+            "title": "Wire Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "wire_id"
+        ],
+        "title": "RemoveWirePayload"
       },
       "ReplaceCandidate": {
         "properties": {
@@ -2278,6 +2751,87 @@
           "sources"
         ],
         "title": "SourceSettingsPayload"
+      },
+      "TapEndpointEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Event Id"
+          },
+          "expected_session_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Session Version"
+          },
+          "type": {
+            "type": "string",
+            "const": "tap_endpoint",
+            "title": "Type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/TapEndpointPayload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "expected_session_version",
+          "type",
+          "payload"
+        ],
+        "title": "TapEndpointEvent"
+      },
+      "TapEndpointPayload": {
+        "properties": {
+          "candidate_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Candidate Revision"
+          },
+          "frame_id": {
+            "type": "string",
+            "pattern": "^F[1-6]$",
+            "title": "Frame Id"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Image Sha256"
+          },
+          "board_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Board Fingerprint"
+          },
+          "target": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Target"
+          },
+          "xy": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Xy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_revision",
+          "frame_id",
+          "image_sha256",
+          "board_fingerprint",
+          "target",
+          "xy"
+        ],
+        "title": "TapEndpointPayload"
       },
       "ValidationError": {
         "properties": {

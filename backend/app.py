@@ -15,7 +15,7 @@ from .auth import firebase_principal
 from .catalog import load_catalog
 from .config import Settings
 from .integrations import Integrations
-from .models import SessionEvent, SessionResponse
+from .models import SessionEvent, SessionResponse, GridSuggestionRequest, GridSuggestionResponse
 from .store import Store
 from .workflow import Workflow, public
 from .smoke import MAX_IMAGE_BYTES, MAX_PIXELS
@@ -104,7 +104,11 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
     def capabilities(user:Auth):
         from reasoning.registry import capabilities as supported
         from reasoning.spice import find_ngspice
-        return {'reasoning':supported(),'ngspice_available':bool(find_ngspice()),'probabilities_calibrated':False}
+        return {'reasoning':supported(),'ngspice_available':bool(find_ngspice()),'probabilities_calibrated':False,
+                'video_upload':{'content_type':'video/mp4','field':'image','max_bytes':50*1024*1024},
+                'grid_review':{'contract':'grid-review-1','enabled':settings.auto_grid_enabled,
+                    'event_types':['accept_grid','reject_grid','tap_endpoint','add_wire','remove_wire'],
+                    'suggest_path':'/api/v1/sessions/{session_id}/grid/suggest'}}
 
     @app.post('/api/v1/sessions',response_model=SessionSnapshot,status_code=201)
     def create(body:CreateSession,user:Auth,idempotency_key:Annotated[UUID,Header()]):
@@ -140,6 +144,10 @@ def create_app(settings=None, *, catalog=None, integrations=None, verify=None):
     @app.post('/api/v1/sessions/{session_id}/events',response_model=SessionSnapshot)
     def event(session_id:UUID,event:AndroidEvent,user:Auth):
         return snapshot(app.state.workflow.event(str(session_id),user,internal_event(event)))
+
+    @app.post('/api/v1/sessions/{session_id}/grid/suggest',response_model=GridSuggestionResponse)
+    def suggest_grid_hole(session_id:UUID,request:GridSuggestionRequest,user:Auth):
+        return app.state.workflow.suggest_hole(str(session_id),user,request)
 
     @app.get('/api/legacy/v1/sessions/{session_id}/image',deprecated=True)
     @app.get('/api/v1/sessions/{session_id}/image')

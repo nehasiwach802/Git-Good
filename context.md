@@ -337,3 +337,118 @@ zero approved real experiments. Decoder/ngspice/worker/storage/catalog checks pa
 No real auth/provider/phone or remote deployed service verification performed.
 Android route/field/event contract preserved, with agreed MP4-only MIME input;
 obsolete combined image POSTs return410. No commit/push/deployment performed.
+
+## README architecture and laptop setup (2026-11-01)
+
+Owner ML2/backend Codex, user requested README first; merge-conflict resolution
+and main consolidation explicitly deferred to the next task. Recalled ordinary
+and promoted/shared gitgood-build architecture decisions, reconciled with current
+backend branch commit333199d (video integration now committed by user).
+Replaced stale reasoning-only README with problem statement, proposed solution,
+ML1/review/ML2/ML3/Meko flow diagram, actual tech stack, current capability limits,
+and laptop installation, offline demo, authenticated server and Android API steps.
+Clarified MP4-only legacy image field, server-only credentials, manual-review
+requirements, synthetic catalog approvals, optional detector/Gemini/Qwen/memory,
+and separate Android app. No fallback proposal presented as an accepted redesign.
+Verification this task: backend MP4 demo, generalized demo, RC validate/diagnose
+commands passed in existing .venv-backend; README local links/fences/sections and
+upload fields vs actual OpenAPI passed; diff check passed. Prior322-test release
+result retained as historical verification, full suite not repeated for docs-only
+change. Fresh laptop install, real auth/providers, APK and deployment not tested.
+Only README/context changed; branches not switched/merged, no push/deployment.
+Matching summary saved successfully to gitgood-build.
+
+## Final ML1 automatic-grid handoff -> ML2 (2026-11-01)
+
+ML1 shared memory identified newly pushed Abhiram ea67b52 and authoritative
+docs/AUTO_GRID_HANDOFF.md. Fetched actual commit and selectively imported its
+autocalibration runtime/video opt-in, focused tests, handoff/preview/practice files;
+retained existing backend/ML2 hardening and uncommitted README work. Current branch
+remains backend/android-connection-test; no main merge/cherry-pick/index changes.
+
+ML2/backend owner Codex: reasoning/grid.py validates bounded geometry/image and
+board binding, finite complete central-grid coordinates, invertible projective
+transform and quality metadata; reconstructs inverse and strips false human checks
+and review flags. Invalid grids fall back to manual entry, not session failure.
+Media worker forwards opt-in auto_grid, preserves normalized per-frame metadata
+and selected ml1.grid_proposal; AUTO_GRID_ENABLED=false by default. Correct actual
+10-70-row central-board profile required; no rails/custom geometry inference.
+
+Capture.accept_grid and suggest_hole require exact candidate/frame binding.
+Acceptance derives independent strip label mapping from explicitly reviewed
+printed corner labels, increments revision, clears circuit review and binds server
+review to proposal digest. Ambiguous/outside/nonfinite touches cannot establish
+connections. Restore validates binding; frame changes remove acceptance.
+Workflow.accept_grid internally checks owner/lab/student, session/candidate state
+and versions, persists with CAS and clears stale readings/diagnosis/checks.
+
+Public API1.1 OpenAPI remains exactly equal to saved schema; no new HTTP events
+or routes. Existing MP4/image-field/nested-payload/close flow remains unchanged.
+Internal acceptance/suggestion is NOT wired to Android HTTP; actual overlay,
+letterbox/zoom inverse and explicit alignment/label approval UI plus agreed mobile
+transport are still needed. Until then use existing physical-hole manual correction.
+No provisional hole labels are confirmed automatically. ML3 receives unchanged
+diagnostic object, with complete-result equality regression and branch probes.
+
+Verification:338 release tests pass, zero failures/skips (includes real synthetic
+MP4 grid extraction, unsupported/blank fallback, label reversal, malformed geometry,
+restore/tamper, ownership and actual concurrent session-version rejection).
+Existing backend demo completes; originalManit uses labelled probability-safe
+fallback, backend ML3 normaltemplate; pip check/diff check pass. No real capture
+accuracy claim, live providers/product datapacks/credentials/Android/deployment
+tested. Wheel build/module inspection passed; matching build summary saved and
+new consumer decisions promoted successfully to gitgood-build.
+Guide docs/ML2_AUTO_GRID_INTEGRATION.md; next review/commit and coordinate Android
+controls/transport without changing required existing fields. No push/deploy.
+
+## Public backend grid/wire integration completed (2026-11-01)
+
+User steered work directly to backend/android-connection-test, requested integration
+verification and necessary API changes; deployment/push from earlier request not
+continued. Earlier saved files had already been restored before interruption.
+This task made no further stash operations, branch switching, commits or pushes.
+Fetched current sources: ML1 Abhiram d335af7 adds Android handoff docs over ea67b52
+runtime; ML2 origin/tanu370759b contains shared grid implementation. Inspected
+latest shared/promoted handoff and actual code. Shared core source matches tanu
+ignoring CRLF; media.py adds only dismissal-flag cleanup on accept/frame changes.
+
+Previous blocker superseded: grid acceptance is now public. Owner ML2/backend
+Codex implementing user request. Additive API1.1 extension grid-review-1 discovered
+via authenticated capabilities. Existing JSON create, MP4 /image field image,
+expected_session_version, nested payload, states and close_session stay compatible.
+New typed events: accept_grid, reject_grid, tap_endpoint, add_wire, remove_wire.
+Read-only POST /api/v1/sessions/{id}/grid/suggest returns version-bound unconfirmed
+suggestions without writes. Grid operations bind candidate revision, selected F-ID,
+image SHA and board fingerprint; map is derived server-side after explicit label
+and alignment acknowledgement. Wire creation needs two unambiguous native-pixel
+taps and explicit same-physical-wire acknowledgement. Occupancy and duplicate IDs
+checked. Reject restores manual path. Existing final confirmation remains separate.
+
+New operations use durable event replay/atomic transaction ownership/lab/student
+and stale-version gates. Asset reads reuse transaction connection. Edits invalidate
+review/diagnostic and clear readings/checks/source settings; analog expectation
+object shape retained (release suite caught and corrected a reset regression).
+ML3 gets the existing diagnostic unchanged. No frame-selection or approved wire-only
+experiment introduced; draft wire-hole exercise still not a backend catalog entry.
+AUTO_GRID_ENABLED remains opt-in; board profile must match actual rows/geometry.
+
+Contract docs/BACKEND_GRID_API.md and regenerated schemas/backend-openapi.json,
+main API/Android/deployment guides, README and Kotlin preview reference updated.
+ML1 docs/ANDROID_WIRE_REVIEW_HANDOFF.md imported with current backend extension note.
+Android still must implement overlay, native-coordinate transforms, label approval
+and wire-edit UI using published contract; no actual app source/build changed.
+
+Verification:343 tests passed, zero failures/skips. Public MP4->preview->accept->
+wire add/edit/remove->circuit confirm->ML2/ML3->close path passed; replay/conflict,
+stale frame/profile/revision, ambiguity/invalid coordinates, occupancy, auth/ownership
+and manual fallback covered. Both tools/demo_backend.py and --grid completed;
+new transcript outputs/backend/synthetic-grid-transcript.json. Actual local uvicorn
+boot /health200, /openapi.json200 registers new route. /ready503 local missing
+Firebase project/credentials and enabled vision config; approved_real_experiments0.
+No real OAuth/model/provider/Android-device/Render test or product datapack access.
+Branch probes preserve strict-Manit labelled probability-safe fallback and normal
+backend template, diagnostic unchanged. pip check/diff check and schema/doc checks
+passed. Full suite last343; demos run separately after their CLI extension.
+Next review/commit backend, configure real catalog/secrets and enable AUTO_GRID
+for matching board profile, deploy and verify live readiness/device flow.
+Matching summary saved; public grid-review-1 contract promoted successfully to gitgood-build.

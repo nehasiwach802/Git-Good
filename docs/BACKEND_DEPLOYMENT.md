@@ -116,7 +116,7 @@ python -m uvicorn backend.app:app --host 0.0.0.0 --port 8000 --workers 1 --no-ac
 
 For Render select the backend branch, Docker runtime, Dockerfile path `Dockerfile.backend`, health path `/health`, configure the persistent disk and secrets, then redeploy. The container honors `$PORT`. Selecting or buying hosting resources remains an account-owner action; this repository change does not provision a disk or change the live service.
 
-After deployment check `/health` reports `mode=integrated`, `/ready` returns 200, and `/docs` shows `/api/v1/sessions`. Then create an authenticated JSON session from Android, upload a synthetic image separately, poll, review/correct, submit readings, close_session, and verify ownership with another test account. Test live vision accuracy and memory behavior with approved test accounts separately. This coding session does not access product datapacks or claim live provider acceptance.
+After deployment check `/health` reports `mode=integrated`, `/ready` returns 200, and `/docs` shows `/api/v1/sessions`. Then create an authenticated JSON session from Android, upload a synthetic MP4 separately, poll, review/correct, submit readings, close_session, and verify ownership with another test account. Test live vision accuracy and memory behavior with approved test accounts separately. This coding session does not access product datapacks or claim live provider acceptance.
 
 Do not label software test success as real-photo/model accuracy. Production acceptance additionally needs the approved experiments, auth claims/credentials, configured disk, provider test accounts, retention policy and a real-device Android test. The existing public URL serves whatever commit its hosting configuration deploys; local edits are not live until committed/pushed and redeployed.
 
@@ -135,3 +135,12 @@ Torch/Ultralytics and needs more memory; base deployment supports manual review.
 VISION_ENABLED requires GEMINI_API_KEY and GEMINI_MODEL separately; disabled vision
 never invents circuit connections. Qwen and Firebase retain their existing settings.
 Actual provider accuracy and phone connectivity require deployed checks.
+
+## Automatic grid / wire review API
+
+To enable new grid proposals set AUTO_GRID_ENABLED=true, with the experiment's
+actual full central-board row count and geometry. Endpoint detection and Gemini
+remain optional and independent. Public grid-review-1 is additive to API1.1; see
+BACKEND_GRID_API.md. Android must implement orientation approval and native-pixel
+wire review; uploading alone never confirms the circuit. No extra Python
+dependencies are needed beyond the existing video runtime.

@@ -21,6 +21,7 @@ class CreateSession(models.Strict):
 COMMANDS=(models.CorrectEndpoint,models.ReplaceCandidate,models.ConfirmCandidate,
           models.Correspondence,models.Measurements,models.SourceSettings,
           models.Message,models.CheckResult,models.CloseSession,models.Retry)
+COMMANDS += (models.AcceptGrid,models.RejectGrid,models.TapEndpoint,models.AddWire,models.RemoveWire)
 wrappers=[]
 for command in COMMANDS:
     fields={name:(field.annotation,deepcopy(field)) for name,field in command.model_fields.items()

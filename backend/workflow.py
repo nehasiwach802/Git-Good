@@ -41,6 +41,43 @@ class Workflow:
         if record['lab_id']!=principal.lab_id:error(404,'session_not_found','Session not found')
         return record
 
+    def accept_grid(self,sid,principal,*,expected_version,expected_revision,image_sha256,
+                    left_top,right_top,acknowledgement):
+        """Internal ML2 coordinator; not a new Android route/event.
+
+        Only an authenticated, explicit student review may call this. The
+        expensive asset loading happens before a short CAS write transaction.
+        A future UI transport must retain these guards, not accept client maps.
+        """
+        from reasoning.media import MediaError
+        from reasoning.grid import GridError
+        record=self.get(sid,principal)
+        if principal.role!='student':error(403,'student_required','Student role required')
+        if type(expected_version) is not int or record['version']!=expected_version:
+            error(409,'stale_session','Refresh session before accepting alignment')
+        if record['state'] not in ('awaiting_review','awaiting_measurement','awaiting_check_result'):
+            error(409,'grid_review_unavailable','Wait for extraction and an editable session')
+        try:
+            capture=self.integrations.capture(record).accept_grid(expected_revision,
+                image_sha256=image_sha256,left_top=left_top,right_top=right_top,acknowledgement=acknowledgement)
+        except (MediaError,GridError,CandidateError,KeyError,ValueError):
+            error(422,'invalid_grid_review','Grid, labels, frame or candidate revision could not be verified')
+        updated=capture.apply_to_record(record)
+        # Label acceptance does not change component identity correspondence.
+        updated['component_map']=record['component_map']
+        updated['port_map']=record['port_map']
+        updated['ml1']['media']=capture.snapshot()['media']
+        updated['version']+=1
+        message(updated,'assistant','Grid alignment and printed labels reviewed. Confirm circuit connections separately.')
+        self.actions(updated)
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            current=self.store.get(db,sid,principal.actor_id)
+            if not current or current['lab_id']!=principal.lab_id:error(404,'session_not_found','Session not found')
+            if current['version']!=expected_version:error(409,'stale_session','Session changed during grid review')
+            self.store.save(db,updated)
+        return public(updated)
+
     def create(self, principal, experiment_id, version, description, data, receipt, request_key):
         if principal.role != 'student': error(403,'student_required','Student role required')
         choices = [x for (eid,v),x in self.catalog.items() if eid==experiment_id and (version is None or v==version)]
@@ -128,11 +165,62 @@ class Workflow:
                                'pending':pending(record['candidate'],record['board']),
                                'reasoning_pending':record['diagnostic'].get('pending',[]) if record.get('diagnostic') else [],
                                'event_types':['correct_endpoint','replace_candidate','confirm_candidate','set_correspondence','source_settings']}]
+            if record.get('ml1',{}).get('grid_proposal',{}).get('status')=='needs_orientation_review':
+                record['actions'][0]['event_types']+=['accept_grid','reject_grid']
+                if record['ml1'].get('media',{}).get('grid_review'):
+                    record['actions'][0]['event_types']+=['tap_endpoint','add_wire']
+            record['actions'][0]['event_types'].append('remove_wire')
         elif record['state']=='failed':
             record['actions']=[{'type':'retry_extraction','message':'Retry explicitly; previous provider request may have run.'}]
         elif record.get('diagnostic') and record['state'] not in ('completed','completing','closed'):
             record['actions']=[record['diagnostic']['next_check']]
         else: record['actions']=[]
+
+    def grid_capture(self,record,binding,db=None):
+        """Validate exact server-owned frame/profile binding before pixel use."""
+        from labvision.geometry import board_fingerprint
+        if not record.get('candidate') or record['candidate']['revision']!=binding.candidate_revision:
+            error(409,'stale_candidate','Refresh the current candidate')
+        media=record.get('ml1',{}).get('media',{})
+        if (media.get('kind')!='video' or media.get('selected_frame_id')!=binding.frame_id or
+            not record.get('image') or record['image']['sha256']!=binding.image_sha256 or
+            board_fingerprint(record['board'])!=binding.board_fingerprint):
+            error(409,'stale_grid_binding','Refresh the selected frame and board')
+        return self.integrations.capture(record,db)
+
+    @staticmethod
+    def apply_grid_capture(record,capture):
+        maps={k:deepcopy(record[k]) for k in ('component_map','port_map')}
+        updated=capture.apply_to_record(record)
+        updated.update(maps)
+        updated['ml1']['media']=capture.snapshot()['media']
+        record.clear();record.update(updated)
+
+    def suggest_hole(self,sid,principal,request):
+        """Read-only, version-bound preview. No event/session/candidate mutation."""
+        with self.store.connect() as db:
+            db.execute('BEGIN')
+            record=self.store.get(db,sid,principal.actor_id)
+            if not record or record['lab_id']!=principal.lab_id:error(404,'session_not_found','Session not found')
+            if principal.role!='student':error(403,'student_required','Student role required')
+            if record['version']!=request.expected_session_version:error(409,'stale_session','Refresh the current session')
+            if record['state'] not in ('awaiting_review','awaiting_measurement','awaiting_check_result'):
+                error(409,'session_not_editable','Wait for an editable session')
+            try:
+                capture=self.grid_capture(record,request,db)
+                suggestion=capture.suggest_hole(request.candidate_revision,image_sha256=request.image_sha256,xy=request.xy)
+            except ValueError:error(422,'invalid_grid_touch','Grid or native image coordinates are invalid')
+            return {**{k:getattr(request,k) for k in ('candidate_revision','frame_id','image_sha256','board_fingerprint')},
+                    'session_version':record['version'],'suggestion':suggestion}
+
+    @staticmethod
+    def snapped_endpoint(capture,xy):
+        if not capture.media.get('grid_review'):error(422,'grid_acceptance_required','Accept grid alignment and printed labels first')
+        suggestion=capture.suggest_hole(capture.candidate['revision'],image_sha256=capture.image['sha256'],xy=xy)
+        if suggestion['hole'] is None:
+            raise HTTPException(422,detail={'code':'ambiguous_tap','message':'Tap a clear insertion hole',
+                'alternatives':suggestion['alternatives']})
+        return suggestion
 
     def event(self, sid, principal, event):
         body = event.model_dump(mode='json')
@@ -156,7 +244,50 @@ class Workflow:
             if hasattr(event,'candidate_revision') and (not candidate or candidate['revision']!=event.candidate_revision):
                 error(409,'stale_candidate','Candidate revision changed; review current connections')
             try:
-                if kind in ('correct_endpoint','replace_candidate'):
+                if kind in ('accept_grid','reject_grid','tap_endpoint','add_wire'):
+                    from reasoning.media import reset_review
+                    if record['state'] not in ('awaiting_review','awaiting_measurement','awaiting_check_result'):
+                        error(409,'session_not_editable','Wait for an editable session')
+                    capture=self.grid_capture(record,event,db)
+                    if kind=='accept_grid':
+                        capture=capture.accept_grid(event.candidate_revision,image_sha256=event.image_sha256,
+                            left_top=event.left_top,right_top=event.right_top,acknowledgement=event.acknowledgement)
+                    elif kind=='reject_grid':
+                        capture.media.pop('grid_review',None)
+                        capture.media['grid_rejected']=True
+                        capture.candidate['revision']+=1
+                        reset_review(capture.candidate)
+                        capture.calibration=None
+                    elif kind=='tap_endpoint':
+                        point=self.snapped_endpoint(capture,event.xy)
+                        matches=[p for name,p,_ in endpoints(capture.candidate) if name==event.target]
+                        if len(matches)!=1:raise ValueError('Unknown endpoint')
+                        matches[0].update(point,external_terminal=None)
+                        capture.candidate['revision']+=1
+                        reset_review(capture.candidate)
+                        validate(capture.candidate,capture.board)
+                    else:
+                        a=self.snapped_endpoint(capture,event.a_xy)
+                        b=self.snapped_endpoint(capture,event.b_xy)
+                        capture.candidate['wires'].append({'id':event.wire_id,'a':a,'b':b,'pairing_reviewed':True})
+                        capture.candidate['revision']+=1
+                        reset_review(capture.candidate)
+                        capture.candidate['wires'][-1]['pairing_reviewed']=True
+                        validate(capture.candidate,capture.board)
+                    self.apply_grid_capture(record,capture)
+                    message(record,'assistant','Review updated. Confirm the current circuit separately before diagnosis.')
+                elif kind=='remove_wire':
+                    from reasoning.media import reset_review
+                    updated=deepcopy(candidate)
+                    matches=[w for w in updated['wires'] if w['id']==event.wire_id]
+                    if len(matches)!=1:raise ValueError('Unknown wire')
+                    updated['wires'].remove(matches[0]);updated['revision']+=1
+                    reset_review(updated);validate(updated,record['board'])
+                    record.update(candidate=updated,diagnostic=None,explanation=None,state='awaiting_review',
+                        measurements=[],student_expectations=[] if isinstance(record.get('student_expectations'),list) else {},
+                        checks_performed=[],source_settings={},resolved=False)
+                    message(record,'assistant','Wire removed. Review the current circuit revision.')
+                elif kind in ('correct_endpoint','replace_candidate'):
                     if kind=='replace_candidate':
                         updated=deepcopy(event.candidate)
                         updated.update(candidate_id=candidate['candidate_id'],revision=candidate['revision']+1,
@@ -176,10 +307,13 @@ class Workflow:
                         if c['part'] in ('resistor','capacitor'):c['value_confirmed']=False
                     for _,point,_ in endpoints(updated):point['confirmed']=False
                     validate(updated,record['board'])
-                    record.update(candidate=updated,diagnostic=None,explanation=None,state='awaiting_review')
+                    record.update(candidate=updated,diagnostic=None,explanation=None,state='awaiting_review',
+                        measurements=[],student_expectations=[] if isinstance(record.get('student_expectations'),list) else {},
+                        checks_performed=[],source_settings={},resolved=False)
                     message(record,'assistant','Observations updated. Review the current revision before diagnosis.')
                 elif kind=='confirm_candidate':
                     record['candidate']=confirm(candidate,record['board'],event.candidate_revision)
+                    for wire in record['candidate']['wires']:wire['pairing_reviewed']=True
                     record.update(state='diagnosing',diagnostic=None,explanation=None)
                     self.store.enqueue(db,record,'diagnose')
                     message(record,'assistant','Current connections reviewed. Evaluating supported models and evidence.')
@@ -290,6 +424,8 @@ class Workflow:
                 record['ml1']={'mode':capture.media['extraction_mode'],'status':capture.media['extraction_status'],
                     'media':capture.snapshot()['media'],'endpoint_detection':detection,
                     'message':'Review the selected video frame, parts and connections before diagnosis.'}
+                if capture.grid_proposal is not None:
+                    record['ml1']['grid_proposal']=capture.grid_proposal
                 message(record,'assistant',record['ml1']['message'])
             elif job['kind']=='extract':
                 extracted=self.integrations.extract(data,record['experiment'])

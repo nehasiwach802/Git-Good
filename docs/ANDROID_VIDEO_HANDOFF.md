@@ -29,3 +29,7 @@ to the Android repository. APK/phone and live provider testing remain deployment
 
 Flow: MP4 -> ML1 sampled frames/selected extraction -> ML2 review + diagnosis ->
 ML3 explanation. Media stays inside ML1/ML2/backend; ML3 diagnostic schema stays unchanged.
+
+Grid/touch wire review: see [BACKEND_GRID_API.md](BACKEND_GRID_API.md) for new optional operations.
+
+Grid/touch wire review: see [BACKEND_GRID_API.md](BACKEND_GRID_API.md) for new optional operations.

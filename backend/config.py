@@ -14,8 +14,11 @@ class Settings:
     memory_scopes_file: str = ''
     qwen_enabled: bool = True
     video_deadline_s: int = 60
+    auto_grid_enabled: bool = False
 
     def __post_init__(self):
+        if type(self.auto_grid_enabled) is not bool:
+            raise ValueError('AUTO_GRID_ENABLED must be boolean')
         if type(self.video_deadline_s) is not int or not 1<=self.video_deadline_s<=120:
             raise ValueError('VIDEO_DEADLINE_SECONDS must be an integer in 1..120')
 
@@ -28,4 +31,5 @@ class Settings:
                    worker_enabled=os.getenv('WORKER_ENABLED', 'true').lower() == 'true',
                    memory_scopes_file=os.getenv('MEMORY_SCOPES_FILE', ''),
                    qwen_enabled=os.getenv('QWEN_ENABLED', 'true').lower()=='true',
-                   video_deadline_s=int(os.getenv('VIDEO_DEADLINE_SECONDS','60')))
+                   video_deadline_s=int(os.getenv('VIDEO_DEADLINE_SECONDS','60')),
+                   auto_grid_enabled=os.getenv('AUTO_GRID_ENABLED','false').lower()=='true')

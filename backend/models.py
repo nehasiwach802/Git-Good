@@ -85,6 +85,57 @@ class CloseSession(EventBase):
     resolved: bool = Field(default=False,strict=True)
 
 
+NativeXY = Annotated[list[Annotated[float,Field(strict=True,allow_inf_nan=False)]],Field(min_length=2,max_length=2)]
+
+
+class GridBinding(Strict):
+    candidate_revision: int = Field(ge=1,strict=True)
+    frame_id: str = Field(pattern=r'^F[1-6]$')
+    image_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    board_fingerprint: str = Field(pattern=r'^[0-9a-f]{64}$')
+
+
+class AcceptGrid(EventBase,GridBinding):
+    type: Literal['accept_grid']
+    left_top: str = Field(pattern=r'^[AEFJ][1-9][0-9]?$')
+    right_top: str = Field(pattern=r'^[AEFJ][1-9][0-9]?$')
+    acknowledgement: Literal['reviewed_grid_alignment_and_printed_labels']
+
+
+class RejectGrid(EventBase,GridBinding):
+    type: Literal['reject_grid']
+
+
+class TapEndpoint(EventBase,GridBinding):
+    type: Literal['tap_endpoint']
+    target: str = Field(min_length=1,max_length=100)
+    xy: NativeXY
+
+
+class AddWire(EventBase,GridBinding):
+    type: Literal['add_wire']
+    wire_id: str = Field(pattern=r'^[A-Za-z][A-Za-z0-9_-]{0,63}$')
+    a_xy: NativeXY
+    b_xy: NativeXY
+    acknowledgement: Literal['reviewed_same_physical_wire']
+
+
+class RemoveWire(EventBase):
+    type: Literal['remove_wire']
+    candidate_revision: int = Field(ge=1,strict=True)
+    wire_id: str = Field(pattern=r'^[A-Za-z][A-Za-z0-9_-]{0,63}$')
+
+
+class GridSuggestionRequest(GridBinding):
+    expected_session_version: int = Field(ge=1,strict=True)
+    xy: NativeXY
+
+
+class GridSuggestionResponse(GridBinding):
+    session_version: int
+    suggestion: dict
+
+
 SessionEvent = Annotated[CorrectEndpoint | ReplaceCandidate | ConfirmCandidate | Correspondence |
                          Measurements | SourceSettings | Message | CheckResult | Complete | Retry,
                          Field(discriminator='type')]

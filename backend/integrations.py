@@ -63,12 +63,16 @@ class Integrations:
 
     def extract_video(self,path,experiment):
         return process_video(path,experiment['board'],known_parts=experiment['reported_parts'],
-            try_vision=self.settings.vision_enabled,deadline_s=self.settings.video_deadline_s)
+            try_vision=self.settings.vision_enabled,deadline_s=self.settings.video_deadline_s,
+            auto_grid=self.settings.auto_grid_enabled)
 
-    def capture(self,record):
+    def capture(self,record,db=None):
         from .store import Store
-        store=Store(self.settings.data_dir)
-        with store.connect() as db:
+        if db is None:
+            store=Store(self.settings.data_dir)
+            with store.connect() as connection:
+                rows=connection.execute('SELECT image,metadata FROM media_frames WHERE session_id=?',(record['session_id'],)).fetchall()
+        else:
             rows=db.execute('SELECT image,metadata FROM media_frames WHERE session_id=?',(record['session_id'],)).fetchall()
         assets={json.loads(row['metadata'])['asset_id']:bytes(row['image']) for row in rows}
         def read_asset(digest):return assets[digest]

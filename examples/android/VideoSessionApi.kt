@@ -37,7 +37,25 @@ interface VideoSessionApi {
     @POST("api/v1/sessions/{id}/events")
     suspend fun event(@Header("Authorization") bearer: String,
         @Path("id") sessionId: String, @Body event: JsonObject): Response<JsonObject>
+
+    // Read-only native-frame pixel preview; does not consume an event UUID/version.
+    @POST("api/v1/sessions/{id}/grid/suggest")
+    suspend fun suggestHole(@Header("Authorization") bearer: String,
+        @Path("id") sessionId: String, @Body request: GridSuggestionBody): Response<JsonObject>
 }
+
+data class GridSuggestionBody(
+    val expected_session_version: Int,
+    val candidate_revision: Int,
+    val frame_id: String,
+    val image_sha256: String,
+    val board_fingerprint: String,
+    val xy: List<Double>
+)
+
+// New mutations use sessionEvent() below and the same event endpoint:
+// accept_grid, reject_grid, tap_endpoint, add_wire, remove_wire.
+// Exact payloads/acknowledgements: docs/BACKEND_GRID_API.md.
 
 fun mp4Part(file: File): MultipartBody.Part {
     require(file.isFile && file.length() in 1L..(50L * 1024 * 1024))

@@ -1,4 +1,4 @@
-﻿# Android / backend API contract 1.1
+ï»¿# Android / backend API contract 1.1
 
 Owner: ML2/backend; JSON creation, separate MP4 upload, nested event payloads,
 `expected_session_version` and `close_session` are confirmed by the user on
@@ -185,3 +185,12 @@ See [Android video handoff](ANDROID_VIDEO_HANDOFF.md).
 Run `python tools/run_checks.py` and `python tools/demo_backend.py`. The demo saves
 `outputs/backend/synthetic-transcript.json` using actual ML1/ML2/ML3 interfaces,
 injected test identity and synthetic data; no live product/provider calls.
+
+## Grid and wire review extension
+
+API1.1 now supports grid-review-1, discovered via GET /api/v1/capabilities.
+Existing endpoints/envelopes remain compatible. New nested event types are
+accept_grid, reject_grid, tap_endpoint, add_wire and remove_wire. Read-only preview:
+POST /api/v1/sessions/{session_id}/grid/suggest. Payloads, frame/board bindings,
+error codes and Android requirements: [grid/wire contract](BACKEND_GRID_API.md).
+AUTO_GRID_ENABLED=true enables extraction; no automatic circuit confirmation.

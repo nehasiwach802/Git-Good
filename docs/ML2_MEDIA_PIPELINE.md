@@ -209,3 +209,5 @@ It compares original `origin/Manit` and the backend-integrated consumer using re
 ML2 output, and saves `outputs/contracts/team-alignment.json`. Requires the named
 Git refs to exist; refresh them separately when teammates push. This check does
 not exercise HTTP uploads, credentials, hosted dependencies or real model accuracy.
+
+Latest automatic-grid integration: see [ML2_AUTO_GRID_INTEGRATION.md](ML2_AUTO_GRID_INTEGRATION.md).
