@@ -194,3 +194,10 @@ accept_grid, reject_grid, tap_endpoint, add_wire and remove_wire. Read-only prev
 POST /api/v1/sessions/{session_id}/grid/suggest. Payloads, frame/board bindings,
 error codes and Android requirements: [grid/wire contract](BACKEND_GRID_API.md).
 AUTO_GRID_ENABLED=true enables extraction; no automatic circuit confirmation.
+
+## Wire-only experiment extension
+
+`wire-hole-practice-v1` (Breadboard Wire Connections) uses the existing upload
+and event routes with analysis engine `wire_connections`. No electrical readings
+or components are required. See [BACKEND_WIRE_WORKFLOW.md](BACKEND_WIRE_WORKFLOW.md)
+for Android handling and reference-approval semantics.

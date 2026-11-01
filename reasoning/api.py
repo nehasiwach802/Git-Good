@@ -8,6 +8,9 @@ from .adapters import adapt_request
 
 
 def validate_input(request):
+    if isinstance(request, dict) and request.get("analysis") == "wire_connections":
+        from .wires import validate_request as validate_wire_request
+        return validate_wire_request(request)
     if isinstance(request, dict) and request.get("schema_version") == "2.0":
         return validate_generalized(adapt_request(request))
     if isinstance(request,dict) and "analysis" in request:
@@ -16,6 +19,9 @@ def validate_input(request):
 
 
 def diagnose_input(request, simulator=simulate):
+    if isinstance(request, dict) and request.get("analysis") == "wire_connections":
+        from .wires import diagnose_wires
+        return diagnose_wires(request)
     if isinstance(request, dict) and request.get("schema_version") == "2.0":
         return diagnose_generalized(adapt_request(request), simulator)
     if isinstance(request,dict) and "analysis" in request:

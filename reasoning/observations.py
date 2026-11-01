@@ -117,6 +117,10 @@ def resolved(point):
 
 
 def validate_reference(record):
+    if (isinstance(record, dict) and isinstance(record.get("analysis"), dict)
+            and record["analysis"].get("engine") == "wire_connections"):
+        from .wires import validate_reference
+        return validate_reference(record)
     object_(record, "$.reference")
     text(record.get("experiment_id"), "$.reference.experiment_id")
     text(record.get("version"), "$.reference.version")

@@ -1,5 +1,10 @@
 # Wire-to-hole identification exercise
 
+Backend update: `wire-hole-practice-v1` is now published for reviewed observations
+with a dedicated ML2 wire workflow. Its reference remains draft. See
+[BACKEND_WIRE_WORKFLOW.md](BACKEND_WIRE_WORKFLOW.md); the original draft notes
+below describe the ML1 handoff before backend integration.
+
 User-requested scope: identify the two insertion holes of each jumper wire.
 This is a visual connection exercise with no voltage readings or SPICE analysis.
 The local draft is `examples/wire-hole-practice.experiment.json`; it is not an

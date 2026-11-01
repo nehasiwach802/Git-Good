@@ -382,6 +382,9 @@ class Workflow:
         reference=record['experiment']['reference']
         from .integrations import Integrations
         engine=reference['analysis']['engine']
+        if engine=='wire_connections':
+            if readings or expectations:raise ValueError('Wire connections require no electrical readings or predictions')
+            return
         if engine=='7400_as_not':
             for rows in (readings,expectations):
                 if not isinstance(rows,list) or len(rows)>2:raise ValueError('Use at most two binary input/output rows')

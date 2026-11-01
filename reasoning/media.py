@@ -208,6 +208,12 @@ class Capture:
         require(self.candidate.get('image_sha256')==self.image['sha256'],'candidate_image_mismatch')
         if self.media.get('grid_review') is not None:
             accepted_labels(self.grid_proposal,self.board,self.image,self.media['grid_review'],self.candidate['revision'])
+        if reference.get('analysis',{}).get('engine') == 'wire_connections':
+            request={'schema_version':'2.0','analysis':'wire_connections',
+                'reference':deepcopy(reference),'board':deepcopy(self.board),
+                'candidate':deepcopy(self.candidate),'measurements':context.get('measurements',[])}
+            validate_input(request)
+            return request
         request={'schema_version':'2.0','reference':deepcopy(reference),
             'component_map':deepcopy(component_map),'input':reasoning_input(self.candidate,self.board),**deepcopy(context)}
         require(set(context)<= {'safety_profile','measurements','student_expectations','problem_description','equipment_evidence','port_map'},'unknown_request_context')
@@ -233,7 +239,7 @@ class Capture:
     def diagnose(self,reference,component_map,*,simulator=None,**kwargs):
         request=self.request(reference,component_map,**kwargs)
         result=diagnose_input(request) if simulator is None else diagnose_input(request,simulator)
-        if request['observation']['source'].get('ideal_model_assumptions'):
+        if request.get('observation',{}).get('source',{}).get('ideal_model_assumptions'):
             result['limitations'].append('Op-amp gain is an explicitly configured ideal-model assumption, not a measured component property.')
         # No media/candidate/assets/raw bytes are added to the ML3 result contract.
         return result

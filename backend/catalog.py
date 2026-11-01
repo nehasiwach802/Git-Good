@@ -16,7 +16,13 @@ def load_catalog(path):
             raise ValueError('Duplicate or inconsistent experiment ID/version')
         if type(item.get('workflow_approved',False)) is not bool or type(item.get('simulated',False)) is not bool:
             raise ValueError('Workflow and simulation flags must be explicit booleans')
-        if not item.get('reported_parts'):
+        wire_mode = item['reference']['analysis']['engine'] == 'wire_connections'
+        if wire_mode:
+            from reasoning.wires import validate_reference as validate_wire_reference
+            validate_wire_reference(item['reference'], item['board'])
+            if item.get('reported_parts') != [] or item.get('source_ports', []):
+                raise ValueError('Wire exercise requires empty reported_parts and no sources')
+        if not wire_mode and not item.get('reported_parts'):
             raise ValueError('Experiment must declare supported reported parts')
         result[key] = deepcopy(item)
     return result

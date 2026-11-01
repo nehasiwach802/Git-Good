@@ -452,3 +452,38 @@ passed. Full suite last343; demos run separately after their CLI extension.
 Next review/commit backend, configure real catalog/secrets and enable AUTO_GRID
 for matching board profile, deploy and verify live readiness/device flow.
 Matching summary saved; public grid-review-1 contract promoted successfully to gitgood-build.
+# Wire-only backend/ML2 workflow (2026-11-01)
+
+User requested immediate publication and integration. Work remains on
+backend/android-connection-test; no stash, branch switch, commit, push or deploy.
+Owner ML2/backend Tanu, implemented by Codex. Breadboard Wire Connections is now
+in backend/catalog.json as wire-hole-practice-v1 version1, engine wire_connections.
+Supersedes earlier notes saying no wire-only catalog/workflow exists.
+
+Trusted board capture_mode enables empty components/ports only for wire mode;
+normal circuits remain strict. Dedicated reasoning/wires.py handles reviewed
+hole pairs, missing/extra wires against approved references, unordered matching
+and distinct exact-hole vs strip-pair comparison. Unknowns/alternatives/unreviewed
+observations block evaluation. No source/measurement/behavior simulation required.
+Media receipt and grid-review guards retained; no references passed to ML1 and no
+fake components. Generic Gemini component extraction disabled for wire exercise;
+automatic grid plus explicit student pairing and final confirmation remain.
+ML3 diagnostic schema2.0 and public Android routes/envelopes unchanged.
+
+Workflow published for observations; sample expected wire pairs remain draft.
+Until instructor/backend reference approval, results list reviewed pairs without
+judging correctness. Draft does not satisfy production approved-reference check.
+Android must permit empty parts/ports and skip source/measurement screens for this
+engine. AUTO_GRID_ENABLED=true enables taps; actual board must match30rowprofile.
+Custom EXPERIMENT_CATALOG_PATH requires adding the record to that catalog too.
+Contract docs/BACKEND_WIRE_WORKFLOW.md; team decision saved/promoted to gitgood-build.
+
+Seven focused tests pass including actual synthetic MP4 public HTTP workflow,
+ML2/ML3 explanation and close, response/reference JSON schemas, ambiguity,
+occupancy, wrong row, same strip/different hole, empty board and draft handling.
+tools/demo_backend.py --wire-only completes, saves
+outputs/backend/synthetic-wire-transcript.json. Final release suite:350 tests pass,
+zero failures or skips (outputs/wire-final-checks.txt); git diff --check passes.
+initial suite found an analog dispatch import collision (fixed), schema test found
+missing diagnostic metadata (fixed). Live Render/Android/model accuracy untested.
+README changed concurrently outside this task; those edits preserved.

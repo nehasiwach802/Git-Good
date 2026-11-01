@@ -101,7 +101,11 @@ def validate(candidate, board):
     for field in ("components", "wires", "ports", "issues"):
         require(isinstance(candidate.get(field), list), f"{field} must be a list")
         require(len(candidate[field]) <= {"components":100,"wires":1000,"ports":100,"issues":100}[field], f"too many {field}")
-    require(candidate["components"], "at least one component required")
+    if board.get("capture_mode") == "wire_connections":
+        require(not candidate["components"] and not candidate["ports"],
+                "wire_connections accepts only wires, without components or ports")
+    else:
+        require(candidate["components"], "at least one component required")
     require(all(isinstance(issue, str) for issue in candidate["issues"]),
             "issues must contain strings")
     ids = set()
@@ -140,6 +144,7 @@ def validate(candidate, board):
         hole = point.get("hole")
         external = point.get("external_terminal")
         if external is not None:
+            require(board.get("capture_mode") != "wire_connections", "wire exercise requires breadboard holes")
             require(candidate["schema_version"] == EXTERNAL_SCHEMA_VERSION,
                     "external terminals require schema_version 0.2")
             require(isinstance(external, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", external),
@@ -180,7 +185,7 @@ def pending(candidate, board):
             result.append(f"{name}: unknown hole or external terminal")
         elif not point["confirmed"] or point["alternatives"]:
             result.append(f"{name}: review required")
-    if not candidate["ports"]:
+    if not candidate["ports"] and board.get("capture_mode") != "wire_connections":
         result.append("external port assignments required")
     if candidate["reviewed_revision"] != candidate["revision"]:
         result.append("whole-circuit review required")

@@ -58,11 +58,33 @@
             ]
           },
           "maxItems": 100,
-          "minItems": 1
+          "minItems": 0
         },
         "wires": {
           "type": "array",
-          "maxItems": 0
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "a",
+              "b"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "a": {
+                "type": "string",
+                "minLength": 1
+              },
+              "b": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
         }
       },
       "required": [
@@ -243,5 +265,58 @@
     "approval",
     "circuit",
     "analysis"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "analysis": {
+            "properties": {
+              "engine": {
+                "const": "wire_connections"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ports"
+        ],
+        "properties": {
+          "ports": {
+            "const": {}
+          },
+          "circuit": {
+            "required": [
+              "components",
+              "wires"
+            ],
+            "properties": {
+              "components": {
+                "const": []
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "circuit": {
+            "properties": {
+              "components": {
+                "minItems": 1
+              },
+              "wires": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      }
+    }
   ]
 }

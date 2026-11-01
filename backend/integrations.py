@@ -63,7 +63,7 @@ class Integrations:
 
     def extract_video(self,path,experiment):
         return process_video(path,experiment['board'],known_parts=experiment['reported_parts'],
-            try_vision=self.settings.vision_enabled,deadline_s=self.settings.video_deadline_s,
+            try_vision=self.settings.vision_enabled and experiment['reference']['analysis']['engine'] != 'wire_connections',deadline_s=self.settings.video_deadline_s,
             auto_grid=self.settings.auto_grid_enabled)
 
     def capture(self,record,db=None):
@@ -81,6 +81,12 @@ class Integrations:
 
     def reasoning_request(self, record):
         experiment = record['experiment']
+        if experiment['reference']['analysis']['engine'] == 'wire_connections':
+            if record.get('ml1',{}).get('media',{}).get('kind')=='video':
+                return self.capture(record).request(experiment['reference'],{},measurements=record['measurements'])
+            return {'schema_version':'2.0', 'analysis':'wire_connections',
+                'reference':experiment['reference'], 'board':record['board'],
+                'candidate':record['candidate'], 'measurements':record['measurements']}
         request = {'schema_version':'2.0', 'reference':experiment['reference'],
             'input':reasoning_input(record['candidate'], record['board']),
             'component_map':record['component_map'], 'port_map':record['port_map'],

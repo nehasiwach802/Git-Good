@@ -24,6 +24,7 @@ MODELS = MappingProxyType({
 })
 
 ANALYSES = MappingProxyType({
+    "wire_connections": "Reviewed breadboard wire endpoints; exact-hole comparison, no powered measurements",
     "connectivity": "Connectivity comparison only; no behavioral prediction",
     "analog_ac": "Single-frequency AC magnitude; ideal small-signal models",
     "7400_as_not": "Isolated 7400 NAND-as-NOT; ideal Boolean logic only",
