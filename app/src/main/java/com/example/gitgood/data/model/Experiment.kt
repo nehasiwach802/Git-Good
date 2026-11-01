@@ -47,7 +47,8 @@ fun resolveExperiments(server: List<BackendExperiment>): List<Experiment> = loca
         "rc-low-pass-filter" -> "rc-lowpass-example"
         else -> null
     }
-    val remote = matches.firstOrNull { it.workflow_approved && !it.simulated }
+    val remote = matches.sortedByDescending { it.version.toIntOrNull() ?: 0 }
+        .firstOrNull { it.workflow_approved && !it.simulated }
         ?: matches.firstOrNull()
         ?: server.firstOrNull { it.simulated && it.experiment_id == demoId }
     if (remote == null) item else item.copy(
