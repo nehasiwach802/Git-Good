@@ -487,3 +487,35 @@ zero failures or skips (outputs/wire-final-checks.txt); git diff --check passes.
 initial suite found an analog dispatch import collision (fixed), schema test found
 missing diagnostic metadata (fixed). Live Render/Android/model accuracy untested.
 README changed concurrently outside this task; those edits preserved.
+
+## Backend branch consolidation verified (2026-11-01)
+
+User requested merging backend, Abhiram, tanu and Manit. Fetched origin; started
+from clean pushed backend54786ed. Remained on backend/android-connection-test.
+Actual merge commits:3329676 includes Abhiram d335af7;3c2e55c includes tanu370759b;
+5bdd09f includes Manitc084375. All three tips verified ancestors; no unresolved
+index entries/conflict markers. No stash, source branch updates, main/Android
+merge, push or deployment performed.
+
+Reviewed conflicts preserve backend wire-only validators, size/revision guards,
+video/grid review cleanup, public API1.1 and optional-probability ML3 compatibility.
+Runtime backend/reasoning/labvision/mentor files unchanged from54786ed because
+source implementations were already imported; merges add remaining source tools,
+training fixtures, reports/docs and original tests. Preserved latest README and
+AGENTS workflow, broader ignore rules plus ML3 local environment patterns.
+Merged branch-specific context/plans are historical; this context.md and current
+backend contract docs are authoritative. Resolution guide docs/BRANCH_INTEGRATION.md.
+
+Added optional training-test dependency (torch), installed locally, and updated CI
+and README so combined release tests run without skips. Production dependencies
+unchanged. Verification:485 tests passed, zero failures/skips, exit0 via
+python tools/run_checks.py; outputs/merged-release-checks.txt records results.
+Synthetic MP4 wire demo closes successfully; strict originalManit yields labelled
+probability-safe fallback and merged backend normal template; both keep diagnostic
+unchanged without fabricated probabilities. pip check passes; conflict scan clear.
+No real provider/auth/phone/Render/Docker validation in this merge task.
+
+Integration ownership/branch decisions saved and promoted to gitgood-build.
+Next push reviewed backend merges, then separately consolidate main/Android and
+perform configured deployment/device verification. Local verification summary
+synchronized to build memory; no product datapacks accessed.

@@ -70,7 +70,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements-backend.txt
-python -m pip install -e ".[test]"
+python -m pip install -e ".[test,training-test]"
 ```
 
 The integrated backend currently lives on `backend/android-connection-test`. After it is merged into `main`, use `main` instead. The final install command adds the editable package and test dependencies; runtime pins come from `requirements-backend.txt`.
