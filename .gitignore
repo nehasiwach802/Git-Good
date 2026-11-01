@@ -9,3 +9,5 @@ dist/
 .env.*
 !.env.example
 outputs/
+.venv-backend/
+.checks-*.log

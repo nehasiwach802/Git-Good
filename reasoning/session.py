@@ -112,6 +112,10 @@ def advance_generalized(request, state=None, simulator=simulate):
                           for name, p in obs.get("ports", {}).items()},
                 "board_topology_id": obs.get("source", {}).get("board_topology_id")}
     physical_key = stable_id("physical_", physical)
+    if obs.get('source',{}).get('image_sha256') is not None:
+        physical['image_sha256']=obs['source']['image_sha256']
+        physical['media_binding']=obs['source'].get('media_binding')
+        physical_key=stable_id('physical_',physical)
     if obs["revision"] == previous_revision and state.get("physical_key", physical_key) != physical_key:
         raise ValueError("physical observations changed without incrementing revision")
     result = diagnose_input(request, simulator)

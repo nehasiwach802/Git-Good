@@ -21,7 +21,8 @@
         "adapter": {
           "enum": [
             "internal_v1",
-            "ml1_v0.1"
+            "ml1_v0.1",
+            "ml1"
           ]
         },
         "payload": {

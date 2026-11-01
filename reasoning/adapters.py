@@ -18,6 +18,8 @@ def ml1_v01(payload):
     except (CandidateError, TypeError, KeyError, AttributeError, OverflowError) as exc:
         fail("$.input.payload", str(exc))
     groups = board_groups(board)
+    if candidate['schema_version']!='0.1' or any(c['part'] not in ('resistor','capacitor','7400','led') for c in candidate['components']):
+        fail('$.input.adapter','Use the ml1 adapter or labvision.handoff.reasoning_input for extended/external observations')
     parent = {n: n for n in groups.values()}
     def root(n):
         while parent[n] != n:
@@ -63,7 +65,17 @@ def ml1_v01(payload):
     return result
 
 
-ADAPTERS = {"internal_v1": internal, "ml1_v0.1": ml1_v01}
+def ml1(payload):
+    """Let ML1 choose its version/part-specific handoff; never grant review."""
+    from labvision.handoff import reasoning_input
+    object_(payload,'$.input.payload')
+    try:spec=reasoning_input(payload.get('candidate'),payload.get('board'))
+    except (CandidateError,TypeError,KeyError,AttributeError,OverflowError) as exc:
+        fail('$.input.payload',str(exc))
+    return internal(spec['payload']) if spec['adapter']=='internal_v1' else ml1_v01(spec['payload'])
+
+
+ADAPTERS = {"internal_v1": internal, "ml1_v0.1": ml1_v01, "ml1":ml1}
 
 
 def adapt_request(request):

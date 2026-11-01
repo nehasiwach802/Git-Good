@@ -1,0 +1,691 @@
+{
+  "schema_version": "0.2",
+  "candidate_id": "annotated-46fd4827e461498d8123143934673f08",
+  "revision": 45,
+  "board_profile_id": "terminal-strips-63-no-rails-draft-52b6c566-split-rail-proposal",
+  "status": "reviewed_connectivity",
+  "components": [
+    {
+      "id": "U1",
+      "part": "7400",
+      "value_si": null,
+      "pins": {
+        "1": "N1",
+        "2": "N0",
+        "3": "N0",
+        "4": "N2",
+        "5": "N0",
+        "6": "N3",
+        "7": "N4",
+        "8": "N10",
+        "9": "N9",
+        "10": "N8",
+        "11": "N7",
+        "12": "N6",
+        "13": "N5",
+        "14": "N0"
+      }
+    },
+    {
+      "id": "D1",
+      "part": "led",
+      "value_si": null,
+      "pins": {
+        "anode": "N4",
+        "cathode": "N3"
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "VCC",
+      "role": "vcc",
+      "node": "N4"
+    },
+    {
+      "id": "GND",
+      "role": "gnd",
+      "node": "N11"
+    }
+  ],
+  "nodes": {
+    "N0": [
+      "A29",
+      "A31",
+      "A32",
+      "A34",
+      "B29",
+      "B31",
+      "B32",
+      "B34",
+      "C29",
+      "C31",
+      "C32",
+      "C34",
+      "D29",
+      "D31",
+      "D32",
+      "D34",
+      "E29",
+      "E31",
+      "E32",
+      "E34",
+      "F30",
+      "G30",
+      "H30",
+      "I30",
+      "J30",
+      "R1",
+      "R2",
+      "R3",
+      "R5"
+    ],
+    "N1": [
+      "A30",
+      "B30",
+      "C30",
+      "D30",
+      "E30"
+    ],
+    "N2": [
+      "A33",
+      "B33",
+      "C33",
+      "D33",
+      "E33"
+    ],
+    "N3": [
+      "A35",
+      "B35",
+      "C35",
+      "D35",
+      "E35"
+    ],
+    "N4": [
+      "A36",
+      "B36",
+      "C36",
+      "D36",
+      "E36",
+      "R6",
+      "R7"
+    ],
+    "N5": [
+      "F31",
+      "G31",
+      "H31",
+      "I31",
+      "J31"
+    ],
+    "N6": [
+      "F32",
+      "G32",
+      "H32",
+      "I32",
+      "J32"
+    ],
+    "N7": [
+      "F33",
+      "G33",
+      "H33",
+      "I33",
+      "J33"
+    ],
+    "N8": [
+      "F34",
+      "G34",
+      "H34",
+      "I34",
+      "J34"
+    ],
+    "N9": [
+      "F35",
+      "G35",
+      "H35",
+      "I35",
+      "J35"
+    ],
+    "N10": [
+      "F36",
+      "G36",
+      "H36",
+      "I36",
+      "J36"
+    ],
+    "N11": [
+      "R4"
+    ]
+  },
+  "external_terminals": {
+    "CLIP_BOTTOM": "N11",
+    "CLIP_TOP": "N4"
+  },
+  "provenance": {
+    "U1.1": {
+      "hole": "E30",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        375.7844086709834,
+        814.2692792168426
+      ],
+      "visible": null,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.2": {
+      "hole": "E31",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        375.30040241079394,
+        798.8156262583412
+      ],
+      "visible": null,
+      "snap_distance_pitch": 8.881784197001252e-16,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.3": {
+      "hole": "E32",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        374.8201665032547,
+        783.4823554646574
+      ],
+      "visible": null,
+      "snap_distance_pitch": 1.0667388882858398e-14,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.4": {
+      "hole": "E33",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        374.34365706338,
+        768.2680656486741
+      ],
+      "visible": null,
+      "snap_distance_pitch": 7.588599744428075e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.5": {
+      "hole": "E34",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        373.8708308846176,
+        753.1713772847045
+      ],
+      "visible": null,
+      "snap_distance_pitch": 7.588599744428075e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.6": {
+      "hole": "E35",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        373.40164542578793,
+        738.190932091514
+      ],
+      "visible": null,
+      "snap_distance_pitch": 8.881784197001252e-16,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.7": {
+      "hole": "E36",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        374.8507177580441,
+        723.2621215676368
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.12420232653639657
+    },
+    "U1.8": {
+      "hole": "F36",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        326.37278257820105,
+        723.1509214590436
+      ],
+      "visible": null,
+      "snap_distance_pitch": 7.32410687763558e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.9": {
+      "hole": "F35",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        326.6604618505248,
+        738.0863551586139
+      ],
+      "visible": null,
+      "snap_distance_pitch": 9.441466109136565e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.10": {
+      "hole": "F34",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        326.95037538602054,
+        753.137785013222
+      ],
+      "visible": null,
+      "snap_distance_pitch": 7.588599744428075e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.11": {
+      "hole": "F33",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        327.24254931479004,
+        768.3065676183518
+      ],
+      "visible": null,
+      "snap_distance_pitch": 1.4238583238573986e-14,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.12": {
+      "hole": "F32",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        327.5370101759912,
+        783.5940808064419
+      ],
+      "visible": null,
+      "snap_distance_pitch": 3.972054645195637e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.13": {
+      "hole": "F31",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        327.8337849258741,
+        799.0017240640872
+      ],
+      "visible": null,
+      "snap_distance_pitch": 1.0695084443661336e-14,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "U1.14": {
+      "hole": "F30",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "DIP placement spans rows 30-36; notch appears at bottom. Pin numbering is a hypothesis to review. Position projected from grid; some pin insertions are occluded.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        328.13290094600706,
+        814.5309189591172
+      ],
+      "visible": null,
+      "snap_distance_pitch": 7.160723346098895e-15,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "D1.anode": {
+      "hole": "C36",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        403.64019294635784,
+        723.8496618776023
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0286545616461078
+    },
+    "D1.cathode": {
+      "hole": "C35",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        404.2277332563234,
+        737.3630890068108
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.06040903869259399
+    },
+    "W1.a": {
+      "hole": "R1",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Upper red jumper from left rail across chip to right terminal strip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        217.0,
+        814.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W1.b": {
+      "hole": "A32",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Upper red jumper from left rail across chip to right terminal strip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        437.0,
+        783.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.024126656669527766,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W2.a": {
+      "hole": "R2",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        215.74480181936335,
+        862.9792072774534
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.06229096193975174
+    },
+    "W2.b": {
+      "hole": "B31",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "User accepted assistant proposal: Middle red jumper from left rail to right terminal strip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        422.0,
+        799.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.03195938805571523,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": true
+    },
+    "W3.a": {
+      "hole": "R3",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Lower red jumper with small bend near left strip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        215.0,
+        912.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W3.b": {
+      "hole": "A29",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Lower red jumper with small bend near left strip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        439.0,
+        830.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.045164843765051504,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W4.a": {
+      "hole": null,
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Named external terminal; no supply polarity or voltage inferred",
+      "source": "manual",
+      "confirmed": true,
+      "external_terminal": "CLIP_BOTTOM",
+      "image_xy": [
+        726.9330734243019,
+        1175.6822612085778
+      ],
+      "visible": true
+    },
+    "W4.b": {
+      "hole": "R4",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Large lower red loop from left terminal strip to outer left rail. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        198.0,
+        1064.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W5.a": {
+      "hole": "R5",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Lead from outer left rail toward external clip. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        215.0,
+        962.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W5.b": {
+      "hole": "H30",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        297.88293715255236,
+        814.3308696123029
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.11321562712019984
+    },
+    "W6.a": {
+      "hole": "R6",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Lead from outer right rail leaving the right edge. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        474.0,
+        666.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W6.b": {
+      "hole": null,
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Named external terminal; no supply polarity or voltage inferred",
+      "source": "manual",
+      "confirmed": true,
+      "external_terminal": "CLIP_TOP",
+      "image_xy": null,
+      "visible": null
+    },
+    "W7.a": {
+      "hole": "R7",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "User accepted assistant proposal: Large upper loop; pairing obscured by LED and overlapping wires. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        478.0,
+        724.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.0,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": true
+    },
+    "W7.b": {
+      "hole": "D36",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        386.6015239573558,
+        722.6745812576712
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.12217894691876544
+    },
+    "W8.a": {
+      "hole": "B32",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Visible terminal end near the overlapping wires; opposite end uncertain. Visible insertion point; wire pairing is an unreviewed visual proposal.",
+      "source": "vision",
+      "confirmed": true,
+      "image_xy": [
+        422.0,
+        783.0
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.033765763571832884,
+      "proposal_origin": "assistant-photo-review",
+      "proposal_reviewed": false
+    },
+    "W8.b": {
+      "hole": "B34",
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Manual pixel annotation snapped to calibrated grid",
+      "source": "manual",
+      "confirmed": true,
+      "image_xy": [
+        420.09132162539436,
+        752.0515967559508
+      ],
+      "visible": true,
+      "snap_distance_pitch": 0.07821122022733602
+    },
+    "VCC": {
+      "hole": null,
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Supply role interpreted from user reply: CLIP_TOP positive, CLIP_BOTTOM ground. No supply voltage inferred.",
+      "source": "manual",
+      "confirmed": true,
+      "external_terminal": "CLIP_TOP",
+      "image_xy": null,
+      "visible": null
+    },
+    "GND": {
+      "hole": null,
+      "alternatives": [],
+      "confidence": "likely",
+      "reason": "Supply role interpreted from user reply: CLIP_TOP positive, CLIP_BOTTOM ground. No supply voltage inferred.",
+      "source": "manual",
+      "confirmed": true,
+      "external_terminal": "CLIP_BOTTOM",
+      "image_xy": null,
+      "visible": null
+    }
+  },
+  "issues": [
+    "Manual pixel annotations; full physical circuit review is required.",
+    "7400 identity is student-reported; physical pin orientation is not yet labelled.",
+    "Wire endpoints and pairing are not yet traced; empty wires does not mean no wires exist.",
+    "The 63-row terminal-only board profile is provisional; power rails need explicit geometry/connectivity.",
+    "Other views may show changed inputs or wiring; do not propagate labels without checking.",
+    "Assisted grid alignment only: verify A/J orientation and board topology; no wire or pin labels confirmed.",
+    "Assistant photo draft: positions, pairing, polarity and rail topology need review; not ground truth."
+  ],
+  "limitations": [
+    "Reviewed observations do not verify physical continuity or device health.",
+    "Node IDs are local to this revision; compare graph connectivity."
+  ]
+}

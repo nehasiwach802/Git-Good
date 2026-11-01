@@ -1,6 +1,6 @@
 # Git-Good project context
 
-Last updated: 2026-10-31 (Asia/Calcutta).
+Last updated: 2026-11-01 (Asia/Calcutta).
 Maintainer: Codex acting as ML person 2.
 Build memory: `gitgood-build`. Agent namespace: `codex:Git-Good`.
 
@@ -155,3 +155,83 @@ Synchronization is performed by the coding agent during tasks, not by a running
 background service. If Meko fails, record pending synchronization here and retry
 on the next task. Never access product datapacks or store secrets, personal data
 or raw student sessions in this context or the build datapack.
+
+## ML1 video review and branch switch (2026-11-01)
+
+User requested tanu and corrected image-only scope. Switched from committed backend
+adf5abd to tanu02d4e36 after stashing the modified backend context/planning files;
+no work discarded. Refreshed refs: ML1 origin/Abhiram393732a now includes callable
+video processor, optional endpoint detector and opamp/diode representations.
+Read ordinary/promoted gitgood-build and actual source/docs/training report.
+
+ML1 process_video returns ml1-video-1 with up to6 normalizedJPEGs,selectedframe,
+perframeproposals andexistingimagecandidate. Candidate binds selectedJPEGhash,
+not video hash. No fused reviewed circuit,automaticpairing or inherited review.
+Model retraining has mixed development metrics,not proven general improvement.
+Backendstillimage-onlyandalreadycallsreasoning_input;needsnewboundedvideojob,
+assets,selection/reviewreset anddeadline handling. tanu shared reasoning needs
+handoff compatibility andselected-frame validation/provenance; no rawvideo solver.
+See docs/ML1_VIDEO_ML2_REVIEW.md for exact changes split bybranch/teamowner.
+Review completed only; no runtimecode/test/provider/deployment changes this task.
+Newvideo route/frameevent are proposals,not finalizedAndroidcontract decisions.
+Existing ignored-on-backend .checks logs remain untrackedon tanu;not source work.
+
+## Implemented ML2-only media pipeline (2026-11-01)
+
+User explicitly requested implementation on tanu with no changes propagated to
+ML3. Current branch remains tanu. Imported ML1runtime393732a plus relevant video,
+detector,extended-part docs/fixtures/tests; preserved ML2 size/overflow/revision
+hardening and ML1rail/externals safeguards. No backend orML3branch files changed.
+
+Added reasoning/media.py Capture boundary and media_worker.py killable subprocess.
+ML2 accepts existingML1videoresults or processes a staged local video with bounded
+copy/hash,decoder deadline and temporary cleanup. Validates selectedJPEG/frame/
+candidate hash andreceipt binding,metadata limits,unreviewed bounded overlays.
+Framebytes stored privately by contenthash; snapshots JSON-safe,restore verifies
+assets. Alternateframe re-extracts,bumpsrevision,clears calibration/review; backend
+record helper clears stale diagnosis/explanation/readings/sources/correspondence.
+Image path uses same upstream extractor. No fabricateddetectorpairs/hiddenholes.
+
+New ml1 adapter delegates actualpart/version handling; legacy ml1_v0.1 explicitly
+rejects extended/external semantics. Sessionphysical fingerprint includes image/
+frame binding to reject same-revision changes. Explicit idealOPAMPgain config
+must match reference's model,with limitations; DIODE remains unsupportedbehavior.
+No new transient/DCmodel or all-fiveexperiment support invented.
+
+ML3 boundary remains original schema2.0diagnostic. Regression test compares entire
+result with old same-reviewed-circuit request,not just shape; no media/frame/asset
+payload added. Existing1.0and2.0 image/CLI/HTTP tests pass. This branch is the ML2
+callable layer; deployedbackend/AndroidHTTP routes are unchanged and need to call
+this layer for actualphonevideo ingestion. Existingauth/CAS/jobs/assetserving are
+backend responsibilities,not replaced by another server orML3 changes.
+
+Verification:142tests passed,zero failures/skips including importedhandoff/video
+checks and actual syntheticvideo subprocess through revieweddiagnosis. Demo
+python tools/demo_media_pipeline.py produced outputs/ml2-media/{unreviewed.json,
+diagnostic.json,frame-changed.json,assets}; diagnostic evaluated,frame switch
+unreviewed. Packagewheelbuilt. docs/ML2_MEDIA_PIPELINE.md is usage/integrationguide.
+No uservideos,realweights,Gemini,Qwen,productmemoryorcredentials accessed; no
+commit/push/deploymentperformed. Backendplanningnotes remainstash@{0}.
+
+## ML2 compatibility completion (2026-11-01)
+
+User asked to fix remaining ML2 issues before committing tanu. Refreshed branches:
+Abhiram393732a,Manitc084375,tanu02d4e36(remote;latestmediaworkstilluncommitted).
+Audit reproduced strictManit DiagnosticResult TypeError onhypothesis_support;
+backend-integratedmentor acceptsordinal/nullprobabilities. Added ML2-only
+reasoning/ml3_bridge.py: injectconsumerclasses/callback,noML3imports; compatible
+consumer callednormally; strictconsumer withoutlegitimateprobabilities gets
+labelledML2fallback,notfakepercentagesoruncaughtTypeError. Withtrustedexplicit
+probabilityvalues/source itcallstrictconsumerunchanged. Refusalsafetyandprivate
+failurefallbackpreserved; diagnostic2.0objectnotmutated/mediaaugmented.
+
+Added6boundarytests andtools/check_team_contracts.py againstactualgitsnapshots.
+Actualprobe: origin/Manit -> fallback/ml3_requires_probabilities;backendconsumer
+-> ok/template;bothdiagnosticunchanged,noprobabilityfabrication. Thisdoesnotclaim
+normalstrictML3explanationonordinaldata. Retainbackendcompatibilitycopywhenmerging.
+Updatedmediausageguide.148tests passedzero fail/skip. NoML3branch/module edits,
+backendHTTP/deploymentchanges orliveprovider/productcalls. Allchangesremainlocal
+ontanu forusercommit;backendvideoingestionstillmustwiretheML2layer.
+
+## Verification-only checkpoint (2026-11-01)
+User explicitly deferred backend integration and requested verification only. Re-ran148tests: all passed, zero skips; actualManitprobe uses labelled ML2fallback, backendconsumer normal template; syntheticvideo revieweddiagnosis passed andframechange clearedreview. Diffcheck passed. Branch remains tanu at02d4e36; nothing staged, committed, pushed or integrated; noML3modulechanges. ML2 working changes ready for user review/commit, not a hosted end-to-end acceptance claim.

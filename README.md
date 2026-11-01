@@ -1,5 +1,9 @@
 # Git-Good — AI Lab Mentor reasoning core
 
+ML2 image/video integration on `tanu`: see [media pipeline](docs/ML2_MEDIA_PIPELINE.md).
+ML1 video frames are normalized and reviewed inside ML2; the existing diagnostic
+result sent to ML3 is unchanged.
+
 ML person 2 implementation: circuit validation and connectivity comparison,
 ngspice AC predictions, evidence-linked diagnostic ledger and next-check rules.
 Python 3.11+; the core and local HTTP server need no Python dependencies.

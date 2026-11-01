@@ -1,6 +1,6 @@
 """Human-readable review sheet for unverified image extraction results."""
 
-from .core import endpoints, pending, validate
+from .core import endpoints, pending, validate, resolved, endpoint_label
 
 
 def review_markdown(candidate, board):
@@ -10,7 +10,7 @@ def review_markdown(candidate, board):
         return str(value).replace("|", "\\|").replace("\n", " ").replace("\r", " ")
 
     points = list(endpoints(candidate))
-    unknown = sum(p["hole"] is None for _, p, _ in points)
+    unknown = sum(not resolved(p) for _, p, _ in points)
     unresolved = pending(candidate, board)
     lines = [
         "# Photo extraction review", "",
@@ -19,7 +19,7 @@ def review_markdown(candidate, board):
         f"Components: {len(candidate['components'])}; wires: {len(candidate['wires'])}; "
         f"ports: {len(candidate['ports'])}; unknown endpoints: {unknown}/{len(points)}.", "",
         f"Board profile: `{board['id']}`. Board confirmed: {candidate['board_confirmed']}.", "",
-        "The generated terminal-strip profile is provisional and excludes power rails. "
+        "Board connectivity groups are provisional until physically verified. "
         "Verify the physical board numbering, orientation and connected groups before accepting any hole IDs.", "",
         "## Components", "", "| ID | Proposed part | Identity/orientation reviewed |",
         "|---|---|---|",
@@ -27,9 +27,9 @@ def review_markdown(candidate, board):
     lines += [f"| {cell(c['id'])} | {cell(c['part'])} | {c['identity_confirmed']} |"
               for c in candidate["components"]]
     lines += ["", "## Endpoint proposals", "",
-              "| Endpoint | Proposed hole | Alternatives | Confidence | Reason |",
+              "| Endpoint | Proposed hole / external terminal | Alternatives | Confidence | Reason |",
               "|---|---|---|---|---|"]
-    lines += [f"| {cell(name)} | {cell(p['hole'] or 'UNKNOWN')} | "
+    lines += [f"| {cell(name)} | {cell(endpoint_label(p) if resolved(p) else 'UNKNOWN')} | "
               f"{cell(', '.join(p['alternatives']))} | {cell(p['confidence'])} | {cell(p['reason'])} |"
               for name, p, _ in points]
     lines += ["", "## Model-reported issues", ""]
